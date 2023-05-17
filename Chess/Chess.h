@@ -1,8 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <math.h>
 
 using namespace std;
+
+
 
 class Position
 {
@@ -125,4 +128,7 @@ public:
 	Position coordinateToPosition(sf::Vector2i coor);
 	Manager();
 	void play();
+	
+
+
 };

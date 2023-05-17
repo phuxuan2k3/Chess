@@ -1,7 +1,13 @@
-#include "Chess.h"
+﻿#include "Chess.h"
 #include <iostream>
 
 using namespace std;
+
+// Các Biến Static phục vụ bắt tốt qua đường
+//Vì vấn đề scope nên chưa quăng vào một class nào cụ thể. Mong muốn: Thuộc class Manager
+static Piece* lastPieceChoosen; // con cờ được chọn nước trước
+static bool enPassantBlack; // Biến bool chỉ khả năng bắt chốt của bên đen
+static bool enPassantWhite; // Biến bool chỉ khả năng bắt chổt của bên trắng
 
 Position::Position()
 {
@@ -67,9 +73,10 @@ Rook::Rook(bool color, Position pos, int id) : Piece(color, pos, id)
 }
 
 void Piece::move(const int& i, const int& j)
-{
+{	
 	this->pos.i = i;
 	this->pos.j = j;
+	this->color == 1 ? enPassantWhite = false : enPassantBlack = false;
 }
 
 Piece::~Piece()
@@ -78,9 +85,14 @@ Piece::~Piece()
 
 void Pawn::move(const int& i, const int& j)
 {
+	if (std::abs(i - this->pos.i) == 2 && this->isFirstMove == true) {
+		this->color == 1 ? enPassantBlack = true :enPassantWhite = true;
+	}
 	this->pos.i = i;
 	this->pos.j = j;
 	this->isFirstMove = false;
+	this->color == 1 ? enPassantWhite = false : enPassantBlack = false;
+	lastPieceChoosen = this;
 }
 
 vector<Position> Pawn::canGo(Square board[8][8])
@@ -104,6 +116,12 @@ vector<Position> Pawn::canGo(Square board[8][8])
 		{
 			pos.push_back(Position(this->pos.i - 1, this->pos.j + 1));
 		}
+		if (Position::isOutOfRange(this->pos.i, this->pos.j - 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j-1].piece) && lastPieceChoosen == board[this->pos.i][this->pos.j - 1].piece && enPassantWhite == true) {
+			pos.push_back(Position(this->pos.i - 1, this->pos.j - 1));
+		}
+		if (Position::isOutOfRange(this->pos.i, this->pos.j + 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j + 1].piece) && lastPieceChoosen == board[this->pos.i][this->pos.j + 1].piece && enPassantWhite == true) {
+			pos.push_back(Position(this->pos.i - 1, this->pos.j + 1));
+		}
 	}
 	else
 	{
@@ -122,6 +140,12 @@ vector<Position> Pawn::canGo(Square board[8][8])
 		if (Position::isOutOfRange(this->pos.i + 1, this->pos.j - 1) == false && board[this->pos.i + 1][this->pos.j - 1].piece != nullptr && board[this->pos.i + 1][this->pos.j - 1].piece->color != this->color)
 		{
 			pos.push_back(Position(this->pos.i + 1, this->pos.j - 1));
+		}
+		if (Position::isOutOfRange(this->pos.i, this->pos.j - 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j - 1].piece) && lastPieceChoosen == board[this->pos.i][this->pos.j - 1].piece && enPassantBlack == true) {
+			pos.push_back(Position(this->pos.i + 1, this->pos.j - 1));
+		}
+		if (Position::isOutOfRange(this->pos.i, this->pos.j + 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j + 1].piece) && lastPieceChoosen == board[this->pos.i][this->pos.j + 1].piece && enPassantBlack == true) {
+			pos.push_back(Position(this->pos.i + 1, this->pos.j + 1));
 		}
 	}
 	return pos;
@@ -222,6 +246,7 @@ void Rook::move(const int& i, const int& j)
 	this->pos.i = i;
 	this->pos.j = j;
 	this->isFirstMove = false;
+	this->color == 1 ? enPassantWhite = false : enPassantBlack = false;
 }
 
 vector<Position> Knight::canGo(Square board[8][8])
@@ -613,6 +638,7 @@ void King::move(const int& i, const int& j)
 	this->pos.i = i;
 	this->pos.j = j;
 	this->isFirstMove = false;
+	this->color == 1 ? enPassantWhite = false : enPassantBlack = false;
 }
 
 Square::Square()
@@ -1027,11 +1053,14 @@ Manager::Manager()
 {
 	this->windowWidthScale = 1;
 	this->windowHeightScale = 1;
-	this->window.create(sf::VideoMode(950, 800), "Ph� Xu�n Chess!");
+	this->window.create(sf::VideoMode(950, 800), "Phú Xuân Chess!");
 	this->b.draw(this->window);
 	this->window.display();
 	this->turn = 1;
 	this->isPieceChoose = false;
+	lastPieceChoosen = nullptr;
+	enPassantBlack = false;
+	enPassantWhite = false;
 }
 
 Position Manager::coordinateToPosition(sf::Vector2i coor)
@@ -1106,6 +1135,23 @@ void Manager::play()
 									Manager::pieces[id] = nullptr;
 									this->b.board[k.i][k.j].piece = nullptr;
 								}
+								else { // Phần xóa quân cờ đối với trường hợp bắt tốt qua đường
+									if (dynamic_cast<Pawn*>(pieceChoosen) && pieceChoosen->pos.j != k.j) {
+										if (pieceChoosen->color == 1 && enPassantWhite == true) {
+											int id = this->b.board[k.i + 1][k.j].piece->id; // Nếu là lượt cờ trắng thì bên dưới vị trí chọn là tốt cần xóa
+											delete Manager::pieces[id];
+											Manager::pieces[id] = nullptr;
+											this->b.board[k.i + 1][k.j].piece = nullptr;
+										}
+										if (pieceChoosen->color == 0 && enPassantBlack == true) {
+											int id = this->b.board[k.i - 1][k.j].piece->id; // Nếu là lượt cờ đen thì trên vị trí chon là tốt cần xóa
+											delete Manager::pieces[id];
+											Manager::pieces[id] = nullptr;
+											this->b.board[k.i - 1][k.j].piece = nullptr;
+										}
+									}
+								}
+
 
 								//gan con co qua o moi
 								this->b.board[k.i][k.j].piece = pieceChoosen;
