@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <math.h>
@@ -119,6 +119,11 @@ public:
 
 	Position* whiteKing;
 	Position* blackKing;
+	// Các Biến Static phục vụ bắt tốt qua đường
+	//Vì vấn đề scope nên chưa quăng vào một class nào cụ thể. Mong muốn: Thuộc class Manager
+	static Piece* lastPieceChoosen ; // con cờ được chọn nước trước
+	static bool enPassantBlack ; // Biến bool chỉ khả năng bắt chốt của bên đen
+	static bool enPassantWhite; // Biến bool chỉ khả năng bắt chổt của bên trắng
 
 	bool turn;
 	bool isPieceChoose;
@@ -129,6 +134,7 @@ public:
 	Manager();
 	void play();
 	
-
-
 };
+
+
+

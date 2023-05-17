@@ -3,11 +3,12 @@
 
 using namespace std;
 
-// Các Biến Static phục vụ bắt tốt qua đường
-//Vì vấn đề scope nên chưa quăng vào một class nào cụ thể. Mong muốn: Thuộc class Manager
-static Piece* lastPieceChoosen; // con cờ được chọn nước trước
-static bool enPassantBlack; // Biến bool chỉ khả năng bắt chốt của bên đen
-static bool enPassantWhite; // Biến bool chỉ khả năng bắt chổt của bên trắng
+Piece* Manager::lastPieceChoosen = nullptr; 
+bool Manager::enPassantBlack = false; 
+bool Manager::enPassantWhite = false;
+
+
+
 
 Position::Position()
 {
@@ -76,7 +77,7 @@ void Piece::move(const int& i, const int& j)
 {	
 	this->pos.i = i;
 	this->pos.j = j;
-	this->color == 1 ? enPassantWhite = false : enPassantBlack = false;
+	this->color == 1 ? Manager::enPassantWhite = false : Manager::enPassantBlack = false;
 }
 
 Piece::~Piece()
@@ -86,13 +87,13 @@ Piece::~Piece()
 void Pawn::move(const int& i, const int& j)
 {
 	if (std::abs(i - this->pos.i) == 2 && this->isFirstMove == true) {
-		this->color == 1 ? enPassantBlack = true :enPassantWhite = true;
+		this->color == 1 ? Manager::enPassantBlack = true : Manager::enPassantWhite = true;
 	}
 	this->pos.i = i;
 	this->pos.j = j;
 	this->isFirstMove = false;
-	this->color == 1 ? enPassantWhite = false : enPassantBlack = false;
-	lastPieceChoosen = this;
+	this->color == 1 ? Manager::enPassantWhite = false : Manager::enPassantBlack = false;
+	Manager::lastPieceChoosen = this;
 }
 
 vector<Position> Pawn::canGo(Square board[8][8])
@@ -116,10 +117,10 @@ vector<Position> Pawn::canGo(Square board[8][8])
 		{
 			pos.push_back(Position(this->pos.i - 1, this->pos.j + 1));
 		}
-		if (Position::isOutOfRange(this->pos.i, this->pos.j - 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j-1].piece) && lastPieceChoosen == board[this->pos.i][this->pos.j - 1].piece && enPassantWhite == true) {
+		if (Position::isOutOfRange(this->pos.i, this->pos.j - 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j-1].piece) && Manager::lastPieceChoosen == board[this->pos.i][this->pos.j - 1].piece && Manager::enPassantWhite == true) {
 			pos.push_back(Position(this->pos.i - 1, this->pos.j - 1));
 		}
-		if (Position::isOutOfRange(this->pos.i, this->pos.j + 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j + 1].piece) && lastPieceChoosen == board[this->pos.i][this->pos.j + 1].piece && enPassantWhite == true) {
+		if (Position::isOutOfRange(this->pos.i, this->pos.j + 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j + 1].piece) && Manager::lastPieceChoosen == board[this->pos.i][this->pos.j + 1].piece && Manager::enPassantWhite == true) {
 			pos.push_back(Position(this->pos.i - 1, this->pos.j + 1));
 		}
 	}
@@ -141,10 +142,10 @@ vector<Position> Pawn::canGo(Square board[8][8])
 		{
 			pos.push_back(Position(this->pos.i + 1, this->pos.j - 1));
 		}
-		if (Position::isOutOfRange(this->pos.i, this->pos.j - 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j - 1].piece) && lastPieceChoosen == board[this->pos.i][this->pos.j - 1].piece && enPassantBlack == true) {
+		if (Position::isOutOfRange(this->pos.i, this->pos.j - 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j - 1].piece) && Manager::lastPieceChoosen == board[this->pos.i][this->pos.j - 1].piece && Manager::enPassantBlack == true) {
 			pos.push_back(Position(this->pos.i + 1, this->pos.j - 1));
 		}
-		if (Position::isOutOfRange(this->pos.i, this->pos.j + 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j + 1].piece) && lastPieceChoosen == board[this->pos.i][this->pos.j + 1].piece && enPassantBlack == true) {
+		if (Position::isOutOfRange(this->pos.i, this->pos.j + 1) == false && dynamic_cast<Pawn*>(board[this->pos.i][this->pos.j + 1].piece) && Manager::lastPieceChoosen == board[this->pos.i][this->pos.j + 1].piece && Manager::enPassantBlack == true) {
 			pos.push_back(Position(this->pos.i + 1, this->pos.j + 1));
 		}
 	}
@@ -246,7 +247,7 @@ void Rook::move(const int& i, const int& j)
 	this->pos.i = i;
 	this->pos.j = j;
 	this->isFirstMove = false;
-	this->color == 1 ? enPassantWhite = false : enPassantBlack = false;
+	this->color == 1 ? Manager::enPassantWhite = false : Manager::enPassantBlack = false;
 }
 
 vector<Position> Knight::canGo(Square board[8][8])
@@ -638,7 +639,7 @@ void King::move(const int& i, const int& j)
 	this->pos.i = i;
 	this->pos.j = j;
 	this->isFirstMove = false;
-	this->color == 1 ? enPassantWhite = false : enPassantBlack = false;
+	this->color == 1 ? Manager::enPassantWhite = false : Manager::enPassantBlack = false;
 }
 
 Square::Square()
@@ -1058,9 +1059,6 @@ Manager::Manager()
 	this->window.display();
 	this->turn = 1;
 	this->isPieceChoose = false;
-	lastPieceChoosen = nullptr;
-	enPassantBlack = false;
-	enPassantWhite = false;
 }
 
 Position Manager::coordinateToPosition(sf::Vector2i coor)
