@@ -1,7 +1,5 @@
 #pragma once
-#include "Game.h"
-
-
+#include "Handle.h"
 
 
 //============== 6 Types Of Pieces =================
@@ -9,15 +7,16 @@
 
 class Pawn : public Piece
 {
+private:
+
 public:
 	bool isFirstMove = true;
 
-	Pawn(bool color, Position pos, int id);
+	Pawn(PieceColor color, Position pos, int id);
 	~Pawn();
 
-	PieceName getPieceName() ;
 	vector<Position> canGo(const Board& board);
-	void move(const int& i, const int& j);
+	void move(const Position& pos);
 };
 
 
@@ -25,9 +24,8 @@ public:
 class Bishop : public Piece
 {
 public:
-	Bishop(bool color, Position pos, int id);
+	Bishop(PieceColor color, Position pos, int id);
 
-	PieceName getPieceName();
 	vector<Position> canGo(const Board& board);
 };
 
@@ -36,9 +34,8 @@ public:
 class Knight : public Piece
 {
 public:
-	Knight(bool color, Position pos, int id);
+	Knight(PieceColor color, Position pos, int id);
 
-	PieceName getPieceName();
 	vector<Position> canGo(const Board& board);
 };
 
@@ -49,11 +46,10 @@ class Rook : public Piece
 public:
 	bool isFirstMove = true;
 
-	Rook(bool color, Position pos, int id);
+	Rook(PieceColor color, Position pos, int id);
 
-	PieceName getPieceName();
 	vector<Position> canGo(const Board& board);
-	void move(const int& i, const int& j);
+	void move(const Position& pos);
 };
 
 
@@ -61,9 +57,8 @@ public:
 class Queen : public Piece
 {
 public:
-	Queen(bool color, Position pos, int id);
+	Queen(PieceColor color, Position pos, int id);
 
-	PieceName getPieceName();
 	vector<Position> canGo(const Board& board);
 };
 
@@ -74,9 +69,8 @@ class King : public Piece
 public:
 	bool isFirstMove = true;
 
-	King(bool color, Position pos, int id);
+	King(PieceColor color, Position pos, int id);
 
-	PieceName getPieceName();
 	vector<Position> canGo(const Board& board);
-	void move(const int& i, const int& j);
+	void move(const Position& pos);
 };

@@ -1,25 +1,19 @@
 #include "System.h"
 
 
-Piece::Piece(bool color, Position pos, int id)
-{
-	this->color = color;
-	this->pos = pos;
-	this->id = id;
 
-	GameState::getInstance()->pieces.push_back(this);
+PieceColor operator ! (const PieceColor& pc) {
+	if (pc == PieceColor::Black) {
+		return PieceColor::White;
+	}
+	else {
+		return PieceColor::Black;
+	}
 }
 
-void Piece::move(const int& i, const int& j)
-{
-	this->pos.i = i;
-	this->pos.j = j;
-}
-
-Piece::~Piece()
-{
-}
-
+//===================================================================
+// Position
+//===================================================================
 
 Position::Position()
 {
@@ -27,8 +21,11 @@ Position::Position()
 	this->j = 0;
 }
 
-Position::Position(const int& i, const int& j)
+Position::Position(int i, int j)
 {
+	if (i < 0 || j < 0 || i > 7 || j > 7) {
+		throw PositionException();
+	}
 	this->i = i;
 	this->j = j;
 }
@@ -38,13 +35,73 @@ bool Position::operator== (const Position& pos)
 	return this->i == pos.i && this->j == pos.j;
 }
 
+Position& Position::operator= (const Position& pos) {
+	this->set(pos);
+	return *this;
+}
+
 bool Position::isOutOfRange(const int& i, const int& j)
 {
-	if (i < 0 || j < 0 || i>7 || j>7)
-	{
+	if (i < 0 || j < 0 || i > 7 || j > 7) {
 		return true;
 	}
 	return false;
+}
+
+int Position::get_i() const {
+	return this->i;
+}
+
+int Position::get_j() const {
+	return this->j;
+}
+
+void Position::set(const int i, const int j) {
+	if (i < 0 || j < 0 || i > 7 || j > 7) {
+		throw PositionException();
+	}
+	this->i = i;
+	this->j = j;
+}
+
+void Position::set(const Position& pos) {
+	int i = pos.get_i();
+	int j = pos.get_j();
+	if (i < 0 || j < 0 || i > 7 || j > 7) {
+		throw PositionException();
+	}
+	this->i = i;
+	this->j = j;
+}
+
+
+//===================================================================
+// Piece
+//===================================================================
+
+Piece::Piece(PieceColor color, Position pos, int id)
+{
+	this->color = color;
+	this->pos = pos;
+	this->id = id;
+
+	GameState::getInstance()->pieces.push_back(this);
+}
+
+PieceName Piece::getPieceName() const {
+	return this->type;
+}
+
+PieceColor Piece::getPieceColor() const {
+	return this->color;
+}
+
+void Piece::move(const Position& pos) {
+	this->pos.set(pos);
+}
+
+Piece::~Piece()
+{
 }
 
 //===================================================================
@@ -59,60 +116,62 @@ Square::Square(Piece* p) {
 	this->piece = p;
 }
 
+Piece* Square::getPiece() const {
+	return this->piece;
+}
+
+bool Square::isEmpty() const {
+	return this->piece == nullptr;
+}
+
 string Square::getPieceName()
 {
 	PieceName p = this->piece->getPieceName();
 
 	switch (p)
 	{
-	case pnPawn:
-		if (this->piece->color == 1)
+	case PieceName::Pawn:
+		if (this->piece->getPieceColor() == PieceColor::White)
 		{
 			return "pt";
 		}
 		return "p";
 		break;
-
-	case pnKnight:
-		if (this->piece->color == 1)
+	case PieceName::Knight:
+		if (this->piece->getPieceColor() == PieceColor::White)
 		{
 			return "knt";
 		}
 		return "kn";
 		break;
-
-	case pnBishop:
-		if (this->piece->color == 1)
+	case PieceName::Bishop:
+		if (this->piece->getPieceColor() == PieceColor::White)
 		{
 			return "bt";
 		}
 		return "b";
 		break;
-
-	case pnRook:
-		if (this->piece->color == 1)
+	case PieceName::Rook:
+		if (this->piece->getPieceColor() == PieceColor::White)
 		{
 			return "rt";
 		}
 		return "r";
 		break;
-
-	case pnQueen:
-		if (this->piece->color == 1)
+	case PieceName::Queen:
+		if (this->piece->getPieceColor() == PieceColor::White)
 		{
 			return "qt";
 		}
 		return "q";
 		break;
-
-	case pnKing:
-		if (this->piece->color == 1)
+	case PieceName::King:
+		if (this->piece->getPieceColor() == PieceColor::White)
 		{
 			return "kit";
 		}
 		return "ki";
 		break;
-
 	default:
 		break;
 	}

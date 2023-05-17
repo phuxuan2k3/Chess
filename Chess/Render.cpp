@@ -11,8 +11,8 @@ RenderSquare::RenderSquare(bool color)
 	this->color = color;
 }
 
-RenderSquare::~RenderSquare() {
-
+RenderSquare::~RenderSquare() 
+{
 }
 
 void RenderSquare::setSize(const float& width, const float& height)
@@ -198,13 +198,13 @@ void Manager::play()
 						GameState::getInstance()->turn == this->b.sqMat[vt.i][vt.j].square->piece->color)
 					{
 						if ((GameState::getInstance()->turn == true &&
-							(((Mng::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == true &&
+							(((GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == true &&
 								dynamic_cast<King*>(this->b.Board.board[vt.i][vt.j].piece)) ||
-								Mng::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == false))) ||
+								GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == false))) ||
 							(GameState::getInstance()->turn == false &&
-								(((Mng::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == true &&
+								(((GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == true &&
 									dynamic_cast<King*>(this->b.Board.board[vt.i][vt.j].piece)) ||
-									Mng::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == false)))
+									GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == false)))
 							)
 						{
 							GameState::getInstance()->isPieceChoose = true;

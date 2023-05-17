@@ -1,7 +1,7 @@
-#include "Game.h"
+#include "Handle.h"
 
 
-bool Mng::isDangerousSquare(const Board& board, Position pos, bool color)
+bool GameHandle::isDangerousSquare(const Board& board, Position pos, bool color)
 {
 	//top
 	int i = pos.i - 1;

@@ -1,39 +1,76 @@
 #pragma once
-#include "Header.h"
+#include "Exception.h"
 
 
-enum PieceColor {
-	Black,
-	White,
+enum class PieceColor {
+	Black = 0,
+	White = 1,
 };
 
-enum PieceName {
-	pnPawn,
-	pnKnight,
-	pnBishop,
-	pnRook,
-	pnQueen,
-	pnKing,
+enum class PieceName {
+	Pawn,
+	Knight,
+	Bishop,
+	Rook,
+	Queen,
+	King,
 };
+
+//=================================================================
 
 class Position
 {
-public:
+private:
 	int i;
 	int j;
 
+public:
+	int get_i() const;
+	int get_j() const;
+	void set(const int i, const int j);
+	void set(const Position& pos);
+
 	Position();
-	Position(const int& i, const int& j);
+	Position(int i, int j);
 
 	bool operator== (const Position& pos);
+	Position& operator= (const Position& pos);
+
 	static bool isOutOfRange(const int& i, const int& j);
 };
 
-class Piece;
+//=================================================================
+
+class Piece
+{
+private:
+
+protected:
+	int id;			// this id is used for vector<Piece*> of Manager
+
+	Position pos;
+	PieceColor color;
+	PieceName type;
+	
+	Piece(PieceColor color, Position pos, int id);	// Not callable from Piece instance
+
+public:
+	virtual ~Piece();
+
+	PieceName getPieceName() const;
+	PieceColor getPieceColor() const;
+	virtual void move(const Position& pos);
+	virtual vector<Position> canGo(const Board& board) = 0;
+};
+
 
 class Square {
-public:
+private:
 	Piece* piece;
+
+public:
+	Piece* getPiece() const;
+	bool isEmpty() const;
 
 	Square();
 	Square(Piece* p);
@@ -48,21 +85,6 @@ public:
 
 	Board();
 	~Board();
-};
-
-class Piece
-{
-public:
-	int id; // this id is used for vector<Piece*> of Manager
-	Position pos;
-	bool color; //1: white,  0 black
-
-	Piece(bool color, Position pos, int id);
-	virtual ~Piece();
-
-	virtual PieceName getPieceName() = 0;
-	virtual void move(const int& i, const int& j);
-	virtual vector<Position> canGo(const Board& board) = 0;
 };
 
 

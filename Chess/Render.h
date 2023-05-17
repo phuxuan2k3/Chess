@@ -1,5 +1,5 @@
 #pragma once
-#include "Piece.h"
+#include "Pieces.h"
 
 
 class RenderSquare
@@ -42,8 +42,6 @@ public:
 class Manager
 {
 public:
-	Mng mng;
-
 	sf::RenderWindow window;
 	float windowWidthScale;
 	float windowHeightScale;

@@ -151,17 +151,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="Handle.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Piece.cpp" />
+    <ClCompile Include="Pieces.cpp" />
     <ClCompile Include="System.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game.h" />
+    <ClInclude Include="Exception.h" />
+    <ClInclude Include="Handle.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="Header.h" />
-    <ClInclude Include="Piece.h" />
+    <ClInclude Include="Pieces.h" />
     <ClInclude Include="System.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

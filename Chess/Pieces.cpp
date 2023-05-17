@@ -1,68 +1,80 @@
-#include "Piece.h"
+#include "Pieces.h"
 
 
-Pawn::Pawn(bool color, Position pos, int id) :Piece(color, pos, id)
+Pawn::Pawn(PieceColor color, Position pos, int id) : Piece(color, pos, id)
 {
+	this->type = PieceName::Pawn;
 }
 
-Knight::Knight(bool color, Position pos, int id) : Piece(color, pos, id)
+Knight::Knight(PieceColor color, Position pos, int id) : Piece(color, pos, id)
 {
+	this->type = PieceName::Knight;
 }
 
-Bishop::Bishop(bool color, Position pos, int id) : Piece(color, pos, id)
+Bishop::Bishop(PieceColor color, Position pos, int id) : Piece(color, pos, id)
 {
+	this->type = PieceName::Bishop;
 }
 
-Queen::Queen(bool color, Position pos, int id) : Piece(color, pos, id)
+Rook::Rook(PieceColor color, Position pos, int id) : Piece(color, pos, id)
 {
+	this->type = PieceName::Rook;
 }
 
-King::King(bool color, Position pos, int id) : Piece(color, pos, id)
+Queen::Queen(PieceColor color, Position pos, int id) : Piece(color, pos, id)
 {
+	this->type = PieceName::Queen;
 }
 
-Rook::Rook(bool color, Position pos, int id) : Piece(color, pos, id)
+King::King(PieceColor color, Position pos, int id) : Piece(color, pos, id)
 {
+	this->type = PieceName::King;
 }
 
 
+//===================================================
+// Pawn
+//===================================================
 
-PieceName Pawn::getPieceName() {
-	return PieceName::pnPawn;
-}
-
-PieceName Bishop::getPieceName() {
-	return PieceName::pnBishop;
-}
-
-PieceName Knight::getPieceName() {
-	return PieceName::pnKnight;
-}
-
-PieceName Rook::getPieceName() {
-	return PieceName::pnRook;
-}
-
-PieceName Queen::getPieceName() {
-	return PieceName::pnQueen;
-}
-
-PieceName King::getPieceName() {
-	return PieceName::pnKing;
-}
-
-
-
-void Pawn::move(const int& i, const int& j)
+void Pawn::move(const Position& pos)
 {
-	this->pos.i = i;
-	this->pos.j = j;
+	Piece::move(pos);
 	this->isFirstMove = false;
 }
 
 vector<Position> Pawn::canGo(const Board& board)
 {
+	// Inverse coefficient - inv
+	int inv = 1;
 	vector<Position> pos;
+
+	if (this->color == PieceColor::White) {
+		inv = -1;	// White will go upward
+	}
+	else {
+		inv = 1;	// Black will go downward
+	}
+
+	
+
+	if (Position::isOutOfRange(this->pos.i - 1, this->pos.j) == false && board.board[this->pos.i - 1][this->pos.j].piece == nullptr)
+	{
+		pos.push_back(Position(this->pos.i - 1, this->pos.j));
+		if (this->isFirstMove == true && Position::isOutOfRange(this->pos.i - 2, this->pos.j) == false && board.board[this->pos.i - 2][this->pos.j].piece == nullptr)
+		{
+			pos.push_back(Position(this->pos.i - 2, this->pos.j));
+		}
+	}
+	if (Position::isOutOfRange(this->pos.i - 1, this->pos.j - 1) == false && board.board[this->pos.i - 1][this->pos.j - 1].piece != nullptr && board.board[this->pos.i - 1][this->pos.j - 1].piece->color != this->color)
+	{
+		pos.push_back(Position(this->pos.i - 1, this->pos.j - 1));
+	}
+	if (Position::isOutOfRange(this->pos.i - 1, this->pos.j + 1) == false && board.board[this->pos.i - 1][this->pos.j + 1].piece != nullptr && board.board[this->pos.i - 1][this->pos.j + 1].piece->color != this->color)
+	{
+		pos.push_back(Position(this->pos.i - 1, this->pos.j + 1));
+	}
+
+
 	if (this->color == true)
 	{
 		if (Position::isOutOfRange(this->pos.i - 1, this->pos.j) == false && board.board[this->pos.i - 1][this->pos.j].piece == nullptr)
@@ -107,6 +119,10 @@ vector<Position> Pawn::canGo(const Board& board)
 Pawn::~Pawn()
 {
 }
+
+//===================================================
+// Rook
+//===================================================
 
 vector<Position> Rook::canGo(const Board& board)
 {
@@ -194,12 +210,15 @@ vector<Position> Rook::canGo(const Board& board)
 	return pos;
 }
 
-void Rook::move(const int& i, const int& j)
+void Rook::move(const Position& pos)
 {
-	this->pos.i = i;
-	this->pos.j = j;
+	Piece::move(pos);
 	this->isFirstMove = false;
 }
+
+//===================================================
+// Knight
+//===================================================
 
 vector<Position> Knight::canGo(const Board& board)
 {
@@ -290,6 +309,10 @@ vector<Position> Knight::canGo(const Board& board)
 	return pos;
 }
 
+//===================================================
+// Bishop
+//===================================================
+
 vector<Position> Bishop::canGo(const Board& board)
 {
 	vector<Position> pos;
@@ -379,6 +402,10 @@ vector<Position> Bishop::canGo(const Board& board)
 	}
 	return pos;
 }
+
+//===================================================
+// Queen
+//===================================================
 
 vector<Position> Queen::canGo(const Board& board)
 {
@@ -550,6 +577,10 @@ vector<Position> Queen::canGo(const Board& board)
 	return pos;
 }
 
+//===================================================
+// King
+//===================================================
+
 vector<Position> King::canGo(const Board& board)
 {
 	vector<Position> pos;
@@ -564,7 +595,7 @@ vector<Position> King::canGo(const Board& board)
 
 	for (int k = pos.size() - 1; k >= 0; k--) {
 		if ((Position::isOutOfRange(pos[k].i, pos[k].j) == true ||
-			Mng::isDangerousSquare(board, pos[k], this->color) == true ||
+			GameHandle::isDangerousSquare(board, pos[k], this->color) == true ||
 			(board.board[pos[k].i][pos[k].j].piece != nullptr &&
 				board.board[pos[k].i][pos[k].j].piece->color == this->color)))
 		{
@@ -579,9 +610,9 @@ vector<Position> King::canGo(const Board& board)
 		rightRook->isFirstMove == true &&
 		board.board[this->pos.i][this->pos.j + 1].piece == nullptr &&
 		board.board[this->pos.i][this->pos.j + 2].piece == nullptr &&
-		Mng::isDangerousSquare(board, this->pos, this->color) == false &&
-		Mng::isDangerousSquare(board, Position(this->pos.i, this->pos.j + 1), this->color) == false &&
-		Mng::isDangerousSquare(board, Position(this->pos.i, this->pos.j + 2), this->color) == false)
+		GameHandle::isDangerousSquare(board, this->pos, this->color) == false &&
+		GameHandle::isDangerousSquare(board, Position(this->pos.i, this->pos.j + 1), this->color) == false &&
+		GameHandle::isDangerousSquare(board, Position(this->pos.i, this->pos.j + 2), this->color) == false)
 	{
 		pos.push_back(Position(this->pos.i, this->pos.j + 2));
 	}
@@ -594,18 +625,17 @@ vector<Position> King::canGo(const Board& board)
 		board.board[this->pos.i][this->pos.j - 1].piece == nullptr &&
 		board.board[this->pos.i][this->pos.j - 2].piece == nullptr &&
 		board.board[this->pos.i][this->pos.j - 3].piece == nullptr &&
-		Mng::isDangerousSquare(board, this->pos, this->color) == false &&
-		Mng::isDangerousSquare(board, Position(this->pos.i, this->pos.j - 1), this->color) == false &&
-		Mng::isDangerousSquare(board, Position(this->pos.i, this->pos.j - 2), this->color) == false)
+		GameHandle::isDangerousSquare(board, this->pos, this->color) == false &&
+		GameHandle::isDangerousSquare(board, Position(this->pos.i, this->pos.j - 1), this->color) == false &&
+		GameHandle::isDangerousSquare(board, Position(this->pos.i, this->pos.j - 2), this->color) == false)
 	{
 		pos.push_back(Position(this->pos.i, this->pos.j - 2));
 	}
 	return pos;
 }
 
-void King::move(const int& i, const int& j)
+void King::move(const Position& pos)
 {
-	this->pos.i = i;
-	this->pos.j = j;
+	Piece::move(pos);
 	this->isFirstMove = false;
 }
