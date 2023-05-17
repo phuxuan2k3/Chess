@@ -1,62 +1,92 @@
 #pragma once
 #include "Header.h"
 
+
+enum PieceColor {
+	Black,
+	White,
+};
+
+enum PieceName {
+	pnPawn,
+	pnKnight,
+	pnBishop,
+	pnRook,
+	pnQueen,
+	pnKing,
+};
+
 class Position
 {
 public:
 	int i;
 	int j;
+
 	Position();
 	Position(const int& i, const int& j);
+
 	bool operator== (const Position& pos);
 	static bool isOutOfRange(const int& i, const int& j);
 };
 
+class Piece;
 
-class Square
-{
+class Square {
 public:
-	float width;
-	float height;
 	Piece* piece;
-	sf::Vector2f coordinate;
-	bool color;
+
 	Square();
-	void setSize(const float& width, const float& height);
+	Square(Piece* p);
+	~Square();
+
 	string getPieceName();
-	void draw(sf::RenderWindow& window);
-	void drawCanGo(sf::RenderWindow& window);
 };
 
-class Board
-{
+class Board {
 public:
-	float width;
-	float height;
-	Square board[8][8];
+	Square** board;
+
 	Board();
-	void setSize(const float& width, const float& height);
-	void draw(sf::RenderWindow& window);
 	~Board();
 };
 
-class Manager
+class Piece
 {
 public:
-	sf::RenderWindow window;
-	float windowWidthScale;
-	float windowHeightScale;
-	Board b;
+	int id; // this id is used for vector<Piece*> of Manager
+	Position pos;
+	bool color; //1: white,  0 black
 
-	Position* whiteKing;
-	Position* blackKing;
+	Piece(bool color, Position pos, int id);
+	virtual ~Piece();
+
+	virtual PieceName getPieceName() = 0;
+	virtual void move(const int& i, const int& j);
+	virtual vector<Position> canGo(const Board& board) = 0;
+};
+
+
+// Design Pattern - Singleton
+
+class GameState
+{
+private:
+	static GameState* _self;
+	GameState();
+
+public:
+	GameState(const GameState& gs) = delete;	// Delete copy constructor
+
+	static GameState* getInstance();
+
+	Position whiteKing;
+	Position blackKing;
 
 	bool turn;
 	bool isPieceChoose;
 
-	static vector<Piece*> pieces;
-	static bool isDangerousSquare(Square board[8][8], Position pos, bool color); // color is the color of the piece which is land in the piece
-	Position coordinateToPosition(sf::Vector2i coor);
-	Manager();
-	void play();
+
+	vector<Piece*> pieces;
 };
+
+

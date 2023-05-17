@@ -6,11 +6,7 @@
 
 using namespace std;
 
-class Piece;
-class Position;
-class Square;
-class Board;
-class Manager;
+
 
 
 

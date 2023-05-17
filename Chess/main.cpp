@@ -1,6 +1,5 @@
-﻿#include "Chess.h"
-#include <iostream>
-#include <string>
+﻿#include "Render.h"
+
 using namespace std;
 
 int main()
