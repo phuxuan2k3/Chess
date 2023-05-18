@@ -130,8 +130,9 @@ void Piece::move(const Position& dest) {
 	if (this->standOn->isEmpty() == false) {
 		this->standOn->getPiece()->setEaten();	// Set that Piece standOn value to nullptr;
 	}
-	
 }
+
+
 
 const Board* Piece::getBoard() const {
 	return this->standOn->getBoard();

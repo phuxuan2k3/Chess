@@ -1,6 +1,10 @@
 #include "Pieces.h"
 
 
+//===================================================
+// Pieces Constructors
+//===================================================
+
 Pawn::Pawn(PieceColor color, const Square* stand, int id) : Piece(color, stand, id)
 {
 	this->type = PieceName::Pawn;
@@ -106,92 +110,20 @@ Pawn::~Pawn()
 
 vector<Position> Rook::canGo()
 {
-	const Board* broad = this->getBoard();
-	Square* squareToMove = nullptr;
-
 	vector<Position> pos;
 
-	int range = 0;
+	vector<Position> upward = linearMove(this->standOn, this->color, MoveDirection::Up);
+	pos.insert(pos.end(), upward.begin(), upward.end());
 
-	// upward
-	while (true) {
-		range += 1;
-		squareToMove = this->standOn->getRelativeSquare(range, 0);
-		// If it's out of range
-		if (squareToMove == nullptr) {
-			break;
-		}
-		// If it's blocked by a Piece
-		if (squareToMove->isEmpty() == false) {
-			// Enemy Piece
-			if (squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) {
-				pos.push_back(squareToMove->getPosition());
-				break;
-			}
-			// Our Piece
-			else {
-				break;
-			}
-		}
-		pos.push_back(squareToMove->getPosition());
-	}
+	vector<Position> downward = linearMove(this->standOn, this->color, MoveDirection::Down);
+	pos.insert(pos.end(), downward.begin(), downward.end());
 
-	// downward
-	while (true) {
-		range -= 1;
-		squareToMove = this->standOn->getRelativeSquare(range, 0);
-		// If it's out of range
-		if (squareToMove == nullptr) {
-			break;
-		}
-		// If it's blocked by a Piece
-		if (squareToMove->isEmpty() == false) {
-			// It's Enemy Piece
-			if (squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) {
-				pos.push_back(squareToMove->getPosition());
-			}
-			break;
-		}
-		pos.push_back(squareToMove->getPosition());
-	}
+	vector<Position> leftward = linearMove(this->standOn, this->color, MoveDirection::Left);
+	pos.insert(pos.end(), leftward.begin(), leftward.end());
 
-	// rightward
-	while (true) {
-		range += 1;
-		squareToMove = this->standOn->getRelativeSquare(0, range);
-		// If it's out of range
-		if (squareToMove == nullptr) {
-			break;
-		}
-		// If it's blocked by a Piece
-		if (squareToMove->isEmpty() == false) {
-			// It's Enemy Piece
-			if (squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) {
-				pos.push_back(squareToMove->getPosition());
-			}
-			break;
-		}
-		pos.push_back(squareToMove->getPosition());
-	}
+	vector<Position> rightward = linearMove(this->standOn, this->color, MoveDirection::Right);
+	pos.insert(pos.end(), rightward.begin(), rightward.end());
 
-	// leftward
-	while (true) {
-		range -= 1;
-		squareToMove = this->standOn->getRelativeSquare(0, range);
-		// If it's out of range
-		if (squareToMove == nullptr) {
-			break;
-		}
-		// If it's blocked by a Piece
-		if (squareToMove->isEmpty() == false) {
-			// It's Enemy Piece
-			if (squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) {
-				pos.push_back(squareToMove->getPosition());
-			}
-			break;
-		}
-		pos.push_back(squareToMove->getPosition());
-	}
 	return pos;
 }
 
@@ -205,93 +137,18 @@ void Rook::move(const Position& dest)
 // Knight
 //===================================================
 
-vector<Position> Knight::canGo()
-{
-	vector<Position> pos;
-
-	//left-top
-	int i = this->pos.i - 1;
-	int j = this->pos.j - 2;
-	if (Position::isOutOfRange(i, j) == false)
-	{
-		if ((board.board[i][j].piece == nullptr) || (board.board[i][j].piece->color != this->color))
-		{
-			pos.push_back(Position(i, j));
-		}
-	}
-	i = this->pos.i - 2;
-	j = this->pos.j - 1;
-	if (Position::isOutOfRange(i, j) == false)
-	{
-		if ((board.board[i][j].piece == nullptr) || (board.board[i][j].piece->color != this->color))
-		{
-			pos.push_back(Position(i, j));
-		}
-	}
-
-	//left-bottom
-	i = this->pos.i + 1;
-	j = this->pos.j - 2;
-	if (Position::isOutOfRange(i, j) == false)
-	{
-		if ((board.board[i][j].piece == nullptr) || (board.board[i][j].piece->color != this->color))
-		{
-			pos.push_back(Position(i, j));
-		}
-	}
-
-	i = this->pos.i + 2;
-	j = this->pos.j - 1;
-	if (Position::isOutOfRange(i, j) == false)
-	{
-		if ((board.board[i][j].piece == nullptr) || (board.board[i][j].piece->color != this->color))
-		{
-			pos.push_back(Position(i, j));
-		}
-	}
-
-	//right-top
-	i = this->pos.i - 1;
-	j = this->pos.j + 2;
-	if (Position::isOutOfRange(i, j) == false)
-	{
-		if ((board.board[i][j].piece == nullptr) || (board.board[i][j].piece->color != this->color))
-		{
-			pos.push_back(Position(i, j));
-		}
-	}
-
-	i = this->pos.i - 2;
-	j = this->pos.j + 1;
-	if (Position::isOutOfRange(i, j) == false)
-	{
-		if ((board.board[i][j].piece == nullptr) || (board.board[i][j].piece->color != this->color))
-		{
-			pos.push_back(Position(i, j));
-		}
-	}
-
-	//right-bottom
-	i = this->pos.i + 1;
-	j = this->pos.j + 2;
-	if (Position::isOutOfRange(i, j) == false)
-	{
-		if ((board.board[i][j].piece == nullptr) || (board.board[i][j].piece->color != this->color))
-		{
-			pos.push_back(Position(i, j));
-		}
-	}
-
-	i = this->pos.i + 2;
-	j = this->pos.j + 1;
-	if (Position::isOutOfRange(i, j) == false)
-	{
-		if ((board.board[i][j].piece == nullptr) || (board.board[i][j].piece->color != this->color))
-		{
-			pos.push_back(Position(i, j));
-		}
-	}
-	return pos;
+vector<Position> Knight::canGo() {
+	int moves[8][2] = { 
+		{-2, 1},
+		{-2, -1},
+		{-1, 2},
+		{-1, -2},
+		{1, 2},
+		{1, -2},
+		{2, 1},
+		{2, -1},
+	};
+	return shortMove(this->standOn, this->color, moves);
 }
 
 //===================================================
@@ -302,89 +159,18 @@ vector<Position> Bishop::canGo()
 {
 	vector<Position> pos;
 
-	//left-top
-	int i = this->pos.i - 1;
-	int j = this->pos.j - 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i--;
-		j--;
-	}
+	vector<Position> upleft = linearMove(this->standOn, this->color, MoveDirection::UpLeft);
+	pos.insert(pos.end(), upleft.begin(), upleft.end());
 
-	//left-bottom
-	i = this->pos.i + 1;
-	j = this->pos.j - 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i++;
-		j--;
-	}
+	vector<Position> upright = linearMove(this->standOn, this->color, MoveDirection::UpRight);
+	pos.insert(pos.end(), upright.begin(), upright.end());
 
-	//right-top
-	i = this->pos.i - 1;
-	j = this->pos.j + 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i--;
-		j++;
-	}
+	vector<Position> downleft = linearMove(this->standOn, this->color, MoveDirection::DownLeft);
+	pos.insert(pos.end(), downleft.begin(), downleft.end());
 
-	//right-bottom
-	i = this->pos.i + 1;
-	j = this->pos.j + 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i++;
-		j++;
-	}
+	vector<Position> downright = linearMove(this->standOn, this->color, MoveDirection::DownRight);
+	pos.insert(pos.end(), downright.begin(), downright.end());
+
 	return pos;
 }
 
@@ -396,169 +182,30 @@ vector<Position> Queen::canGo()
 {
 	vector<Position> pos;
 
-	//upward
-	int i = this->pos.i - 1;
-	int j = this->pos.j;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i--;
-	}
+	vector<Position> upward = linearMove(this->standOn, this->color, MoveDirection::Up);
+	pos.insert(pos.end(), upward.begin(), upward.end());
 
-	//downward
-	i = this->pos.i + 1;
-	j = this->pos.j;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i++;
-	}
+	vector<Position> downward = linearMove(this->standOn, this->color, MoveDirection::Down);
+	pos.insert(pos.end(), downward.begin(), downward.end());
 
-	//rightward
-	i = this->pos.i;
-	j = this->pos.j + 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		j++;
-	}
+	vector<Position> leftward = linearMove(this->standOn, this->color, MoveDirection::Left);
+	pos.insert(pos.end(), leftward.begin(), leftward.end());
 
-	//leftward
-	i = this->pos.i;
-	j = this->pos.j - 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		j--;
-	}
+	vector<Position> rightward = linearMove(this->standOn, this->color, MoveDirection::Right);
+	pos.insert(pos.end(), rightward.begin(), rightward.end());
 
-	//left-top
-	i = this->pos.i - 1;
-	j = this->pos.j - 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i--;
-		j--;
-	}
+	vector<Position> upleft = linearMove(this->standOn, this->color, MoveDirection::UpLeft);
+	pos.insert(pos.end(), upleft.begin(), upleft.end());
 
-	//left-bottom
-	i = this->pos.i + 1;
-	j = this->pos.j - 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i++;
-		j--;
-	}
+	vector<Position> upright = linearMove(this->standOn, this->color, MoveDirection::UpRight);
+	pos.insert(pos.end(), upright.begin(), upright.end());
 
-	//right-top
-	i = this->pos.i - 1;
-	j = this->pos.j + 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i--;
-		j++;
-	}
+	vector<Position> downleft = linearMove(this->standOn, this->color, MoveDirection::DownLeft);
+	pos.insert(pos.end(), downleft.begin(), downleft.end());
 
-	//right-bottom
-	i = this->pos.i + 1;
-	j = this->pos.j + 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
-			break;
-		}
-		i++;
-		j++;
-	}
+	vector<Position> downright = linearMove(this->standOn, this->color, MoveDirection::DownRight);
+	pos.insert(pos.end(), downright.begin(), downright.end());
+
 	return pos;
 }
 
@@ -569,53 +216,116 @@ vector<Position> Queen::canGo()
 vector<Position> King::canGo()
 {
 	vector<Position> pos;
-	pos.push_back(Position(this->pos.i - 1, this->pos.j - 1));
-	pos.push_back(Position(this->pos.i - 1, this->pos.j));
-	pos.push_back(Position(this->pos.i - 1, this->pos.j + 1));
-	pos.push_back(Position(this->pos.i, this->pos.j + 1));
-	pos.push_back(Position(this->pos.i + 1, this->pos.j + 1));
-	pos.push_back(Position(this->pos.i + 1, this->pos.j));
-	pos.push_back(Position(this->pos.i + 1, this->pos.j - 1));
-	pos.push_back(Position(this->pos.i, this->pos.j - 1));
+	int moves[8][2] = {
+		{-1, -1},
+		{-1, 0},
+		{-1, 1},
+		{0, -1},
+		{0, 1},
+		{1, -1},
+		{1, 0},
+		{1, 1},
+	};
+	pos = shortMove(this->standOn, this->color, moves);
 
-	for (int k = pos.size() - 1; k >= 0; k--) {
-		if ((Position::isOutOfRange(pos[k].i, pos[k].j) == true ||
-			GameHandle::isDangerousSquare(board, pos[k], this->color) == true ||
-			(board.board[pos[k].i][pos[k].j].piece != nullptr &&
-				board.board[pos[k].i][pos[k].j].piece->color == this->color)))
-		{
-			pos.erase(pos.begin() + k);
+	// goto with do - while style
+	do {
+		// Handle castling
+		// King has moved => no castling
+		if (this->isFirstMove == false) {
+			break;
 		}
-	}
+		// Note: If the king hasn't moved, all relative square that we get below will always
+		// valid. Therefore, no need for checking nullptr.
 
-	//nhap thanh phai
-	Rook* rightRook = dynamic_cast<Rook*> (GameState::getInstance()->pieces[this->id + 3]);
-	if (this->isFirstMove == true &&
-		rightRook != nullptr &&
-		rightRook->isFirstMove == true &&
-		board.board[this->pos.i][this->pos.j + 1].piece == nullptr &&
-		board.board[this->pos.i][this->pos.j + 2].piece == nullptr &&
-		GameHandle::isDangerousSquare(board, this->pos, this->color) == false &&
-		GameHandle::isDangerousSquare(board, Position(this->pos.i, this->pos.j + 1), this->color) == false &&
-		GameHandle::isDangerousSquare(board, Position(this->pos.i, this->pos.j + 2), this->color) == false)
-	{
-		pos.push_back(Position(this->pos.i, this->pos.j + 2));
-	}
+		Square* s_1;	// One square away
+		Square* s_2;	// Two square away
+		Square* s_3;	// Three square away
 
-	//nhap thanh trai
-	Rook* leftRook = dynamic_cast<Rook*> (GameState::getInstance()->pieces[this->id - 4]);
-	if (this->isFirstMove == true &&
-		leftRook != nullptr &&
-		leftRook->isFirstMove == true &&
-		board.board[this->pos.i][this->pos.j - 1].piece == nullptr &&
-		board.board[this->pos.i][this->pos.j - 2].piece == nullptr &&
-		board.board[this->pos.i][this->pos.j - 3].piece == nullptr &&
-		GameHandle::isDangerousSquare(board, this->pos, this->color) == false &&
-		GameHandle::isDangerousSquare(board, Position(this->pos.i, this->pos.j - 1), this->color) == false &&
-		GameHandle::isDangerousSquare(board, Position(this->pos.i, this->pos.j - 2), this->color) == false)
-	{
-		pos.push_back(Position(this->pos.i, this->pos.j - 2));
-	}
+		// Left castling: R K B Q Ki
+		Piece* leftRook = this->standOn->getRelativeSquare(0, -4)->getPiece();
+		
+		s_1 = this->standOn->getRelativeSquare(0, -1);
+		s_2 = this->standOn->getRelativeSquare(0, -2);
+		s_3 = this->standOn->getRelativeSquare(0, -3);
+
+		if (
+			// It's Rook
+			leftRook != nullptr &&
+			leftRook->getPieceName() != PieceName::Rook &&
+			// It's our troop
+			leftRook->getPieceColor() == this->color &&
+			// Left Rook has not moved
+			((Rook*)leftRook)->isFirstMove == true &&
+			// Check 3 squares that on the left path must bve empty
+			(
+				s_1->isEmpty() == true &&
+				s_2->isEmpty() == true &&
+				s_3->isEmpty() == true
+			) && 
+			// Check squares that King go pass by is Dangerous
+			(
+				GameHandle::isDangerousSquare(
+					this->standOn,
+					this->color
+			) == false &&
+				GameHandle::isDangerousSquare(
+					s_1,
+					this->color
+			) == false &&
+				GameHandle::isDangerousSquare(
+					s_2,
+					this->color
+			) == false
+			)
+			// End checking, add the postion if it satifies all conditions above
+			)
+		{
+			pos.push_back(s_2->getPosition());
+		}
+			
+
+		// Right castling: Ki B K R
+		Piece* rightRook = this->standOn->getRelativeSquare(0, -4)->getPiece();
+		
+		s_1 = this->standOn->getRelativeSquare(0, 1);
+		s_2 = this->standOn->getRelativeSquare(0, 2);
+
+		if (
+			// It's Rook
+			rightRook != nullptr &&
+			rightRook->getPieceName() != PieceName::Rook &&
+			// It's our troop
+			rightRook->getPieceColor() == this->color &&
+			// Left Rook has not moved
+			((Rook*)rightRook)->isFirstMove == true &&
+			// Check 3 squares that on the left path must bve empty
+			(
+				s_1->isEmpty() == true &&
+				s_2->isEmpty() == true
+			) && 
+			// Check squares that King go pass by is Dangerous
+			(
+				GameHandle::isDangerousSquare(
+					this->standOn,
+					this->color
+			) == false &&
+				GameHandle::isDangerousSquare(
+					s_1,
+					this->color
+			) == false &&
+				GameHandle::isDangerousSquare(
+					s_2,
+					this->color
+			) == false
+			)
+			// End checking, add the postion if it satifies all conditions above
+			)
+		{
+			pos.push_back(s_2->getPosition());
+		}
+	} while (false);
+
 	return pos;
 }
 

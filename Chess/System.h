@@ -117,7 +117,9 @@ public:
 	const Board* getBoard() const;		// Get the board it belong to
 	void setEaten();
 	bool isEaten() const;
+
 	virtual void move(const Position& dest);
+	
 	virtual vector<Position> canGo() = 0;
 };
 

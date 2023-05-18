@@ -1,8 +1,8 @@
 #pragma once
-#include "System.h"
+#include "StaticFunc.h"
 
 class GameHandle
 {
 public:
-	static bool isDangerousSquare(const Board& board, Position pos, bool color); // color is the color of the piece which is land in the piece
+	static bool isDangerousSquare(const Square* pos, PieceColor color); // color is the color of the piece which is land in the piece
 };

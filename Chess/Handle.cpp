@@ -1,215 +1,132 @@
 #include "Handle.h"
 
 
-bool GameHandle::isDangerousSquare(const Board& board, Position pos, bool color)
+// Observer (???)
+
+bool GameHandle::isDangerousSquare(const Square* pos, PieceColor color)
 {
-	//top
-	int i = pos.i - 1;
-	int j = pos.j;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece != nullptr)
+	// Linear Part - Rook, Bishop, Queen
+
+	Piece* upward = linearSearchEnemy(pos, color, MoveDirection::Up);
+	Piece* downward = linearSearchEnemy(pos, color, MoveDirection::Down);
+	Piece* leftward = linearSearchEnemy(pos, color, MoveDirection::Left);
+	Piece* rightward = linearSearchEnemy(pos, color, MoveDirection::Right);
+	Piece* upleft = linearSearchEnemy(pos, color, MoveDirection::UpLeft);
+	Piece* upright = linearSearchEnemy(pos, color, MoveDirection::UpRight);
+	Piece* downleft = linearSearchEnemy(pos, color, MoveDirection::DownLeft);
+	Piece* downright = linearSearchEnemy(pos, color, MoveDirection::DownRight);
+
+	// R - Q
+	if (upward != nullptr) {
+		if (upward->getPieceName() == PieceName::Queen ||
+			upward->getPieceName() == PieceName::Rook) 
 		{
-			if (board.board[i][j].piece->color != color)
-			{
-				string namePiece = board.board[i][j].getPieceName();
-				if (
-					(namePiece.find_first_of("r", 0) != std::string::npos) ||
-					(namePiece.find_first_of("q", 0) != std::string::npos) || 
-					(namePiece.find_first_of("ki", 0) != std::string::npos && i == pos.i - 2)
-					)
-				{
-					return true;
-				}
-			}
-			break;
+			return true;
 		}
-		i--;
 	}
-
-	//bottom
-	i = pos.i + 1;
-	j = pos.j;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece != nullptr)
+	if (downward != nullptr) {
+		if (downward->getPieceName() == PieceName::Queen ||
+			downward->getPieceName() == PieceName::Rook) 
 		{
-			if (board.board[i][j].piece->color != color)
-			{
-				string namePiece = board.board[i][j].getPieceName();
-				if (
-					(namePiece.find_first_of("r", 0) != std::string::npos) ||
-					(namePiece.find_first_of("q", 0) != std::string::npos) ||
-					(namePiece.find_first_of("ki", 0) != std::string::npos && i == pos.i + 2)
-					)
-				{
-					return true;
-				}
-			}
-			break;
+			return true;
 		}
-		i++;
 	}
-
-	//left
-	i = pos.i;
-	j = pos.j - 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece != nullptr)
+	if (leftward != nullptr) {
+		if (leftward->getPieceName() == PieceName::Queen ||
+			leftward->getPieceName() == PieceName::Rook) 
 		{
-			if (board.board[i][j].piece->color != color)
-			{
-				string namePiece = board.board[i][j].getPieceName();
-				if ((namePiece.find_first_of("r", 0) != std::string::npos) || (namePiece.find_first_of("q", 0) != std::string::npos) || (namePiece.find_first_of("ki", 0) != std::string::npos && j == pos.j - 2))
-				{
-					return true;
-				}
-			}
-			break;
+			return true;
 		}
-		j--;
 	}
-
-	//right
-	i = pos.i;
-	j = pos.j + 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece != nullptr)
+	if (rightward != nullptr) {
+		if (rightward->getPieceName() == PieceName::Queen ||
+			rightward->getPieceName() == PieceName::Rook)
 		{
-			if (board.board[i][j].piece->color != color)
-			{
-				string namePiece = board.board[i][j].getPieceName();
-				if ((namePiece.find_first_of("r", 0) != std::string::npos) || (namePiece.find_first_of("q", 0) != std::string::npos) || (namePiece.find_first_of("ki", 0) != std::string::npos && j == pos.j + 2))
-				{
-					return true;
-				}
-			}
-			break;
+			return true;
 		}
-		j++;
 	}
 
-	//left-top
-	i = pos.i - 1;
-	j = pos.j - 1;
-	if (Position::isOutOfRange(i, j) == false && board.board[i][j].piece != nullptr && board.board[i][j].piece->color != color && color == true && board.board[i][j].getPieceName().find_first_of("p", 0) != std::string::npos)
-	{
-		return true;
-	}
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece != nullptr)
+	// B - Q
+	if (upleft != nullptr) {
+		if (upleft->getPieceName() == PieceName::Queen ||
+			upleft->getPieceName() == PieceName::Bishop) 
 		{
-			if (board.board[i][j].piece->color != color)
-			{
-				string namePiece = board.board[i][j].getPieceName();
-				if ((namePiece.find_first_of("q", 0) != std::string::npos) || (namePiece.find_first_of("b", 0) != std::string::npos) || (namePiece.find_first_of("ki", 0) != std::string::npos && i == pos.i - 2 && j == pos.j - 2))
-				{
-					return true;
-				}
-			}
-			break;
+			return true;
 		}
-		i--;
-		j--;
 	}
-
-	//right-top
-	i = pos.i - 1;
-	j = pos.j + 1;
-	//if the diagon is the pawn which is diffrent color
-	if (Position::isOutOfRange(i, j) == false && board.board[i][j].piece != nullptr && board.board[i][j].piece->color != color && color == true && board.board[i][j].getPieceName().find_first_of("p", 0) != std::string::npos)
-	{
-		return true;
-	}
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece != nullptr)
+	if (upright != nullptr) {
+		if (upright->getPieceName() == PieceName::Queen ||
+			upright->getPieceName() == PieceName::Bishop)
 		{
-			if (board.board[i][j].piece->color != color)
-			{
-				string namePiece = board.board[i][j].getPieceName();
-				if ((namePiece.find_first_of("q", 0) != std::string::npos) || (namePiece.find_first_of("b", 0) != std::string::npos) || (namePiece.find_first_of("ki", 0) != std::string::npos && i == pos.i - 2 && j == pos.j + 2))
-				{
-					return true;
-				}
-			}
-			break;
+			return true;
 		}
-		i--;
-		j++;
 	}
-
-	//left-bottom
-	i = pos.i + 1;
-	j = pos.j - 1;
-	//if the diagon is the pawn which is diffrent color
-	if (Position::isOutOfRange(i, j) == false && board.board[i][j].piece != nullptr && board.board[i][j].piece->color != color && color == false && board.board[i][j].getPieceName().find_first_of("p", 0) != std::string::npos)
-	{
-		return true;
-	}
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece != nullptr)
+	if (downleft != nullptr) {
+		if (downleft->getPieceName() == PieceName::Queen ||
+			downleft->getPieceName() == PieceName::Bishop)
 		{
-			if (board.board[i][j].piece->color != color)
-			{
-				string namePiece = board.board[i][j].getPieceName();
-				if ((namePiece.find_first_of("q", 0) != std::string::npos) || (namePiece.find_first_of("b", 0) != std::string::npos) || (namePiece.find_first_of("ki", 0) != std::string::npos && i == pos.i + 2 && j == pos.j - 2))
-				{
-					return true;
-				}
-			}
-			break;
+			return true;
 		}
-		i++;
-		j--;
 	}
-
-
-	//right-bottom
-	i = pos.i + 1;
-	j = pos.j + 1;
-	//if the diagon is the pawn which is diffrent color
-	if (Position::isOutOfRange(i, j) == false && board.board[i][j].piece != nullptr && board.board[i][j].piece->color != color && color == false && board.board[i][j].getPieceName().find_first_of("p", 0) != std::string::npos)
-	{
-		return true;
-	}
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece != nullptr)
+	if (downright != nullptr) {
+		if (downright->getPieceName() == PieceName::Queen ||
+			downright->getPieceName() == PieceName::Bishop)
 		{
-			if (board.board[i][j].piece->color != color)
-			{
-				string namePiece = board.board[i][j].getPieceName();
-				if ((namePiece.find_first_of("q", 0) != std::string::npos) || (namePiece.find_first_of("b", 0) != std::string::npos) || (namePiece.find_first_of("ki", 0) != std::string::npos && i == pos.i + 2 && j == pos.j + 2))
-				{
-					return true;
-				}
-			}
-			break;
+			return true;
 		}
-		i++;
-		j++;
 	}
 
-	//check knight
-	vector<Position> knightPos;
-	knightPos.push_back(Position(pos.i - 1, pos.j - 2));
-	knightPos.push_back(Position(pos.i - 2, pos.j - 1));
-	knightPos.push_back(Position(pos.i - 1, pos.j + 2));
-	knightPos.push_back(Position(pos.i - 2, pos.j + 1));
-	knightPos.push_back(Position(pos.i + 1, pos.j - 2));
-	knightPos.push_back(Position(pos.i + 2, pos.j - 1));
-	knightPos.push_back(Position(pos.i + 1, pos.j + 2));
-	knightPos.push_back(Position(pos.i + 2, pos.j + 1));
+	// Short path Part - Pawn, King, Knight
+	Piece* test = nullptr;
 
-	for (auto k : knightPos)
-	{
-		if (Position::isOutOfRange(k.i, k.j) == false && board.board[k.i][k.j].piece != nullptr && board.board[k.i][k.j].piece->color != color && board.board[k.i][k.j].getPieceName().find_first_of("kn", 0) != std::string::npos)
-		{
+	// Pawn: Black eat downward, White eat upward
+	int pawnEat[2][2] = {
+		{-1, -1},
+		{-1, 1},
+	};
+	if (color == PieceColor::Black) {
+		pawnEat[0][0] = 1;
+		pawnEat[1][0] = 1;
+	}
+	test = shortSearchEnemy(pos, color, pawnEat, 2);
+	if (test != nullptr) {
+		if (test->getPieceName() == PieceName::Pawn) {
+			return true;
+		}
+	}
+
+	// Knight
+	int knightEat[8][2] = {
+		{-2, 1},
+		{-2, -1},
+		{-1, 2},
+		{-1, -2},
+		{1, 2},
+		{1, -2},
+		{2, 1},
+		{2, -1},
+	};
+	test = shortSearchEnemy(pos, color, knightEat, 8);
+	if (test != nullptr) {
+		if (test->getPieceName() == PieceName::Knight) {
+			return true;
+		}
+	}
+
+	// King
+	int kingEat[8][2] = {
+		{-1, -1},
+		{-1, 0},
+		{-1, 1},
+		{0, -1},
+		{0, 1},
+		{1, -1},
+		{1, 0},
+		{1, 1},
+	};
+	test = shortSearchEnemy(pos, color, kingEat, 8);
+	if (test != nullptr) {
+		if (test->getPieceName() == PieceName::King) {
 			return true;
 		}
 	}
