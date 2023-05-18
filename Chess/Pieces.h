@@ -12,11 +12,11 @@ private:
 public:
 	bool isFirstMove = true;
 
-	Pawn(PieceColor color, Position pos, int id);
+	Pawn(PieceColor color, const Square* stand, int id);
 	~Pawn();
 
-	vector<Position> canGo(const Board& board);
-	void move(const Position& pos);
+	vector<Position> canGo();
+	void move(const Position& dest);
 };
 
 
@@ -24,9 +24,9 @@ public:
 class Bishop : public Piece
 {
 public:
-	Bishop(PieceColor color, Position pos, int id);
+	Bishop(PieceColor color, const Square* stand, int id);
 
-	vector<Position> canGo(const Board& board);
+	vector<Position> canGo();
 };
 
 
@@ -34,9 +34,9 @@ public:
 class Knight : public Piece
 {
 public:
-	Knight(PieceColor color, Position pos, int id);
+	Knight(PieceColor color, const Square* stand, int id);
 
-	vector<Position> canGo(const Board& board);
+	vector<Position> canGo();
 };
 
 
@@ -46,10 +46,10 @@ class Rook : public Piece
 public:
 	bool isFirstMove = true;
 
-	Rook(PieceColor color, Position pos, int id);
+	Rook(PieceColor color, const Square* stand, int id);
 
-	vector<Position> canGo(const Board& board);
-	void move(const Position& pos);
+	vector<Position> canGo();
+	void move(const Position& dest);
 };
 
 
@@ -57,9 +57,9 @@ public:
 class Queen : public Piece
 {
 public:
-	Queen(PieceColor color, Position pos, int id);
+	Queen(PieceColor color, const Square* stand, int id);
 
-	vector<Position> canGo(const Board& board);
+	vector<Position> canGo();
 };
 
 
@@ -69,8 +69,8 @@ class King : public Piece
 public:
 	bool isFirstMove = true;
 
-	King(PieceColor color, Position pos, int id);
+	King(PieceColor color, const Square* stand, int id);
 
-	vector<Position> canGo(const Board& board);
-	void move(const Position& pos);
+	vector<Position> canGo();
+	void move(const Position& dest);
 };

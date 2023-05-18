@@ -30,13 +30,65 @@ public:
 	void set(const int i, const int j);
 	void set(const Position& pos);
 
+	Position getRelativePosition(const int i, const int j) const;
+
 	Position();
 	Position(int i, int j);
+	Position(const Position& p);
 
 	bool operator== (const Position& pos);
 	Position& operator= (const Position& pos);
 
-	static bool isOutOfRange(const int& i, const int& j);
+	bool validRelativePosition(const int& i, const int& j);
+	static bool isOutOfRange_abs(const int& i, const int& j);
+};
+
+//=================================================================
+
+// NOTE: About using pointer (Ex: Piece*)
+// + Its a refernce, not value
+// + Therefore, no need to delete
+
+// Forwarding classes
+class Board;
+class Piece;
+
+//=================================================================
+
+class Square {
+private:
+	Position position;				// Constant position
+
+	Piece* piece;					// Reference to Piece that stands on
+	const Board* const board;		// Reference to the Board its belong. A square can never change its board
+
+public:
+	Position getPosition() const;
+	Square* getRelativeSquare(const int i, const int j) const;	// Get reletive square on its board
+	Piece* getPiece() const;
+	const Board* getBoard() const;
+	bool isEmpty() const;
+
+	Square(const Board* b, const Position& pos);
+	Square(const Board* b, Piece* p, const Position& pos);
+	~Square();
+
+	string getPieceName();
+};
+
+//=================================================================
+
+class Board {
+public:
+	Square** board;
+
+	Board();
+	~Board();
+
+	Square* getSquare(const Position& pos) const;
+	Square* getSquare(const int i, const int j) const;
+	Piece* getPiece(const Position& pos) const;
+	bool hasPiece(const Position& pos) const;
 };
 
 //=================================================================
@@ -46,47 +98,30 @@ class Piece
 private:
 
 protected:
-	int id;			// this id is used for vector<Piece*> of Manager
+	int id;					// id for vector<Piece*> of Manager
 
-	Position pos;
+	const Square* standOn;	// Square that piece is standing on ~ Position
+
 	PieceColor color;
 	PieceName type;
-	
-	Piece(PieceColor color, Position pos, int id);	// Not callable from Piece instance
+
+	Piece(PieceColor color, const Square* stand, int id);		// Not callable from Piece instance (protected)
+	// When initialize, a piece must have a square to stand on. If it has been eaten, that stand on
+	// will be nullptr.
 
 public:
 	virtual ~Piece();
 
 	PieceName getPieceName() const;
 	PieceColor getPieceColor() const;
-	virtual void move(const Position& pos);
-	virtual vector<Position> canGo(const Board& board) = 0;
+	const Board* getBoard() const;		// Get the board it belong to
+	void setEaten();
+	bool isEaten() const;
+	virtual void move(const Position& dest);
+	virtual vector<Position> canGo() = 0;
 };
 
-
-class Square {
-private:
-	Piece* piece;
-
-public:
-	Piece* getPiece() const;
-	bool isEmpty() const;
-
-	Square();
-	Square(Piece* p);
-	~Square();
-
-	string getPieceName();
-};
-
-class Board {
-public:
-	Square** board;
-
-	Board();
-	~Board();
-};
-
+//=================================================================
 
 // Design Pattern - Singleton
 

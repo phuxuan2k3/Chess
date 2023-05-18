@@ -1,32 +1,32 @@
 #include "Pieces.h"
 
 
-Pawn::Pawn(PieceColor color, Position pos, int id) : Piece(color, pos, id)
+Pawn::Pawn(PieceColor color, const Square* stand, int id) : Piece(color, stand, id)
 {
 	this->type = PieceName::Pawn;
 }
 
-Knight::Knight(PieceColor color, Position pos, int id) : Piece(color, pos, id)
+Knight::Knight(PieceColor color, const Square* stand, int id) : Piece(color, stand, id)
 {
 	this->type = PieceName::Knight;
 }
 
-Bishop::Bishop(PieceColor color, Position pos, int id) : Piece(color, pos, id)
+Bishop::Bishop(PieceColor color, const Square* stand, int id) : Piece(color, stand, id)
 {
 	this->type = PieceName::Bishop;
 }
 
-Rook::Rook(PieceColor color, Position pos, int id) : Piece(color, pos, id)
+Rook::Rook(PieceColor color, const Square* stand, int id) : Piece(color, stand, id)
 {
 	this->type = PieceName::Rook;
 }
 
-Queen::Queen(PieceColor color, Position pos, int id) : Piece(color, pos, id)
+Queen::Queen(PieceColor color, const Square* stand, int id) : Piece(color, stand, id)
 {
 	this->type = PieceName::Queen;
 }
 
-King::King(PieceColor color, Position pos, int id) : Piece(color, pos, id)
+King::King(PieceColor color, const Square* stand, int id) : Piece(color, stand, id)
 {
 	this->type = PieceName::King;
 }
@@ -36,16 +36,17 @@ King::King(PieceColor color, Position pos, int id) : Piece(color, pos, id)
 // Pawn
 //===================================================
 
-void Pawn::move(const Position& pos)
+void Pawn::move(const Position& dest)
 {
-	Piece::move(pos);
+	Piece::move(dest);
 	this->isFirstMove = false;
 }
 
-vector<Position> Pawn::canGo(const Board& board)
+vector<Position> Pawn::canGo()
 {
-	// Inverse coefficient - inv
 	int inv = 1;
+	Square* squareToMove = nullptr;
+
 	vector<Position> pos;
 
 	if (this->color == PieceColor::White) {
@@ -55,63 +56,42 @@ vector<Position> Pawn::canGo(const Board& board)
 		inv = 1;	// Black will go downward
 	}
 
+	// Checked if it can go 1 or 2 square ahead
+	int range = 1;
+	if (this->isFirstMove == true) {
+		range = 2;
+	}
+
+	// Note: If it can't go 1 step, it can never go 2 steps
+	for (int i = 1; i <= 2; ++i) {
+		// If it is nullptr it's out of range
+		squareToMove = this->standOn->getRelativeSquare(i * inv, 0);
+		if (squareToMove == nullptr) {
+			break;
+		}
+		// If the square is blocked (either it's enemy or our piece)
+		if (squareToMove->isEmpty() == false) {
+			break;
+		}
+		pos.push_back(squareToMove->getPosition());
+	}
 	
-
-	if (Position::isOutOfRange(this->pos.i - 1, this->pos.j) == false && board.board[this->pos.i - 1][this->pos.j].piece == nullptr)
+	// Eatalbe moves
+	// If it's not out of range and has enemy Piece
+	squareToMove = this->standOn->getRelativeSquare(1 * inv, 1);
+	if (squareToMove != nullptr &&
+		squareToMove->isEmpty() == false &&
+		squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) 
 	{
-		pos.push_back(Position(this->pos.i - 1, this->pos.j));
-		if (this->isFirstMove == true && Position::isOutOfRange(this->pos.i - 2, this->pos.j) == false && board.board[this->pos.i - 2][this->pos.j].piece == nullptr)
-		{
-			pos.push_back(Position(this->pos.i - 2, this->pos.j));
-		}
-	}
-	if (Position::isOutOfRange(this->pos.i - 1, this->pos.j - 1) == false && board.board[this->pos.i - 1][this->pos.j - 1].piece != nullptr && board.board[this->pos.i - 1][this->pos.j - 1].piece->color != this->color)
-	{
-		pos.push_back(Position(this->pos.i - 1, this->pos.j - 1));
-	}
-	if (Position::isOutOfRange(this->pos.i - 1, this->pos.j + 1) == false && board.board[this->pos.i - 1][this->pos.j + 1].piece != nullptr && board.board[this->pos.i - 1][this->pos.j + 1].piece->color != this->color)
-	{
-		pos.push_back(Position(this->pos.i - 1, this->pos.j + 1));
+		pos.push_back(squareToMove->getPosition());
 	}
 
-
-	if (this->color == true)
+	squareToMove = this->standOn->getRelativeSquare(1 * inv, -1);
+	if (squareToMove != nullptr &&
+		squareToMove->isEmpty() == false &&
+		squareToMove->getPiece()->getPieceColor() != this->getPieceColor())
 	{
-		if (Position::isOutOfRange(this->pos.i - 1, this->pos.j) == false && board.board[this->pos.i - 1][this->pos.j].piece == nullptr)
-		{
-			pos.push_back(Position(this->pos.i - 1, this->pos.j));
-			if (this->isFirstMove == true && Position::isOutOfRange(this->pos.i - 2, this->pos.j) == false && board.board[this->pos.i - 2][this->pos.j].piece == nullptr)
-			{
-				pos.push_back(Position(this->pos.i - 2, this->pos.j));
-			}
-		}
-		if (Position::isOutOfRange(this->pos.i - 1, this->pos.j - 1) == false && board.board[this->pos.i - 1][this->pos.j - 1].piece != nullptr && board.board[this->pos.i - 1][this->pos.j - 1].piece->color != this->color)
-		{
-			pos.push_back(Position(this->pos.i - 1, this->pos.j - 1));
-		}
-		if (Position::isOutOfRange(this->pos.i - 1, this->pos.j + 1) == false && board.board[this->pos.i - 1][this->pos.j + 1].piece != nullptr && board.board[this->pos.i - 1][this->pos.j + 1].piece->color != this->color)
-		{
-			pos.push_back(Position(this->pos.i - 1, this->pos.j + 1));
-		}
-	}
-	else
-	{
-		if (Position::isOutOfRange(this->pos.i + 1, this->pos.j) == false && board.board[this->pos.i + 1][this->pos.j].piece == nullptr)
-		{
-			pos.push_back(Position(this->pos.i + 1, this->pos.j));
-			if (this->isFirstMove == true && Position::isOutOfRange(this->pos.i + 2, this->pos.j) == false && board.board[this->pos.i + 2][this->pos.j].piece == nullptr)
-			{
-				pos.push_back(Position(this->pos.i + 2, this->pos.j));
-			}
-		}
-		if (Position::isOutOfRange(this->pos.i + 1, this->pos.j + 1) == false && board.board[this->pos.i + 1][this->pos.j + 1].piece != nullptr && board.board[this->pos.i + 1][this->pos.j + 1].piece->color != this->color)
-		{
-			pos.push_back(Position(this->pos.i + 1, this->pos.j + 1));
-		}
-		if (Position::isOutOfRange(this->pos.i + 1, this->pos.j - 1) == false && board.board[this->pos.i + 1][this->pos.j - 1].piece != nullptr && board.board[this->pos.i + 1][this->pos.j - 1].piece->color != this->color)
-		{
-			pos.push_back(Position(this->pos.i + 1, this->pos.j - 1));
-		}
+		pos.push_back(squareToMove->getPosition());
 	}
 	return pos;
 }
@@ -124,95 +104,100 @@ Pawn::~Pawn()
 // Rook
 //===================================================
 
-vector<Position> Rook::canGo(const Board& board)
+vector<Position> Rook::canGo()
 {
+	const Board* broad = this->getBoard();
+	Square* squareToMove = nullptr;
+
 	vector<Position> pos;
 
-	//upward
-	int i = this->pos.i - 1;
-	int j = this->pos.j;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
-		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
-			}
+	int range = 0;
+
+	// upward
+	while (true) {
+		range += 1;
+		squareToMove = this->standOn->getRelativeSquare(range, 0);
+		// If it's out of range
+		if (squareToMove == nullptr) {
 			break;
 		}
-		i--;
+		// If it's blocked by a Piece
+		if (squareToMove->isEmpty() == false) {
+			// Enemy Piece
+			if (squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) {
+				pos.push_back(squareToMove->getPosition());
+				break;
+			}
+			// Our Piece
+			else {
+				break;
+			}
+		}
+		pos.push_back(squareToMove->getPosition());
 	}
 
-	//downward
-	i = this->pos.i + 1;
-	j = this->pos.j;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
+	// downward
+	while (true) {
+		range -= 1;
+		squareToMove = this->standOn->getRelativeSquare(range, 0);
+		// If it's out of range
+		if (squareToMove == nullptr) {
+			break;
 		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
+		// If it's blocked by a Piece
+		if (squareToMove->isEmpty() == false) {
+			// It's Enemy Piece
+			if (squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) {
+				pos.push_back(squareToMove->getPosition());
 			}
 			break;
 		}
-		i++;
+		pos.push_back(squareToMove->getPosition());
 	}
 
-	//rightward
-	i = this->pos.i;
-	j = this->pos.j + 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
+	// rightward
+	while (true) {
+		range += 1;
+		squareToMove = this->standOn->getRelativeSquare(0, range);
+		// If it's out of range
+		if (squareToMove == nullptr) {
+			break;
 		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
+		// If it's blocked by a Piece
+		if (squareToMove->isEmpty() == false) {
+			// It's Enemy Piece
+			if (squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) {
+				pos.push_back(squareToMove->getPosition());
 			}
 			break;
 		}
-		j++;
+		pos.push_back(squareToMove->getPosition());
 	}
 
-	//leftward
-	i = this->pos.i;
-	j = this->pos.j - 1;
-	while (Position::isOutOfRange(i, j) == false)
-	{
-		if (board.board[i][j].piece == nullptr)
-		{
-			pos.push_back(Position(i, j));
+	// leftward
+	while (true) {
+		range -= 1;
+		squareToMove = this->standOn->getRelativeSquare(0, range);
+		// If it's out of range
+		if (squareToMove == nullptr) {
+			break;
 		}
-		else
-		{
-			if (board.board[i][j].piece->color != this->color)
-			{
-				pos.push_back(Position(i, j));
+		// If it's blocked by a Piece
+		if (squareToMove->isEmpty() == false) {
+			// It's Enemy Piece
+			if (squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) {
+				pos.push_back(squareToMove->getPosition());
 			}
 			break;
 		}
-		j--;
+		pos.push_back(squareToMove->getPosition());
 	}
 	return pos;
 }
 
-void Rook::move(const Position& pos)
+void Rook::move(const Position& dest)
 {
-	Piece::move(pos);
+	Piece::move(dest);
 	this->isFirstMove = false;
 }
 
@@ -220,7 +205,7 @@ void Rook::move(const Position& pos)
 // Knight
 //===================================================
 
-vector<Position> Knight::canGo(const Board& board)
+vector<Position> Knight::canGo()
 {
 	vector<Position> pos;
 
@@ -313,7 +298,7 @@ vector<Position> Knight::canGo(const Board& board)
 // Bishop
 //===================================================
 
-vector<Position> Bishop::canGo(const Board& board)
+vector<Position> Bishop::canGo()
 {
 	vector<Position> pos;
 
@@ -407,7 +392,7 @@ vector<Position> Bishop::canGo(const Board& board)
 // Queen
 //===================================================
 
-vector<Position> Queen::canGo(const Board& board)
+vector<Position> Queen::canGo()
 {
 	vector<Position> pos;
 
@@ -581,7 +566,7 @@ vector<Position> Queen::canGo(const Board& board)
 // King
 //===================================================
 
-vector<Position> King::canGo(const Board& board)
+vector<Position> King::canGo()
 {
 	vector<Position> pos;
 	pos.push_back(Position(this->pos.i - 1, this->pos.j - 1));
@@ -634,8 +619,8 @@ vector<Position> King::canGo(const Board& board)
 	return pos;
 }
 
-void King::move(const Position& pos)
+void King::move(const Position& dest)
 {
-	Piece::move(pos);
+	Piece::move(dest);
 	this->isFirstMove = false;
 }
