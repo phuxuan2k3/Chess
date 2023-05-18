@@ -1,14 +1,19 @@
 #include "Render.h"
 
 
-RenderSquare::RenderSquare(bool color)
+
+//===================================================
+// RenderSquare
+//===================================================
+
+RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, Square* associate)
 {
 	this->square = square;
 
-	this->width = 100;
-	this->height = 100;
-	this->coordinate = sf::Vector2f(0, 0);
-	this->color = color;
+	this->width = DEFAULT_SIZE;
+	this->height = DEFAULT_SIZE;
+	this->coordinate = coordinate;
+	this->themeColor = color;
 }
 
 RenderSquare::~RenderSquare() 
@@ -23,23 +28,34 @@ void RenderSquare::setSize(const float& width, const float& height)
 
 void RenderSquare::draw(sf::RenderWindow& window)
 {
-	//draw background square
-	sf::RectangleShape square(sf::Vector2f(100, 100));
+	// Draw background
+	sf::RectangleShape square(sf::Vector2f(this->width, this->height));
 	square.setPosition(this->coordinate);
-	square.setFillColor(this->color == true ? sf::Color(255, 255, 178) : sf::Color(85, 46, 20, 255));
+	// Set color of background
+	switch (themeColor)
+	{
+	case ThemeColor::Black:
+		square.setFillColor(sf::Color(85, 46, 20, 255));	// 4 so????
+		break;
+	case ThemeColor::White:
+		square.setFillColor(sf::Color(255, 255, 178));
+		break;
+	default:
+		break;
+	}
 	window.draw(square);
 
-	//draw sprite piece
-	if (this->square->piece != nullptr)
+	// Draw piece's sprite
+	if (this->square->getPiece() != nullptr)
 	{
 		sf::Texture texture;
-		texture.loadFromFile(this->square->getPieceName() + ".png", sf::IntRect(0, 0, 100, 100));
+		texture.loadFromFile(this->square->getPieceName() + ".png", sf::IntRect(0, 0, this->width, this->height));
 		texture.setSmooth(true);
 
 		sf::Sprite sprite;
 		sprite.setTexture(texture);
 		sprite.setPosition(this->coordinate);
-		if (this->square->piece->color == true)
+		if (this->square->getPiece()->getPieceColor() == PieceColor::White)
 		{
 			sprite.setColor(sf::Color(255, 255, 75));
 		}
@@ -57,71 +73,64 @@ void RenderSquare::drawCanGo(sf::RenderWindow& window)
 	window.draw(square);
 }
 
-void RenderBoard::setSize(const float& width, const float& height)
-{
-	this->width = width;
-	this->height = height;
-}
+//===================================================
+// RenderBoard
+//===================================================
 
-RenderBoard::RenderBoard()
+
+
+RenderBoard::RenderBoard(const Board* associate)
 {
-	this->sqMat = new RenderSquare * [8];
+	this->board = associate;
+
+	// Will initialize RenderSquare associate with each Square inside
+	// of the referenced Board
+	this->squareMat = new RenderSquare * [8];
 	for (int i = 0; i < 8; ++i) {
-		this->sqMat[i] = new RenderSquare[8];
-	}
-	for (int i = 0; i < 8; ++i) {
-		for (int j = 0; j < 8; ++j) {
-			this->sqMat[i][j].square = &(this->Board.board[i][j]);
-		}
+		this->squareMat[i] = new RenderSquare[8]{
+			RenderSquare(
+				(i + 0) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
+				sf::Vector2f(0 * 100, i * 100),
+				associate->getSquare(i, 0)),
+			RenderSquare(
+				(i + 1) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
+				sf::Vector2f(1 * 100, i * 100),
+				associate->getSquare(i, 1)),
+			RenderSquare(
+				(i + 2) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
+				sf::Vector2f(2 * 100, i * 100),
+				associate->getSquare(i, 2)),
+			RenderSquare(
+				(i + 3) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
+				sf::Vector2f(3 * 100, i * 100),
+				associate->getSquare(i, 3)),
+			RenderSquare(
+				(i + 4) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
+				sf::Vector2f(4 * 100, i * 100),
+				associate->getSquare(i, 4)),
+			RenderSquare(
+				(i + 5) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
+				sf::Vector2f(5 * 100, i * 100),
+				associate->getSquare(i, 5)),
+			RenderSquare(
+				(i + 6) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
+				sf::Vector2f(6 * 100, i * 100),
+				associate->getSquare(i, 6)),
+			RenderSquare(
+				(i + 7) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
+				sf::Vector2f(7 * 100, i * 100),
+				associate->getSquare(i, 7)),
+		};
 	}
 
 	this->width = 800;
 	this->height = 800;
+}
 
-	for (int i = 0; i < 8; i++)
-	{
-		for (int j = 0; j < 8; j++)
-		{
-			if ((i + j) % 2 == 0) {
-				this->sqMat[i][j].color = true;
-			}
-			else {
-				this->sqMat[i][j].color = false;
-			}
-
-			this->sqMat[i][j].coordinate = sf::Vector2f(j * 100, i * 100);
-		}
-	}
-
-	// Black
-	this->sqMat[0][0].square->piece = new Rook(false, Position(0, 0), 0);
-	this->sqMat[0][1].square->piece = new Knight(false, Position(0, 1), 1);
-	this->sqMat[0][2].square->piece = new Bishop(false, Position(0, 2), 2);
-	this->sqMat[0][3].square->piece = new Queen(false, Position(0, 3), 3);
-	this->sqMat[0][4].square->piece = new King(false, Position(0, 4), 4);
-	this->sqMat[0][5].square->piece = new Bishop(false, Position(0, 5), 5);
-	this->sqMat[0][6].square->piece = new Knight(false, Position(0, 6), 6);
-	this->sqMat[0][7].square->piece = new Rook(false, Position(0, 7), 7);
-
-	for (int j = 0; j < 8; j++)
-	{
-		this->sqMat[1][j].square->piece = new Pawn(false, Position(1, j), j + 8);
-	}
-
-	//white
-	this->sqMat[7][0].square->piece = new Rook(true, Position(7, 0), 24);
-	this->sqMat[7][1].square->piece = new Knight(true, Position(7, 1), 25);
-	this->sqMat[7][2].square->piece = new Bishop(true, Position(7, 2), 26);
-	this->sqMat[7][3].square->piece = new Queen(true, Position(7, 3), 27);
-	this->sqMat[7][4].square->piece = new King(true, Position(7, 4), 28);
-	this->sqMat[7][5].square->piece = new Bishop(true, Position(7, 5), 29);
-	this->sqMat[7][6].square->piece = new Knight(true, Position(7, 6), 30);
-	this->sqMat[7][7].square->piece = new Rook(true, Position(7, 7), 31);
-
-	for (int j = 0; j < 8; j++)
-	{
-		this->sqMat[6][j].square->piece = new Pawn(true, Position(6, j), j + 16);
-	}
+void RenderBoard::setSize(const float& width, const float& height)
+{
+	this->width = width;
+	this->height = height;
 }
 
 void RenderBoard::draw(sf::RenderWindow& window)
@@ -131,7 +140,7 @@ void RenderBoard::draw(sf::RenderWindow& window)
 		for (int j = 0; j < 8; j++)
 		{
 			//	this->board[i][j].setSize(this->width / 8, this->height / 8);
-			this->sqMat[i][j].draw(window);
+			this->squareMat[i][j].draw(window);
 		}
 	}
 }
@@ -139,17 +148,20 @@ void RenderBoard::draw(sf::RenderWindow& window)
 RenderBoard::~RenderBoard()
 {
 	for (int i = 0; i < 8; ++i) {
-		delete[] this->sqMat[i];
+		delete[] this->squareMat[i];
 	}
-	delete[] this->sqMat;
+	delete[] this->squareMat;
 }
 
+//===================================================
+// Manager
+//===================================================
 
-Manager::Manager()
+Manager::Manager(const Board* board) : b(board)
 {
 	this->windowWidthScale = 1;
 	this->windowHeightScale = 1;
-	this->window.create(sf::VideoMode(950, 800), "Phú Xuân Chess!");
+	this->window.create(sf::VideoMode(950, 800), "");
 	this->b.draw(this->window);
 	this->window.display();
 }
@@ -177,6 +189,7 @@ void Manager::play()
 			{
 				window.close();
 			}
+
 			else if (event.type == sf::Event::Resized)
 			{
 				this->windowWidthScale = this->window.getSize().x * 1.0f / 950;
@@ -185,17 +198,23 @@ void Manager::play()
 				this->b.draw(this->window);
 				this->window.display();
 			}
+
 			//xu ly su kien nhap chuot vao quan co
 			else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
-				sf::Vector2i mousePosition = sf::Vector2i(sf::Mouse::getPosition(this->window).x * 1.0f / this->windowWidthScale, sf::Mouse::getPosition(this->window).y * 1.0f / this->windowHeightScale);
+				sf::Vector2i mousePosition = 
+					sf::Vector2i(
+						sf::Mouse::getPosition(this->window).x * 1.0f / this->windowWidthScale,
+						sf::Mouse::getPosition(this->window).y * 1.0f / this->windowHeightScale
+					);
+
 				if (mousePosition.x <= 800)
 				{
 					Position vt = this->coordinateToPosition(mousePosition);
 					//neu chua chon mot quan co truoc do thi hien len duong di cua quan co duoc chon  va phai den turn
 					if (GameState::getInstance()->isPieceChoose == false &&
-						this->b.sqMat[vt.i][vt.j].square->piece != nullptr &&
-						GameState::getInstance()->turn == this->b.sqMat[vt.i][vt.j].square->piece->color)
+						this->b.squareMat[vt.i][vt.j].square->piece != nullptr &&
+						GameState::getInstance()->turn == this->b.squareMat[vt.i][vt.j].square->piece->color)
 					{
 						if ((GameState::getInstance()->turn == true &&
 							(((GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == true &&
@@ -215,7 +234,7 @@ void Manager::play()
 							canGo = this->b.Board.board[vt.i][vt.j].piece->canGo(this->b.Board);
 							for (Position k : canGo)
 							{
-								this->b.sqMat[k.i][k.j].drawCanGo(this->window);
+								this->b.squareMat[k.i][k.j].drawCanGo(this->window);
 							}
 							this->window.display();
 						}
