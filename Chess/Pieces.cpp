@@ -83,7 +83,7 @@ vector<MovePosition> Pawn::canGo()
 	}
 
 	// Note: If it can't go 1 step, it can never go 2 steps
-	for (int i = 1; i <= 2; ++i) {
+	for (int i = 1; i <= range; ++i) {
 		// If it is nullptr it's out of range
 		squareToMove = this->standOn->getRelativeSquare(i * inv, 0);
 		if (squareToMove == nullptr) {
@@ -228,6 +228,11 @@ vector<MovePosition> Queen::canGo()
 //===================================================
 // King
 //===================================================
+
+void King::setRook(Piece* leftRook, Piece* rightRook) {
+	this->leftRook = leftRook;
+	this->rightRook = rightRook;
+}
 
 vector<MovePosition> King::canGo()
 {

@@ -298,12 +298,18 @@ bool Piece::isEaten() const {
 
 void Piece::move(const MovePosition& dest) {
 	// Set this Piece standOn value to the dest on Board
-	this->standOn = this->getBoard()->getSquare(dest.getPosition());
+	Square* destSquare = this->getBoard()->getSquare(dest.getPosition());
 
 	// If that Square is occupied by a Piece
-	if (this->standOn->isEmpty() == false) {
-		this->standOn->getPiece()->setEaten();	// Set that Piece standOn value to nullptr;
+	if (destSquare->isEmpty() == false) {
+		destSquare->getPiece()->setEaten();	// Set that Piece standOn value to nullptr;
 	}
+	
+	// Set the current Square to empty
+	this->standOn->setPiece(nullptr);
+
+	this->standOn = destSquare;
+	destSquare->setPiece(this);
 }
 
 const Board* Piece::getBoard() const {

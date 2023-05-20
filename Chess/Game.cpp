@@ -9,8 +9,14 @@
 GameState::GameState(PieceColor turn) {
 	this->turn = turn;
 
+
+	// Will replace this placePiece setting with placing pieces
+	// independently from constructor
+
 	// Default Placing
+
 	// Black
+
 	this->placePiece(PieceName::Pawn, PieceColor::Black, 1, 0);
 	this->placePiece(PieceName::Pawn, PieceColor::Black, 1, 1);
 	this->placePiece(PieceName::Pawn, PieceColor::Black, 1, 2);
@@ -19,8 +25,18 @@ GameState::GameState(PieceColor turn) {
 	this->placePiece(PieceName::Pawn, PieceColor::Black, 1, 5);
 	this->placePiece(PieceName::Pawn, PieceColor::Black, 1, 6);
 	this->placePiece(PieceName::Pawn, PieceColor::Black, 1, 7);
+	
+	this->placePiece(PieceName::Rook, PieceColor::Black, 0, 0);
+	this->placePiece(PieceName::Knight, PieceColor::Black, 0, 1);
+	this->placePiece(PieceName::Bishop, PieceColor::Black, 0, 2);
+	this->placePiece(PieceName::Queen, PieceColor::Black, 0, 3);
+	this->placePiece(PieceName::King, PieceColor::Black, 0, 4);
+	this->placePiece(PieceName::Bishop, PieceColor::Black, 0, 5);
+	this->placePiece(PieceName::Knight, PieceColor::Black, 0, 6);
+	this->placePiece(PieceName::Rook, PieceColor::Black, 0, 7);
 
 	// White
+
 	this->placePiece(PieceName::Pawn, PieceColor::White, 6, 0);
 	this->placePiece(PieceName::Pawn, PieceColor::White, 6, 1);
 	this->placePiece(PieceName::Pawn, PieceColor::White, 6, 2);
@@ -29,6 +45,26 @@ GameState::GameState(PieceColor turn) {
 	this->placePiece(PieceName::Pawn, PieceColor::White, 6, 5);
 	this->placePiece(PieceName::Pawn, PieceColor::White, 6, 6);
 	this->placePiece(PieceName::Pawn, PieceColor::White, 6, 7);
+
+	this->placePiece(PieceName::Rook, PieceColor::White, 7, 0);
+	this->placePiece(PieceName::Knight, PieceColor::White, 7, 1);
+	this->placePiece(PieceName::Bishop, PieceColor::White, 7, 2);
+	this->placePiece(PieceName::Queen, PieceColor::White, 7, 3);
+	this->placePiece(PieceName::King, PieceColor::White, 7, 4);
+	this->placePiece(PieceName::Bishop, PieceColor::White, 7, 5);
+	this->placePiece(PieceName::Knight, PieceColor::White, 7, 6);
+	this->placePiece(PieceName::Rook, PieceColor::White, 7, 7);
+
+
+	// Arkward setting (need to be fixed)
+	// Black King set Rook
+	((King*)this->board.getPiece(0, 4))->setRook(
+		this->board.getPiece(0, 0),
+		this->board.getPiece(0, 7));
+	// White King set Rook
+	((King*)this->board.getPiece(7, 4))->setRook(
+		this->board.getPiece(7, 0),
+		this->board.getPiece(7, 7));
 }
 
 GameState::~GameState()

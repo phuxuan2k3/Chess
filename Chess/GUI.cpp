@@ -14,15 +14,18 @@ GUI::GUI() {
 	this->render->setBoard(this->game->getRefBoard());
 }
 
+// Change state to NotSelected
 void GUI::draw() {
 	this->window.clear();
 	this->render->draw(this->window);
 	this->window.display();
 }
 
+// Change state to Selected
 void GUI::drawCanGo(const Position& selectedSquare, vector<Position> cango) {
 
 	this->window.clear();
+	this->render->draw(this->window);
 	this->render->drawCanGo(this->window, cango);
 	this->window.display();
 }
@@ -61,7 +64,8 @@ void GUI::play()
 						sf::Mouse::getPosition(this->window).x * 1.0f / this->windowWidthScale,
 						sf::Mouse::getPosition(this->window).y * 1.0f / this->windowHeightScale
 					);
-
+				
+				// nhap chuot vao ban co
 				if (mousePosition.x <= 800)
 				{
 					curPos = coordinateToPosition(mousePosition);
@@ -83,17 +87,30 @@ void GUI::play()
 						//	)
 						//{
 						canGo = toPos(this->game->getRefBoard()->getPiece(curPos)->canGo());
-						this->drawCanGo(curPos, canGo);
-						prePos = curPos;
+						
+						// neu khong co nuoc di hop le, ta giu nguyen trang thai NotSelected
+						// nguoc lai, ta chuyen ve tran thai Selected
+						if (canGo.empty() == false) {
+							this->drawCanGo(curPos, canGo);
+							prePos = curPos;
+						}
 					}
 
-					//neu da chon mot quan co truoc do thi thuc hien viec di chuyen
+					// neu da chon mot quan co truoc do va chon vao 1 nuoc di hop le
 					else if (this->render->getState() == State::Selected &&
 						curPos.find(canGo) == true
 						)
 					{
 						this->game->getRefBoard()->getPiece(prePos)->move(curPos);
 						this->game->switchTurn();
+						this->draw();
+					}
+
+					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected
+					else if (this->render->getState() == State::Selected &&
+						curPos.find(canGo) == false
+						)
+					{
 						this->draw();
 					}
 				}

@@ -78,6 +78,7 @@ private:
 
 public:
 	King(PieceColor color, Square* stand);
+	void setRook(Piece* leftRook, Piece* rightRook);
 
 	vector<MovePosition> canGo();
 	void move(const MovePosition& dest);
