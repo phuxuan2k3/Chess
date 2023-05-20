@@ -8,23 +8,36 @@ enum class ThemeColor {
 	White = 1,
 };
 
+enum class State {
+	Selected,
+	NotSelected,
+	// CheckMate,
+	// InCheck,
+};
+
 //===================================================
+// Handle the graphics part
 
 class RenderSquare
 {
 public:
-	Square* square;		// Reference to the square, no delete
-
 	float width;
 	float height;
 	sf::Vector2f coordinate;
 	ThemeColor themeColor;
+	PieceName pieceType;
+	PieceColor pieceColor;
 
-	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, Square* associate);
+	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate);
+	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceName type, PieceColor pieceColor);
+	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceName type, PieceColor pieceColor, float width, float height);
 	~RenderSquare();
 	
+	// Update functions
 	void setSize(const float& width, const float& height);
+	void setPiece(PieceName type, PieceColor pieceColor);
 
+	// Draw
 	void draw(sf::RenderWindow& window);
 	void drawCanGo(sf::RenderWindow& window);
 };
@@ -33,34 +46,46 @@ public:
 
 class RenderBoard
 {
-public:
+private:
 	RenderSquare** squareMat;
-	const Board* board;			// Board of the game that it's associate with 
-								// (could make this Board static)
+	const Board* board;					// Board of the game that it's associate with 
 
+public:
 	float width;
 	float height;
 
-	RenderBoard(const Board* associate);
+	RenderBoard();
 	~RenderBoard();
 
+	void setBoard(const Board* board);
+
+	// Update functions
 	void setSize(const float& width, const float& height);
+	void setPieces();
+
+	// Draw
 	void draw(sf::RenderWindow& window);
+	void drawCanGo(sf::RenderWindow& window, vector<Position> squares);
 };
 
 //===================================================
 
-class Manager
+class RenderGame
 {
-public:
-	sf::RenderWindow window;
-	float windowWidthScale;
-	float windowHeightScale;
+private:
 	RenderBoard b;
+	State state;
 
-	Manager(const Board* broad);
+public:
+	RenderGame();
 
-	Position coordinateToPosition(sf::Vector2i coor);
-	void play();
+	State getState() const;
+
+	// Update
+	void setBoard(const Board* board);
+
+	// Draw
+	void draw(sf::RenderWindow& window);
+	void drawCanGo(sf::RenderWindow& window, vector<Position> squares);
 };
 

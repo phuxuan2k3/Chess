@@ -20,7 +20,8 @@ Position::Position(int i, int j)
 	this->j = j;
 }
 
-Position::Position(const Position& p) {
+Position::Position(const Position& p) 
+{
 	int i = p.get_i();
 	int j = p.get_j();
 
@@ -91,58 +92,70 @@ Position Position::getRelativePosition(const int i, const int j) const {
 	return p;
 }
 
-
-//===================================================================
-// Piece
-//===================================================================
-
-Piece::Piece(PieceColor color, const Square* stand, int id)
-{
-	this->type = PieceName::Pawn;
-	this->color = color;
-	this->standOn = stand;
-	this->id = id;
-
-	GameState::getInstance()->pieces.push_back(this);
+bool Position::find(vector<Position> list) {
+	for (Position i : list) {
+		if (i == *this) {
+			return true;
+		}
+	}
+	return false;
 }
 
-PieceName Piece::getPieceName() const {
+//===================================================================
+// MovePosition
+//===================================================================
+
+MovePosition::MovePosition() 
+{
+	this->type = MoveType::Normal;
+}
+
+MovePosition::MovePosition(const Position& p) 
+{
+	this->type = MoveType::Normal;
+	this->position = p;
+}
+
+MovePosition::MovePosition(const Position& p, MoveType t) 
+{
+	this->type = t;
+	this->position = p;
+}
+
+MovePosition::~MovePosition() 
+{
+}
+
+void MovePosition::setMoveType(const MoveType& type) {
+	this->type = type;
+}
+
+MoveType MovePosition::getMoveType() const{
 	return this->type;
 }
 
-PieceColor Piece::getPieceColor() const {
-	return this->color;
+void MovePosition::setPosition(const Position& p) {
+	this->position = p;
 }
 
-void Piece::setEaten() {
-	this->standOn = nullptr;
+Position MovePosition::getPosition() const {
+	return this->position;
 }
 
-bool Piece::isEaten() const {
-	return this->standOn == nullptr;
+MovePosition& MovePosition::operator= (const MovePosition& pos) {
+	this->position = pos.position;
+	this->type = pos.type;
+	return *this;
 }
 
-void Piece::move(const Position& dest) {
-	// Set this Piece standOn value to the dest on Board
-	this->standOn = this->getBoard()->getSquare(dest);
-
-	// If that Square is occupied by a Piece
-	if (this->standOn->isEmpty() == false) {
-		this->standOn->getPiece()->setEaten();	// Set that Piece standOn value to nullptr;
+bool MovePosition::operator== (const MovePosition& pos) {
+	if (this->position == pos.position &&
+		this->type == pos.type)
+	{
+		return true;
 	}
+	return false;
 }
-
-
-
-const Board* Piece::getBoard() const {
-	return this->standOn->getBoard();
-}
-
-Piece::~Piece()
-{
-}
-
-
 
 //===================================================================
 // Square
@@ -163,10 +176,15 @@ Piece* Square::getPiece() const {
 	return this->piece;
 }
 
+void Square::setPiece(Piece* p) {
+	this->piece = p;
+}
+
 const Board* Square::getBoard() const {
 	return this->board;
 }
 
+// mark
 Position Square::getPosition() const {
 	return this->position;
 }
@@ -175,60 +193,7 @@ bool Square::isEmpty() const {
 	return this->piece == nullptr;
 }
 
-string Square::getPieceName()
-{
-	PieceName p = this->piece->getPieceName();
-
-	switch (p)
-	{
-	case PieceName::Pawn:
-		if (this->piece->getPieceColor() == PieceColor::White)
-		{
-			return "pt";
-		}
-		return "p";
-		break;
-	case PieceName::Knight:
-		if (this->piece->getPieceColor() == PieceColor::White)
-		{
-			return "knt";
-		}
-		return "kn";
-		break;
-	case PieceName::Bishop:
-		if (this->piece->getPieceColor() == PieceColor::White)
-		{
-			return "bt";
-		}
-		return "b";
-		break;
-	case PieceName::Rook:
-		if (this->piece->getPieceColor() == PieceColor::White)
-		{
-			return "rt";
-		}
-		return "r";
-		break;
-	case PieceName::Queen:
-		if (this->piece->getPieceColor() == PieceColor::White)
-		{
-			return "qt";
-		}
-		return "q";
-		break;
-	case PieceName::King:
-		if (this->piece->getPieceColor() == PieceColor::White)
-		{
-			return "kit";
-		}
-		return "ki";
-		break;
-	default:
-		break;
-	}
-	return "";
-}
-
+// mark
 Square* Square::getRelativeSquare(const int i, const int j) const {
 	Position pos;
 	try {
@@ -253,9 +218,7 @@ Board::Board() {
 	this->board = new Square * [8];
 	for (int i = 0; i < 8; ++i) {
 		this->board[i] = new Square[8]{
-			
 			// Shadow copy Board cause there should be one instance of Board
-
 			Square(this, nullptr, Position(i,0)),
 			Square(this, nullptr, Position(i,1)),
 			Square(this, nullptr, Position(i,2)),
@@ -283,6 +246,10 @@ Square* Board::getSquare(const Position& pos) const {
 	return &(this->board[pos.get_i()][pos.get_j()]);
 }
 
+Piece* Board::getPiece(const int i, const int j) const {
+	return this->board[i][j].getPiece();
+}
+
 Piece* Board::getPiece(const Position& pos) const {
 	return this->getSquare(pos)->getPiece();
 }
@@ -291,27 +258,69 @@ bool Board::hasPiece(const Position& pos) const {
 	return this->getSquare(pos)->isEmpty();
 }
 
-
-//=======================================================
-// // GameState
-//=======================================================
-
-GameState::GameState() {
-	this->turn = 1;
-	this->isPieceChoose = false;
+void Board::placePiece(Piece* piece, const int i, const int j) {
+	if (piece == nullptr) {
+		throw UninitializedException();
+	}
+	this->board[i][j].setPiece(piece);
 }
 
-GameState* GameState::getInstance() {
-	if (_self == nullptr)
-	{
-		_self = new GameState();
-		return _self;
-	}
-	else
-	{
-		return _self;
+void Board::placePiece(Piece* piece, const Position& p) {
+	this->placePiece(piece, p.get_i(), p.get_j());
+}
+
+//===================================================================
+// Piece
+//===================================================================
+
+Piece::Piece(PieceColor color, Square* stand)
+{
+	this->type = PieceName::None;
+	this->color = color;
+	this->standOn = stand;
+}
+
+PieceName Piece::getPieceName() const {
+	return this->type;
+}
+
+PieceColor Piece::getPieceColor() const {
+	return this->color;
+}
+
+void Piece::setEaten() {
+	this->standOn = nullptr;
+}
+
+bool Piece::isEaten() const {
+	return this->standOn == nullptr;
+}
+
+void Piece::move(const MovePosition& dest) {
+	// Set this Piece standOn value to the dest on Board
+	this->standOn = this->getBoard()->getSquare(dest.getPosition());
+
+	// If that Square is occupied by a Piece
+	if (this->standOn->isEmpty() == false) {
+		this->standOn->getPiece()->setEaten();	// Set that Piece standOn value to nullptr;
 	}
 }
 
-// Dat o day de no co khai bao cho bien static _self sau khi da khai bao ham static getInstance()
-GameState* GameState::_self = nullptr;
+const Board* Piece::getBoard() const {
+	if (this->standOn == nullptr) {
+		throw UninitializedException();
+	}
+	return this->standOn->getBoard();
+}
+
+void Piece::setSquare(Square* stand) {
+	this->standOn = stand;
+}
+
+Square* Piece::getSquare() const {
+	return this->standOn;
+}
+
+Piece::~Piece()
+{
+}

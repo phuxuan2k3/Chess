@@ -6,14 +6,34 @@
 // RenderSquare
 //===================================================
 
-RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, Square* associate)
+RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate)
 {
-	this->square = square;
-
 	this->width = DEFAULT_SIZE;
 	this->height = DEFAULT_SIZE;
 	this->coordinate = coordinate;
 	this->themeColor = color;
+	this->pieceType = PieceName::None;
+	this->pieceColor = PieceColor::None;
+}
+
+RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceName type, PieceColor pieceColor)
+{
+	this->width = DEFAULT_SIZE;
+	this->height = DEFAULT_SIZE;
+	this->coordinate = coordinate;
+	this->themeColor = color;
+	this->pieceType = type;
+	this->pieceColor = pieceColor;
+}
+
+RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceName type, PieceColor pieceColor, float width, float height)
+{
+	this->width = width;
+	this->height = height;
+	this->coordinate = coordinate;
+	this->themeColor = color;
+	this->pieceType = type;
+	this->pieceColor = pieceColor;
 }
 
 RenderSquare::~RenderSquare() 
@@ -25,6 +45,12 @@ void RenderSquare::setSize(const float& width, const float& height)
 	this->width = width;
 	this->height = height;
 }
+
+void RenderSquare::setPiece(PieceName pieceType, PieceColor pieceColor) {
+	this->pieceColor = pieceColor;
+	this->pieceType = pieceType;
+}
+
 
 void RenderSquare::draw(sf::RenderWindow& window)
 {
@@ -46,16 +72,18 @@ void RenderSquare::draw(sf::RenderWindow& window)
 	window.draw(square);
 
 	// Draw piece's sprite
-	if (this->square->getPiece() != nullptr)
+	if (this->pieceType != PieceName::None &&
+		this->pieceColor != PieceColor::None) 
 	{
 		sf::Texture texture;
-		texture.loadFromFile(this->square->getPieceName() + ".png", sf::IntRect(0, 0, this->width, this->height));
-		texture.setSmooth(true);
+		string spriteName = getSprite(this->pieceType, this->pieceColor);
 
+		texture.loadFromFile(spriteName + ".png", sf::IntRect(0, 0, this->width, this->height));
+		texture.setSmooth(true);
 		sf::Sprite sprite;
 		sprite.setTexture(texture);
 		sprite.setPosition(this->coordinate);
-		if (this->square->getPiece()->getPieceColor() == PieceColor::White)
+		if (this->pieceColor == PieceColor::White)
 		{
 			sprite.setColor(sf::Color(255, 255, 75));
 		}
@@ -77,12 +105,8 @@ void RenderSquare::drawCanGo(sf::RenderWindow& window)
 // RenderBoard
 //===================================================
 
-
-
-RenderBoard::RenderBoard(const Board* associate)
+RenderBoard::RenderBoard()
 {
-	this->board = associate;
-
 	// Will initialize RenderSquare associate with each Square inside
 	// of the referenced Board
 	this->squareMat = new RenderSquare * [8];
@@ -90,41 +114,39 @@ RenderBoard::RenderBoard(const Board* associate)
 		this->squareMat[i] = new RenderSquare[8]{
 			RenderSquare(
 				(i + 0) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
-				sf::Vector2f(0 * 100, i * 100),
-				associate->getSquare(i, 0)),
+				sf::Vector2f(0 * DEFAULT_SIZE, i * DEFAULT_SIZE)),
 			RenderSquare(
 				(i + 1) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
-				sf::Vector2f(1 * 100, i * 100),
-				associate->getSquare(i, 1)),
+				sf::Vector2f(1 * DEFAULT_SIZE, i * DEFAULT_SIZE)),
 			RenderSquare(
 				(i + 2) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
-				sf::Vector2f(2 * 100, i * 100),
-				associate->getSquare(i, 2)),
+				sf::Vector2f(2 * DEFAULT_SIZE, i * DEFAULT_SIZE)),
 			RenderSquare(
 				(i + 3) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
-				sf::Vector2f(3 * 100, i * 100),
-				associate->getSquare(i, 3)),
+				sf::Vector2f(3 * DEFAULT_SIZE, i * DEFAULT_SIZE)),
 			RenderSquare(
 				(i + 4) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
-				sf::Vector2f(4 * 100, i * 100),
-				associate->getSquare(i, 4)),
+				sf::Vector2f(4 * DEFAULT_SIZE, i * DEFAULT_SIZE)),
 			RenderSquare(
 				(i + 5) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
-				sf::Vector2f(5 * 100, i * 100),
-				associate->getSquare(i, 5)),
+				sf::Vector2f(5 * DEFAULT_SIZE, i * DEFAULT_SIZE)),
 			RenderSquare(
 				(i + 6) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
-				sf::Vector2f(6 * 100, i * 100),
-				associate->getSquare(i, 6)),
+				sf::Vector2f(6 * DEFAULT_SIZE, i * DEFAULT_SIZE)),
 			RenderSquare(
 				(i + 7) % 2 == 0 ? ThemeColor::White : ThemeColor::Black,
-				sf::Vector2f(7 * 100, i * 100),
-				associate->getSquare(i, 7)),
+				sf::Vector2f(7 * DEFAULT_SIZE, i * DEFAULT_SIZE)),
 		};
 	}
 
-	this->width = 800;
-	this->height = 800;
+	this->width = DEFAULT_SIZE * 800;
+	this->height = DEFAULT_SIZE * 800;
+
+	this->board = nullptr;
+}
+
+void RenderBoard::setBoard(const Board* board) {
+	this->board = board;
 }
 
 void RenderBoard::setSize(const float& width, const float& height)
@@ -133,8 +155,29 @@ void RenderBoard::setSize(const float& width, const float& height)
 	this->height = height;
 }
 
+void RenderBoard::setPieces() {
+	Piece* p;
+	for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
+			p = this->board->getPiece(i, j);
+			if (p == nullptr) {
+				this->squareMat[i][j].setPiece(PieceName::None, PieceColor::None);
+			}
+			else {
+				this->squareMat[i][j].setPiece(p->getPieceName(), p->getPieceColor());
+			}
+		}
+	}
+}
+
 void RenderBoard::draw(sf::RenderWindow& window)
 {
+	if (this->board == nullptr) {
+		throw UninitializedException();
+	}
+
+	// Update Pieces before draw
+	this->setPieces();
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < 8; j++)
@@ -142,6 +185,12 @@ void RenderBoard::draw(sf::RenderWindow& window)
 			//	this->board[i][j].setSize(this->width / 8, this->height / 8);
 			this->squareMat[i][j].draw(window);
 		}
+	}
+}
+
+void RenderBoard::drawCanGo(sf::RenderWindow& window, vector<Position> squares) {
+	for (Position p : squares) {
+		this->squareMat[p.get_i()][p.get_j()].drawCanGo(window);
 	}
 }
 
@@ -154,142 +203,28 @@ RenderBoard::~RenderBoard()
 }
 
 //===================================================
-// Manager
+// Window
 //===================================================
 
-Manager::Manager(const Board* board) : b(board)
+RenderGame::RenderGame()
 {
-	this->windowWidthScale = 1;
-	this->windowHeightScale = 1;
-	this->window.create(sf::VideoMode(950, 800), "");
-	this->b.draw(this->window);
-	this->window.display();
+	this->state = State::NotSelected;
 }
 
-Position Manager::coordinateToPosition(sf::Vector2i coor)
-{
-	int j = coor.x / 100;
-	int i = coor.y / 100;
-	return Position(i, j);
+void RenderGame::setBoard(const Board* board) {
+	this->b.setBoard(board);
 }
 
+State RenderGame::getState() const {
+	return this->state;
+}
 
+void RenderGame::draw(sf::RenderWindow& window) {
+	this->state = State::NotSelected;
+	this->b.draw(window);
+}
 
-void Manager::play()
-{
-	vector<Position> canGo; // luu lai cac o co the di cua con co duoc chon
-	Piece* pieceChoosen = nullptr; // luu lai con co duoc chon
-
-	while (this->window.isOpen())
-	{
-		sf::Event event;
-		if (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed)
-			{
-				window.close();
-			}
-
-			else if (event.type == sf::Event::Resized)
-			{
-				this->windowWidthScale = this->window.getSize().x * 1.0f / 950;
-				this->windowHeightScale = this->window.getSize().y * 1.0f / 800;
-				this->window.clear();
-				this->b.draw(this->window);
-				this->window.display();
-			}
-
-			//xu ly su kien nhap chuot vao quan co
-			else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-			{
-				sf::Vector2i mousePosition = 
-					sf::Vector2i(
-						sf::Mouse::getPosition(this->window).x * 1.0f / this->windowWidthScale,
-						sf::Mouse::getPosition(this->window).y * 1.0f / this->windowHeightScale
-					);
-
-				if (mousePosition.x <= 800)
-				{
-					Position vt = this->coordinateToPosition(mousePosition);
-					//neu chua chon mot quan co truoc do thi hien len duong di cua quan co duoc chon  va phai den turn
-					if (GameState::getInstance()->isPieceChoose == false &&
-						this->b.squareMat[vt.i][vt.j].square->piece != nullptr &&
-						GameState::getInstance()->turn == this->b.squareMat[vt.i][vt.j].square->piece->color)
-					{
-						if ((GameState::getInstance()->turn == true &&
-							(((GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == true &&
-								dynamic_cast<King*>(this->b.Board.board[vt.i][vt.j].piece)) ||
-								GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == false))) ||
-							(GameState::getInstance()->turn == false &&
-								(((GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == true &&
-									dynamic_cast<King*>(this->b.Board.board[vt.i][vt.j].piece)) ||
-									GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == false)))
-							)
-						{
-							GameState::getInstance()->isPieceChoose = true;
-							this->window.clear();
-							this->b.draw(this->window);
-
-							pieceChoosen = this->b.Board.board[vt.i][vt.j].piece;
-							canGo = this->b.Board.board[vt.i][vt.j].piece->canGo(this->b.Board);
-							for (Position k : canGo)
-							{
-								this->b.squareMat[k.i][k.j].drawCanGo(this->window);
-							}
-							this->window.display();
-						}
-					}
-					//neu da chon mot quan co truoc do thi thuc hien viec di chuyen
-					else if (GameState::getInstance()->isPieceChoose == true)
-					{
-						for (auto k : canGo)
-						{
-							//o duoc chon de di chuyen la hop le
-							if (k == vt)
-							{
-								//neu co con co thi xoa con co do
-								if (this->b.Board.board[k.i][k.j].piece != nullptr)
-								{
-									int id = this->b.Board.board[k.i][k.j].piece->id;
-									delete GameState::getInstance()->pieces[id];
-									GameState::getInstance()->pieces[id] = nullptr;
-									this->b.Board.board[k.i][k.j].piece = nullptr;
-								}
-
-								//gan con co qua o moi
-								this->b.Board.board[k.i][k.j].piece = pieceChoosen;
-								this->b.Board.board[pieceChoosen->pos.i][pieceChoosen->pos.j].piece = nullptr;
-								//nhap thanh phai
-								if (dynamic_cast<King*>(pieceChoosen) != nullptr)
-								{
-									if (k.j == pieceChoosen->pos.j + 2)
-									{
-										Piece* rightRook = GameState::getInstance()->pieces[pieceChoosen->id + 3];
-										this->b.Board.board[k.i][k.j - 1].piece = rightRook;
-										this->b.Board.board[rightRook->pos.i][rightRook->pos.j].piece = nullptr;
-										rightRook->move(k.i, k.j - 1);
-									}
-									else if (k.j == pieceChoosen->pos.j - 2)
-									{
-										Piece* leftRook = GameState::getInstance()->pieces[pieceChoosen->id - 4];
-										this->b.Board.board[k.i][k.j + 1].piece = leftRook;
-										this->b.Board.board[leftRook->pos.i][leftRook->pos.j].piece = nullptr;
-										leftRook->move(k.i, k.j + 1);
-									}
-								}
-								this->b.Board.board[k.i][k.j].piece->move(k.i, k.j);
-
-								GameState::getInstance()->turn = !GameState::getInstance()->turn;
-								break;
-							}
-						}
-						GameState::getInstance()->isPieceChoose = false;
-						this->window.clear();
-						this->b.draw(this->window);
-						this->window.display();
-					}
-				}
-			}
-		}
-	}
+void RenderGame::drawCanGo(sf::RenderWindow& window, vector<Position> squares) {
+	this->state = State::Selected;
+	this->b.drawCanGo(window, squares);
 }

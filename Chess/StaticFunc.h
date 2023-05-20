@@ -13,6 +13,26 @@ enum class MoveDirection {
 	DownRight,
 };
 
+//===================================================
+// Check Square is in Danger
+//===================================================
+
+bool isDangerousSquare(const Square* pos, PieceColor color);
+
+//===================================================
+// Mics
+//===================================================
+
+// Convert vector
+vector<Position> toPos(vector<MovePosition> mp);
+
+//===================================================
+// Graphics Related
+//===================================================
+
+Position coordinateToPosition(sf::Vector2i coor);
+
+string getSprite(PieceName pn, PieceColor pc);
 
 //===================================================
 // Find enemy
@@ -34,13 +54,13 @@ Piece* shortSearchEnemy(const Square* standOn, PieceColor pieceColor, int moves[
 // If blocking piece is enemy piece, you can move on it (but not go over it)
 // Apply for: Rook, Bishop, Queen
 
-vector<Position> linearMove(const Square* standOn, PieceColor pieceColor, MoveDirection dir);
+vector<MovePosition> linearMove(const Square* standOn, PieceColor pieceColor, MoveDirection dir);
 
 // Short Move: has a small amount of square that can be moved on. However, these moves
 // are absolute, which means blockers won't effect the general availible moves.
 // Apply for: Knight, King (they both have 8 moves)
 
-vector<Position> shortMove(const Square* standOn, PieceColor pieceColor, int moves[][2]);
+vector<MovePosition> shortMove(const Square* standOn, PieceColor pieceColor, int moves[][2]);
 
 // Pawn will have its own move
 

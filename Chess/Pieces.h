@@ -1,22 +1,30 @@
 #pragma once
-#include "Handle.h"
+#include "StaticFunc.h"
 
+
+// Pieces that has special first move
+class FirstMovePiece {
+protected:
+	bool moved;
+
+public:
+	FirstMovePiece();
+
+	bool hasNotMoved() const;
+	void setMoved();
+};
 
 //============== 6 Types Of Pieces =================
 
 
-class Pawn : public Piece
+class Pawn : public Piece, public FirstMovePiece
 {
-private:
-
 public:
-	bool isFirstMove = true;
-
-	Pawn(PieceColor color, const Square* stand, int id);
+	Pawn(PieceColor color, Square* stand);
 	~Pawn();
 
-	vector<Position> canGo();
-	void move(const Position& dest);
+	vector<MovePosition> canGo();
+	void move(const MovePosition& dest);
 };
 
 
@@ -24,9 +32,9 @@ public:
 class Bishop : public Piece
 {
 public:
-	Bishop(PieceColor color, const Square* stand, int id);
+	Bishop(PieceColor color, Square* stand);
 
-	vector<Position> canGo();
+	vector<MovePosition> canGo();
 };
 
 
@@ -34,22 +42,20 @@ public:
 class Knight : public Piece
 {
 public:
-	Knight(PieceColor color, const Square* stand, int id);
+	Knight(PieceColor color, Square* stand);
 
-	vector<Position> canGo();
+	vector<MovePosition> canGo();
 };
 
 
 
-class Rook : public Piece
+class Rook : public Piece, public FirstMovePiece
 {
 public:
-	bool isFirstMove = true;
+	Rook(PieceColor color, Square* stand);
 
-	Rook(PieceColor color, const Square* stand, int id);
-
-	vector<Position> canGo();
-	void move(const Position& dest);
+	vector<MovePosition> canGo();
+	void move(const MovePosition& dest);
 };
 
 
@@ -57,20 +63,22 @@ public:
 class Queen : public Piece
 {
 public:
-	Queen(PieceColor color, const Square* stand, int id);
+	Queen(PieceColor color, Square* stand);
 
-	vector<Position> canGo();
+	vector<MovePosition> canGo();
 };
 
 
 
-class King : public Piece
+class King : public Piece, public FirstMovePiece
 {
+private:
+	Piece* leftRook;
+	Piece* rightRook;
+
 public:
-	bool isFirstMove = true;
+	King(PieceColor color, Square* stand);
 
-	King(PieceColor color, const Square* stand, int id);
-
-	vector<Position> canGo();
-	void move(const Position& dest);
+	vector<MovePosition> canGo();
+	void move(const MovePosition& dest);
 };

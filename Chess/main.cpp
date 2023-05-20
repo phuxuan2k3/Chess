@@ -1,11 +1,11 @@
-﻿#include "Render.h"
+﻿#include "GUI.h"
 
 using namespace std;
 
 int main()
 {
-	Manager manager;
-	manager.play();
+	GUI game;
+	game.play();
 
 	return 0;
 }
