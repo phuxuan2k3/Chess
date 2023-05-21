@@ -24,8 +24,6 @@ enum class PieceType {
 
 // Contain information for Position
 enum class PosInfo {
-	Invalid = -1,	// Invalid position
-
 	Normal = 0,		// Default
 	// These moves below affect other pieces
 	CastlingLeft,
@@ -35,20 +33,41 @@ enum class PosInfo {
 
 //=================================================================
 
+// Classes that can have instances that do not suitable with logic.
+// This is a replacement for throwing uneccessary exceptions.
+
+class WrongAbleType {
+private:
+	bool valid;
+
+public:
+	// Initialize as true
+	WrongAbleType();
+
+	void setInvalid();
+	void setValid();
+	bool isValid() const;
+
+	virtual void updateValid() = 0;
+};
+
+//=================================================================
+
 // A self made data structure for mapping on a [8][8] Board
-class Position
+class Position : public WrongAbleType
 {
 private:
 	PosInfo info;
 	int i;
 	int j;
+	virtual void updateValid();
 
 public:
 	int get_i() const;
 	int get_j() const;
 	void set(const int i, const int j);
 	void set(const Position& pos);
-	PosInfo getMoveType() const;
+	PosInfo getInfo() const;
 	void setMoveType(const PosInfo& type);
 
 	Position getRelativePosition(const int i, const int j) const;
@@ -57,16 +76,12 @@ public:
 	Position(int i, int j);
 	Position(const Position& p);
 	Position(int i, int j, PosInfo info);
-	Position(const Position& p, PosInfo info);
 
 	// Only compare the position part
 	bool isPosEqual(const Position& pos) const;
 
 	bool operator== (const Position& pos);
 	Position& operator= (const Position& pos);
-
-	bool validRelativePosition(const int& i, const int& j);
-	static bool isOutOfRange_abs(const int& i, const int& j);
 };
 
 //=================================================================

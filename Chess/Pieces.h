@@ -17,6 +17,7 @@ public:
 
 
 //============== 6 Types Of Pieces =================
+
 class King;	// Forwarding this
 
 

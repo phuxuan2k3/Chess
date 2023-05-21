@@ -1,10 +1,6 @@
 #pragma once
 #include "Header.h"
 
-class PositionOutOfRangeException : public exception
-{
-public:
-};
 
 class UninitializedException : public exception
 {

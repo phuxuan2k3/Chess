@@ -1,61 +1,70 @@
 #include "System.h"
 
 
+
+WrongAbleType::WrongAbleType() {
+	this->valid = true;
+}
+
+void WrongAbleType::setInvalid() {
+	this->valid = false;
+}
+
+void WrongAbleType::setValid() {
+	this->valid = true;
+}
+
+bool WrongAbleType::isValid() const {
+	return this->valid;
+}
+
 //===================================================================
 // Position
 //===================================================================
+
+void Position::updateValid() {
+	if (this->i < 0 ||
+		this->j < 0 ||
+		this->i > 7 || 
+		this->j > 7) 
+	{
+		this->setInvalid();
+	}
+	else {
+		this->setValid();
+	}
+}
 
 Position::Position()
 {
 	this->i = 0;
 	this->j = 0;
 	this->info = PosInfo::Normal;
+	this->updateValid();
 }
 
 Position::Position(int i, int j)
 {
-	if (i < 0 || j < 0 || i > 7 || j > 7) {
-		throw PositionOutOfRangeException();
-	}
 	this->i = i;
 	this->j = j;
 	this->info = PosInfo::Normal;
+	this->updateValid();
 }
 
 Position::Position(const Position& p) 
 {
-	int i = p.get_i();
-	int j = p.get_j();
-
-	if (i < 0 || j < 0 || i > 7 || j > 7) {
-		throw PositionOutOfRangeException();
-	}
-	this->i = i;
-	this->j = j;
+	this->i = p.get_i();
+	this->j = p.get_j();
 	this->info = p.info;
+	this->updateValid();
 }
 
 Position::Position(int i, int j, PosInfo info) 
 {
-	if (i < 0 || j < 0 || i > 7 || j > 7) {
-		throw PositionOutOfRangeException();
-	}
 	this->i = i;
 	this->j = j;
 	this->info = info;
-}
-
-Position::Position(const Position& p, PosInfo info) 
-{
-	int i = p.get_i();
-	int j = p.get_j();
-
-	if (i < 0 || j < 0 || i > 7 || j > 7) {
-		throw PositionOutOfRangeException();
-	}
-	this->i = i;
-	this->j = j;
-	this->info = info;
+	this->updateValid();
 }
 
 bool Position::operator== (const Position& pos)
@@ -73,15 +82,8 @@ bool Position::isPosEqual(const Position& pos) const {
 Position& Position::operator= (const Position& pos) {
 	this->set(pos);
 	this->info = pos.info;
+	this->updateValid();
 	return *this;
-}
-
-bool Position::isOutOfRange_abs(const int& i, const int& j)
-{
-	if (i < 0 || j < 0 || i > 7 || j > 7) {
-		return true;
-	}
-	return false;
 }
 
 int Position::get_i() const {
@@ -93,40 +95,23 @@ int Position::get_j() const {
 }
 
 void Position::set(const int i, const int j) {
-	if (i < 0 || j < 0 || i > 7 || j > 7) {
-		throw PositionOutOfRangeException();
-	}
 	this->i = i;
 	this->j = j;
+	this->updateValid();
 }
 
 void Position::set(const Position& pos) {
-	int i = pos.get_i();
-	int j = pos.get_j();
-
-	if (i < 0 || j < 0 || i > 7 || j > 7) {
-		throw PositionOutOfRangeException();
-	}
-	this->i = i;
-	this->j = j;
+	this->i = pos.get_i();
+	this->j = pos.get_j();
+	this->updateValid();
 }
 
-PosInfo Position::getMoveType() const {
+PosInfo Position::getInfo() const {
 	return this->info;
 }
 
 void Position::setMoveType(const PosInfo& type) {
 	this->info = type;
-}
-
-bool Position::validRelativePosition(const int& i, const int& j) {
-	try {
-		getRelativePosition(i, j);
-		return true;
-	}
-	catch (PositionOutOfRangeException& e) {
-		return false;
-	}
 }
 
 Position Position::getRelativePosition(const int i, const int j) const {
@@ -175,12 +160,9 @@ Square* Square::getRelativeSquare(const int i, const int j) const {
 	if (this == nullptr) {
 		throw UninitializedException();
 	}
-
 	Position pos;
-	try {
-		pos = this->getPosition().getRelativePosition(i, j);
-	}
-	catch (PositionOutOfRangeException& e) {
+	pos = this->getPosition().getRelativePosition(i, j);
+	if (pos.isValid() == false) {
 		return nullptr;
 	}
 	Square* s = this->board->getSquare(pos);

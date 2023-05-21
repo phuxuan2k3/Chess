@@ -340,7 +340,9 @@ vector<Position> King::canGo()
 				) == false)
 			{
 				// End checking, add the postion if it satifies all conditions above
-				pos.push_back(Position(s_2->getPosition(), PosInfo::CastlingLeft));
+				Position castling = s_2->getPosition();
+				castling.setMoveType(PosInfo::CastlingLeft);
+				pos.push_back(castling);
 			}
 		}
 
@@ -369,7 +371,9 @@ vector<Position> King::canGo()
 				) == false)
 			{
 				// End checking, add the postion if it satifies all conditions above
-				pos.push_back(Position(s_2->getPosition(), PosInfo::CastlingRight));
+				Position castling = s_2->getPosition();
+				castling.setMoveType(PosInfo::CastlingRight);
+				pos.push_back(castling);
 			}
 		}
 
@@ -380,10 +384,10 @@ vector<Position> King::canGo()
 
 void King::move(const Position& dest)
 {
-	if (dest.getMoveType() == PosInfo::CastlingLeft) {
+	if (dest.getInfo() == PosInfo::CastlingLeft) {
 		this->leftRook->move(this->standOn->getRelativeSquare(0, -1)->getPosition());
 	}
-	else if (dest.getMoveType() == PosInfo::CastlingRight) {
+	else if (dest.getInfo() == PosInfo::CastlingRight) {
 		this->rightRook->move(this->standOn->getRelativeSquare(0, 1)->getPosition());
 	}
 	Piece::move(dest);
