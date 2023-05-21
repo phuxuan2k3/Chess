@@ -9,16 +9,19 @@
 class GameState
 {
 private:
-	PieceColor turn;
+	Troop turn;
 	Board board;
+	vector<Piece*> pieces;
+	void setConnection(King* king, Rook* lRook, Rook* rRook);
 
 public:
-	GameState(PieceColor turn = PieceColor::White);
+	GameState(Troop turn = Troop::White);
+	// Will delete the pieces
 	~GameState();
 
-	PieceColor getTurn() const;
+	Troop getTurn() const;
 	const Board* getRefBoard() const;
 	void switchTurn();
-	void placePiece(PieceName pn, PieceColor pc, const int i, const int j);
-	void placePiece(PieceName pn, PieceColor pc, const Position& p);
+	Piece* initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j);
+	Piece* initPieceOnBoard(PieceType pn, Troop pc, const Position& p);
 };

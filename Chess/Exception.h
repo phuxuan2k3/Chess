@@ -11,3 +11,8 @@ class UninitializedException : public exception
 public:
 
 };
+
+class WrongConnection : public exception {
+public:
+
+};

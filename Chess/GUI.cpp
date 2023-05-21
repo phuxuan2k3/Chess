@@ -35,6 +35,7 @@ void GUI::play()
 	this->window.create(sf::VideoMode(950, 800), "");
 	this->draw();
 
+	int posIdx;
 	Position curPos;
 	Position prePos;
 	vector<Position> canGo;
@@ -69,11 +70,12 @@ void GUI::play()
 				if (mousePosition.x <= 800)
 				{
 					curPos = coordinateToPosition(mousePosition);
+					posIdx = hasPosition(canGo, curPos);
 
 					//neu chua chon mot quan co truoc do thi hien len duong di cua quan co duoc chon  va phai den turn
 					if (this->render->getState() == State::NotSelected &&
 						this->game->getRefBoard()->getPiece(curPos) != nullptr &&
-						this->game->getTurn() == this->game->getRefBoard()->getPiece(curPos)->getPieceColor())
+						this->game->getTurn() == this->game->getRefBoard()->getPiece(curPos)->getTroop())
 					{
 						// WTF ????
 						//if ((GameState::getInstance()->turn == true &&
@@ -86,21 +88,22 @@ void GUI::play()
 						//			GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == false)))
 						//	)
 						//{
-						canGo = toPos(this->game->getRefBoard()->getPiece(curPos)->canGo());
+						canGo = this->game->getRefBoard()->getPiece(curPos)->canGo();
 						
 						// neu khong co nuoc di hop le, ta giu nguyen trang thai NotSelected
 						// nguoc lai, ta chuyen ve tran thai Selected
 						if (canGo.empty() == false) {
-							this->drawCanGo(curPos, canGo);
+							this->drawCanGo(curPos, toVec<Position, Position>(canGo));
 							prePos = curPos;
 						}
 					}
 
 					// neu da chon mot quan co truoc do va chon vao 1 nuoc di hop le
 					else if (this->render->getState() == State::Selected &&
-						curPos.find(canGo) == true
+						posIdx != -1
 						)
 					{
+						curPos = canGo[posIdx];
 						this->game->getRefBoard()->getPiece(prePos)->move(curPos);
 						this->game->switchTurn();
 						this->draw();
@@ -108,7 +111,7 @@ void GUI::play()
 
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected
 					else if (this->render->getState() == State::Selected &&
-						curPos.find(canGo) == false
+						hasPosition(canGo, curPos) == -1
 						)
 					{
 						this->draw();

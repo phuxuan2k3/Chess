@@ -12,11 +12,11 @@ RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate)
 	this->height = DEFAULT_SIZE;
 	this->coordinate = coordinate;
 	this->themeColor = color;
-	this->pieceType = PieceName::None;
-	this->pieceColor = PieceColor::None;
+	this->pieceType = PieceType::None;
+	this->pieceColor = Troop::None;
 }
 
-RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceName type, PieceColor pieceColor)
+RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceType type, Troop pieceColor)
 {
 	this->width = DEFAULT_SIZE;
 	this->height = DEFAULT_SIZE;
@@ -26,7 +26,7 @@ RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, Pie
 	this->pieceColor = pieceColor;
 }
 
-RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceName type, PieceColor pieceColor, float width, float height)
+RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceType type, Troop pieceColor, float width, float height)
 {
 	this->width = width;
 	this->height = height;
@@ -46,7 +46,7 @@ void RenderSquare::setSize(const float& width, const float& height)
 	this->height = height;
 }
 
-void RenderSquare::setPiece(PieceName pieceType, PieceColor pieceColor) {
+void RenderSquare::setPiece(PieceType pieceType, Troop pieceColor) {
 	this->pieceColor = pieceColor;
 	this->pieceType = pieceType;
 }
@@ -72,8 +72,8 @@ void RenderSquare::draw(sf::RenderWindow& window)
 	window.draw(square);
 
 	// Draw piece's sprite
-	if (this->pieceType != PieceName::None &&
-		this->pieceColor != PieceColor::None) 
+	if (this->pieceType != PieceType::None &&
+		this->pieceColor != Troop::None) 
 	{
 		sf::Texture texture;
 		string spriteName = getSprite(this->pieceType, this->pieceColor);
@@ -83,7 +83,7 @@ void RenderSquare::draw(sf::RenderWindow& window)
 		sf::Sprite sprite;
 		sprite.setTexture(texture);
 		sprite.setPosition(this->coordinate);
-		if (this->pieceColor == PieceColor::White)
+		if (this->pieceColor == Troop::White)
 		{
 			sprite.setColor(sf::Color(255, 255, 75));
 		}
@@ -156,15 +156,19 @@ void RenderBoard::setSize(const float& width, const float& height)
 }
 
 void RenderBoard::setPieces() {
+	if (this->board == nullptr) {
+		throw UninitializedException();
+	}
+
 	Piece* p;
 	for (int i = 0; i < 8; ++i) {
 		for (int j = 0; j < 8; ++j) {
 			p = this->board->getPiece(i, j);
 			if (p == nullptr) {
-				this->squareMat[i][j].setPiece(PieceName::None, PieceColor::None);
+				this->squareMat[i][j].setPiece(PieceType::None, Troop::None);
 			}
 			else {
-				this->squareMat[i][j].setPiece(p->getPieceName(), p->getPieceColor());
+				this->squareMat[i][j].setPiece(p->getPieceType(), p->getTroop());
 			}
 		}
 	}

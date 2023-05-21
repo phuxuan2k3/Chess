@@ -4,14 +4,14 @@
 
 // mark = about to change
 
-enum class PieceColor {
+enum class Troop {
 	None = -1,
 
 	Black = 0,
 	White = 1,
 };
 
-enum class PieceName {
+enum class PieceType {
 	None = -1,
 
 	Pawn,
@@ -22,13 +22,15 @@ enum class PieceName {
 	King,
 };
 
-enum class MoveType {
-	Normal = -1,	// Default
+// Contain information for Position
+enum class PosInfo {
+	Invalid = -1,	// Invalid position
 
+	Normal = 0,		// Default
 	// These moves below affect other pieces
 	CastlingLeft,
 	CastlingRight,
-	//EnPassant,
+	//EnPassant ??,
 };
 
 //=================================================================
@@ -37,6 +39,7 @@ enum class MoveType {
 class Position
 {
 private:
+	PosInfo info;
 	int i;
 	int j;
 
@@ -45,40 +48,25 @@ public:
 	int get_j() const;
 	void set(const int i, const int j);
 	void set(const Position& pos);
+	PosInfo getMoveType() const;
+	void setMoveType(const PosInfo& type);
 
 	Position getRelativePosition(const int i, const int j) const;
 
 	Position();
 	Position(int i, int j);
 	Position(const Position& p);
+	Position(int i, int j, PosInfo info);
+	Position(const Position& p, PosInfo info);
+
+	// Only compare the position part
+	bool isPosEqual(const Position& pos) const;
 
 	bool operator== (const Position& pos);
 	Position& operator= (const Position& pos);
-	bool find(vector<Position> list);
 
 	bool validRelativePosition(const int& i, const int& j);
 	static bool isOutOfRange_abs(const int& i, const int& j);
-};
-
-// Position for moving
-class MovePosition {
-private:
-	Position position;
-	MoveType type;
-
-public:
-	MovePosition();
-	~MovePosition();
-
-	MovePosition(const Position& p);					// To convert Position more easily (*) Direct contact for explaination
-	MovePosition(const Position& p, MoveType t);
-	MovePosition& operator= (const MovePosition& pos);	// To make sure there will be no errors whilst converting Position
-	bool operator== (const MovePosition& pos);
-
-	void setMoveType(const MoveType& type);
-	MoveType getMoveType() const;
-	void setPosition(const Position& p);
-	Position getPosition() const;
 };
 
 //=================================================================
@@ -121,12 +109,14 @@ public:
 	Square** board;
 
 	Board();
+	// Will not delete the Pieces
 	~Board();
 
 	Square* getSquare(const Position& pos) const;
 	Square* getSquare(const int i, const int j) const;
 	Piece* getPiece(const Position& pos) const;
 	Piece* getPiece(const int i, const int j) const;
+
 	bool hasPiece(const Position& pos) const;
 	void placePiece(Piece* piece, const int i, const int j);
 	void placePiece(Piece* piece, const Position& p);
@@ -139,29 +129,29 @@ class Piece
 private:
 
 protected:
-	Square* standOn;								// Square that piece is standing on ~ Position
-
-	PieceColor color;
-	PieceName type;
+	Square* standOn;						// Square that piece is standing on ~ Position
+											// Will determined by place function in Board
+	Troop color;
+	PieceType type;
 
 	Piece();
-	Piece(PieceColor color, Square* stand);			// Not callable from Piece instance (protected)
+	Piece(Troop color);						// Not callable from Piece instance (protected)
 	// When initialize, a piece must have a square to stand on. If it has been eaten, that stand on
 	// will be nullptr.
 
 public:
 	virtual ~Piece();
 
-	PieceName getPieceName() const;
-	PieceColor getPieceColor() const;
-	const Board* getBoard() const;					// Get the board it belong to
+	PieceType getPieceType() const;
+	Troop getTroop() const;
+	const Board* getBoard() const;			// Get the board it belong to
 	void setEaten();
 	bool isEaten() const;
-	void setSquare(Square* stand);
-	Square* getSquare() const;
+	void setStandOn(Square* stand);
+	Square* getStandOn() const;
 
-	virtual void move(const MovePosition& dest);
-	virtual vector<MovePosition> canGo() = 0;
+	virtual void move(const Position& dest);
+	virtual vector<Position> canGo() = 0;
 };
 
 

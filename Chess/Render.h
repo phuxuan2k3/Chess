@@ -25,17 +25,17 @@ public:
 	float height;
 	sf::Vector2f coordinate;
 	ThemeColor themeColor;
-	PieceName pieceType;
-	PieceColor pieceColor;
+	PieceType pieceType;
+	Troop pieceColor;
 
 	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate);
-	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceName type, PieceColor pieceColor);
-	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceName type, PieceColor pieceColor, float width, float height);
+	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceType type, Troop pieceColor);
+	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceType type, Troop pieceColor, float width, float height);
 	~RenderSquare();
 	
 	// Update functions
 	void setSize(const float& width, const float& height);
-	void setPiece(PieceName type, PieceColor pieceColor);
+	void setPiece(PieceType type, Troop pieceColor);
 
 	// Draw
 	void draw(sf::RenderWindow& window);

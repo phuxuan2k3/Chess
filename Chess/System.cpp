@@ -9,6 +9,7 @@ Position::Position()
 {
 	this->i = 0;
 	this->j = 0;
+	this->info = PosInfo::Normal;
 }
 
 Position::Position(int i, int j)
@@ -18,6 +19,7 @@ Position::Position(int i, int j)
 	}
 	this->i = i;
 	this->j = j;
+	this->info = PosInfo::Normal;
 }
 
 Position::Position(const Position& p) 
@@ -30,15 +32,47 @@ Position::Position(const Position& p)
 	}
 	this->i = i;
 	this->j = j;
+	this->info = p.info;
+}
+
+Position::Position(int i, int j, PosInfo info) 
+{
+	if (i < 0 || j < 0 || i > 7 || j > 7) {
+		throw PositionOutOfRangeException();
+	}
+	this->i = i;
+	this->j = j;
+	this->info = info;
+}
+
+Position::Position(const Position& p, PosInfo info) 
+{
+	int i = p.get_i();
+	int j = p.get_j();
+
+	if (i < 0 || j < 0 || i > 7 || j > 7) {
+		throw PositionOutOfRangeException();
+	}
+	this->i = i;
+	this->j = j;
+	this->info = info;
 }
 
 bool Position::operator== (const Position& pos)
 {
-	return this->i == pos.i && this->j == pos.j;
+	return this->i == pos.i 
+		&& this->j == pos.j
+		&& this->info == pos.info;
+}
+
+bool Position::isPosEqual(const Position& pos) const {
+	return this->i == pos.i
+		&& this->j == pos.j;
 }
 
 Position& Position::operator= (const Position& pos) {
 	this->set(pos);
+	this->info = pos.info;
 	return *this;
 }
 
@@ -77,6 +111,14 @@ void Position::set(const Position& pos) {
 	this->j = j;
 }
 
+PosInfo Position::getMoveType() const {
+	return this->info;
+}
+
+void Position::setMoveType(const PosInfo& type) {
+	this->info = type;
+}
+
 bool Position::validRelativePosition(const int& i, const int& j) {
 	try {
 		getRelativePosition(i, j);
@@ -90,71 +132,6 @@ bool Position::validRelativePosition(const int& i, const int& j) {
 Position Position::getRelativePosition(const int i, const int j) const {
 	Position p(this->i + i, this->j + j);
 	return p;
-}
-
-bool Position::find(vector<Position> list) {
-	for (Position i : list) {
-		if (i == *this) {
-			return true;
-		}
-	}
-	return false;
-}
-
-//===================================================================
-// MovePosition
-//===================================================================
-
-MovePosition::MovePosition() 
-{
-	this->type = MoveType::Normal;
-}
-
-MovePosition::MovePosition(const Position& p) 
-{
-	this->type = MoveType::Normal;
-	this->position = p;
-}
-
-MovePosition::MovePosition(const Position& p, MoveType t) 
-{
-	this->type = t;
-	this->position = p;
-}
-
-MovePosition::~MovePosition() 
-{
-}
-
-void MovePosition::setMoveType(const MoveType& type) {
-	this->type = type;
-}
-
-MoveType MovePosition::getMoveType() const{
-	return this->type;
-}
-
-void MovePosition::setPosition(const Position& p) {
-	this->position = p;
-}
-
-Position MovePosition::getPosition() const {
-	return this->position;
-}
-
-MovePosition& MovePosition::operator= (const MovePosition& pos) {
-	this->position = pos.position;
-	this->type = pos.type;
-	return *this;
-}
-
-bool MovePosition::operator== (const MovePosition& pos) {
-	if (this->position == pos.position &&
-		this->type == pos.type)
-	{
-		return true;
-	}
-	return false;
 }
 
 //===================================================================
@@ -195,6 +172,10 @@ bool Square::isEmpty() const {
 
 // mark
 Square* Square::getRelativeSquare(const int i, const int j) const {
+	if (this == nullptr) {
+		throw UninitializedException();
+	}
+
 	Position pos;
 	try {
 		pos = this->getPosition().getRelativePosition(i, j);
@@ -258,11 +239,15 @@ bool Board::hasPiece(const Position& pos) const {
 	return this->getSquare(pos)->isEmpty();
 }
 
+// PlacePiece is different than setPiece about it also set piece.standOn
+// to the square that it gonna be placed on
+
 void Board::placePiece(Piece* piece, const int i, const int j) {
 	if (piece == nullptr) {
 		throw UninitializedException();
 	}
 	this->board[i][j].setPiece(piece);
+	piece->setStandOn(&this->board[i][j]);
 }
 
 void Board::placePiece(Piece* piece, const Position& p) {
@@ -273,18 +258,18 @@ void Board::placePiece(Piece* piece, const Position& p) {
 // Piece
 //===================================================================
 
-Piece::Piece(PieceColor color, Square* stand)
+Piece::Piece(Troop color)
 {
-	this->type = PieceName::None;
+	this->type = PieceType::None;
 	this->color = color;
-	this->standOn = stand;
+	this->standOn = nullptr;
 }
 
-PieceName Piece::getPieceName() const {
+PieceType Piece::getPieceType() const {
 	return this->type;
 }
 
-PieceColor Piece::getPieceColor() const {
+Troop Piece::getTroop() const {
 	return this->color;
 }
 
@@ -296,9 +281,9 @@ bool Piece::isEaten() const {
 	return this->standOn == nullptr;
 }
 
-void Piece::move(const MovePosition& dest) {
+void Piece::move(const Position& dest) {
 	// Set this Piece standOn value to the dest on Board
-	Square* destSquare = this->getBoard()->getSquare(dest.getPosition());
+	Square* destSquare = this->getBoard()->getSquare(dest);
 
 	// If that Square is occupied by a Piece
 	if (destSquare->isEmpty() == false) {
@@ -319,11 +304,11 @@ const Board* Piece::getBoard() const {
 	return this->standOn->getBoard();
 }
 
-void Piece::setSquare(Square* stand) {
+void Piece::setStandOn(Square* stand) {
 	this->standOn = stand;
 }
 
-Square* Piece::getSquare() const {
+Square* Piece::getStandOn() const {
 	return this->standOn;
 }
 

@@ -1,54 +1,59 @@
 #include "Pieces.h"
 
 
+//===================================================
+// First Move Piece Interface
+//===================================================
 
 FirstMovePiece::FirstMovePiece() {
 	this->moved = false;
 }
 
-bool FirstMovePiece::hasNotMoved() const {
-	return !this->moved;
-}
-
-// It has been moved, no need to set back to false
-void FirstMovePiece::setMoved() {
-	this->moved = true;
+// Make sure the event only triggered once
+void FirstMovePiece::trigger() {
+	if (this->moved == false) {
+		this->moved == true;
+		action();
+	}
 }
 
 //===================================================
 // Pieces Constructors
 //===================================================
 
-Pawn::Pawn(PieceColor color, Square* stand) : Piece(color, stand)
+Pawn::Pawn(Troop color) : Piece(color)
 {
-	this->type = PieceName::Pawn;
+	this->type = PieceType::Pawn;
+	this->isFirstMove = true;
 }
 
-Knight::Knight(PieceColor color, Square* stand) : Piece(color, stand)
+Knight::Knight(Troop color) : Piece(color)
 {
-	this->type = PieceName::Knight;
+	this->type = PieceType::Knight;
 }
 
-Bishop::Bishop(PieceColor color, Square* stand) : Piece(color, stand)
+Bishop::Bishop(Troop color) : Piece(color)
 {
-	this->type = PieceName::Bishop;
+	this->type = PieceType::Bishop;
 }
 
-Rook::Rook(PieceColor color, Square* stand) : Piece(color, stand)
+Rook::Rook(Troop color) : Piece(color)
 {
-	this->type = PieceName::Rook;
+	this->type = PieceType::Rook;
+	this->kingPiece = nullptr;
 }
 
-Queen::Queen(PieceColor color, Square* stand) : Piece(color, stand)
+Queen::Queen(Troop color) : Piece(color)
 {
-	this->type = PieceName::Queen;
+	this->type = PieceType::Queen;
 }
 
-King::King(PieceColor color, Square* stand) : Piece(color, stand)
+King::King(Troop color) : Piece(color)
 {
 	this->leftRook = nullptr;
 	this->rightRook = nullptr;
-	this->type = PieceName::King;
+	this->type = PieceType::King;
+	this->castlable = true;
 }
 
 
@@ -56,20 +61,24 @@ King::King(PieceColor color, Square* stand) : Piece(color, stand)
 // Pawn
 //===================================================
 
-void Pawn::move(const MovePosition& dest)
-{
-	Piece::move(dest);
-	this->setMoved();
+void Pawn::action() {
+	this->isFirstMove = false;
 }
 
-vector<MovePosition> Pawn::canGo()
+void Pawn::move(const Position& dest)
+{
+	Piece::move(dest);
+	this->trigger();
+}
+
+vector<Position> Pawn::canGo()
 {
 	int inv = 1;
 	Square* squareToMove = nullptr;
 
-	vector<MovePosition> pos;
+	vector<Position> pos;
 
-	if (this->color == PieceColor::White) {
+	if (this->color == Troop::White) {
 		inv = -1;	// White will go upward
 	}
 	else {
@@ -78,7 +87,7 @@ vector<MovePosition> Pawn::canGo()
 
 	// Checked if it can go 1 or 2 square ahead
 	int range = 1;
-	if (this->hasNotMoved() == true) {
+	if (this->isFirstMove == true) {
 		range = 2;
 	}
 
@@ -101,7 +110,7 @@ vector<MovePosition> Pawn::canGo()
 	squareToMove = this->standOn->getRelativeSquare(1 * inv, 1);
 	if (squareToMove != nullptr &&
 		squareToMove->isEmpty() == false &&
-		squareToMove->getPiece()->getPieceColor() != this->getPieceColor()) 
+		squareToMove->getPiece()->getTroop() != this->getTroop()) 
 	{
 		pos.push_back(squareToMove->getPosition());
 	}
@@ -109,7 +118,7 @@ vector<MovePosition> Pawn::canGo()
 	squareToMove = this->standOn->getRelativeSquare(1 * inv, -1);
 	if (squareToMove != nullptr &&
 		squareToMove->isEmpty() == false &&
-		squareToMove->getPiece()->getPieceColor() != this->getPieceColor())
+		squareToMove->getPiece()->getTroop() != this->getTroop())
 	{
 		pos.push_back(squareToMove->getPosition());
 	}
@@ -124,36 +133,56 @@ Pawn::~Pawn()
 // Rook
 //===================================================
 
-vector<MovePosition> Rook::canGo()
+vector<Position> Rook::canGo()
 {
-	vector<MovePosition> pos;
+	vector<Position> pos;
 
-	vector<MovePosition> upward = linearMove(this->standOn, this->color, MoveDirection::Up);
+	vector<Position> upward = linearMove(this->standOn, this->color, MoveDirection::Up);
 	pos.insert(pos.end(), upward.begin(), upward.end());
 
-	vector<MovePosition> downward = linearMove(this->standOn, this->color, MoveDirection::Down);
+	vector<Position> downward = linearMove(this->standOn, this->color, MoveDirection::Down);
 	pos.insert(pos.end(), downward.begin(), downward.end());
 
-	vector<MovePosition> leftward = linearMove(this->standOn, this->color, MoveDirection::Left);
+	vector<Position> leftward = linearMove(this->standOn, this->color, MoveDirection::Left);
 	pos.insert(pos.end(), leftward.begin(), leftward.end());
 
-	vector<MovePosition> rightward = linearMove(this->standOn, this->color, MoveDirection::Right);
+	vector<Position> rightward = linearMove(this->standOn, this->color, MoveDirection::Right);
 	pos.insert(pos.end(), rightward.begin(), rightward.end());
 
 	return pos;
 }
 
-void Rook::move(const MovePosition& dest)
+void Rook::move(const Position& dest)
 {
 	Piece::move(dest);
-	this->setMoved();
+	this->trigger();
+}
+
+void Rook::action() {
+	this->kingPiece->setUnCastable();
+}
+
+void Rook::setConnection(King* king) {
+	// Only connects once
+	if (this->kingPiece != nullptr) {
+		return;
+	}
+
+	// Oops! Wrong connection
+	if (king->getTroop() != this->getTroop() ||
+		king->getPieceType() != PieceType::King)
+	{
+		throw WrongConnection();
+	}
+
+	this->kingPiece = king;
 }
 
 //===================================================
 // Knight
 //===================================================
 
-vector<MovePosition> Knight::canGo() {
+vector<Position> Knight::canGo() {
 	int moves[8][2] = { 
 		{-2, 1},
 		{-2, -1},
@@ -171,20 +200,20 @@ vector<MovePosition> Knight::canGo() {
 // Bishop
 //===================================================
 
-vector<MovePosition> Bishop::canGo()
+vector<Position> Bishop::canGo()
 {
-	vector<MovePosition> pos;
+	vector<Position> pos;
 
-	vector<MovePosition> upleft = linearMove(this->standOn, this->color, MoveDirection::UpLeft);
+	vector<Position> upleft = linearMove(this->standOn, this->color, MoveDirection::UpLeft);
 	pos.insert(pos.end(), upleft.begin(), upleft.end());
 
-	vector<MovePosition> upright = linearMove(this->standOn, this->color, MoveDirection::UpRight);
+	vector<Position> upright = linearMove(this->standOn, this->color, MoveDirection::UpRight);
 	pos.insert(pos.end(), upright.begin(), upright.end());
 
-	vector<MovePosition> downleft = linearMove(this->standOn, this->color, MoveDirection::DownLeft);
+	vector<Position> downleft = linearMove(this->standOn, this->color, MoveDirection::DownLeft);
 	pos.insert(pos.end(), downleft.begin(), downleft.end());
 
-	vector<MovePosition> downright = linearMove(this->standOn, this->color, MoveDirection::DownRight);
+	vector<Position> downright = linearMove(this->standOn, this->color, MoveDirection::DownRight);
 	pos.insert(pos.end(), downright.begin(), downright.end());
 
 	return pos;
@@ -194,32 +223,32 @@ vector<MovePosition> Bishop::canGo()
 // Queen
 //===================================================
 
-vector<MovePosition> Queen::canGo()
+vector<Position> Queen::canGo()
 {
-	vector<MovePosition> pos;
+	vector<Position> pos;
 
-	vector<MovePosition> upward = linearMove(this->standOn, this->color, MoveDirection::Up);
+	vector<Position> upward = linearMove(this->standOn, this->color, MoveDirection::Up);
 	pos.insert(pos.end(), upward.begin(), upward.end());
 
-	vector<MovePosition> downward = linearMove(this->standOn, this->color, MoveDirection::Down);
+	vector<Position> downward = linearMove(this->standOn, this->color, MoveDirection::Down);
 	pos.insert(pos.end(), downward.begin(), downward.end());
 
-	vector<MovePosition> leftward = linearMove(this->standOn, this->color, MoveDirection::Left);
+	vector<Position> leftward = linearMove(this->standOn, this->color, MoveDirection::Left);
 	pos.insert(pos.end(), leftward.begin(), leftward.end());
 
-	vector<MovePosition> rightward = linearMove(this->standOn, this->color, MoveDirection::Right);
+	vector<Position> rightward = linearMove(this->standOn, this->color, MoveDirection::Right);
 	pos.insert(pos.end(), rightward.begin(), rightward.end());
 
-	vector<MovePosition> upleft = linearMove(this->standOn, this->color, MoveDirection::UpLeft);
+	vector<Position> upleft = linearMove(this->standOn, this->color, MoveDirection::UpLeft);
 	pos.insert(pos.end(), upleft.begin(), upleft.end());
 
-	vector<MovePosition> upright = linearMove(this->standOn, this->color, MoveDirection::UpRight);
+	vector<Position> upright = linearMove(this->standOn, this->color, MoveDirection::UpRight);
 	pos.insert(pos.end(), upright.begin(), upright.end());
 
-	vector<MovePosition> downleft = linearMove(this->standOn, this->color, MoveDirection::DownLeft);
+	vector<Position> downleft = linearMove(this->standOn, this->color, MoveDirection::DownLeft);
 	pos.insert(pos.end(), downleft.begin(), downleft.end());
 
-	vector<MovePosition> downright = linearMove(this->standOn, this->color, MoveDirection::DownRight);
+	vector<Position> downright = linearMove(this->standOn, this->color, MoveDirection::DownRight);
 	pos.insert(pos.end(), downright.begin(), downright.end());
 
 	return pos;
@@ -229,14 +258,36 @@ vector<MovePosition> Queen::canGo()
 // King
 //===================================================
 
-void King::setRook(Piece* leftRook, Piece* rightRook) {
-	this->leftRook = leftRook;
-	this->rightRook = rightRook;
+void King::setUnCastable() {
+	this->castlable == false;
 }
 
-vector<MovePosition> King::canGo()
+void King::setConnection(Rook* lR, Rook* rR) {
+	// Only connects once
+	if (this->leftRook != nullptr || this->rightRook != nullptr) {
+		return;
+	}
+
+	// Oops! Wrong connection
+	if (lR->getTroop() != this->getTroop() ||
+		rR->getTroop() != this->getTroop() ||
+		lR->getPieceType() != PieceType::Rook ||
+		rR->getPieceType() != PieceType::Rook) 
+	{
+		throw WrongConnection();
+	}
+
+	this->leftRook = lR;
+	this->rightRook = rR;
+}
+
+void King::action() {
+	this->castlable = false;
+}
+
+vector<Position> King::canGo()
 {
-	vector<MovePosition> pos;
+	vector<Position> pos;
 	int moves[8][2] = {
 		{-1, -1},
 		{-1, 0},
@@ -248,116 +299,93 @@ vector<MovePosition> King::canGo()
 		{1, 1},
 	};
 	pos = shortMove(this->standOn, this->color, moves);
-
+	
+	// Handle castling
+	if (this->castlable == false) {
+		return pos;
+	}
 	// goto with do - while style
 	do {
-		// Handle castling
-		// King has moved => no castling
-		if (this->hasNotMoved() == false) {
-			break;
-		}
+
 		// Note: If the king hasn't moved, all relative square that we get below will always
 		// valid. Therefore, no need for checking nullptr.
-
 		Square* s_1;	// One square away
 		Square* s_2;	// Two square away
 		Square* s_3;	// Three square away
 
+
 		// Left castling: R K B Q Ki
-		Piece* leftRook = this->standOn->getRelativeSquare(0, -4)->getPiece();
-		
+		// 3 Squares on the left
 		s_1 = this->standOn->getRelativeSquare(0, -1);
 		s_2 = this->standOn->getRelativeSquare(0, -2);
 		s_3 = this->standOn->getRelativeSquare(0, -3);
 
-		if (
-			// It's Rook
-			leftRook != nullptr &&
-			leftRook->getPieceName() != PieceName::Rook &&
-			// It's our troop
-			leftRook->getPieceColor() == this->color &&
-			// Left Rook has not moved
-			((Rook*)leftRook)->hasNotMoved() == true &&
-			// Check 3 squares that on the left path must bve empty
-			(
-				s_1->isEmpty() == true &&
-				s_2->isEmpty() == true &&
-				s_3->isEmpty() == true
-			) && 
+		// The Path must be empty
+		if (s_1->isEmpty() == true &&
+			s_2->isEmpty() == true &&
+			s_3->isEmpty() == true)
+		{
 			// Check squares that King go pass by is Dangerous
-			(
-				isDangerousSquare(
-					this->standOn,
-					this->color
+			if (isDangerousSquare(
+				this->standOn,
+				this->color
 			) == false &&
 				isDangerousSquare(
 					s_1,
 					this->color
-			) == false &&
+				) == false &&
 				isDangerousSquare(
 					s_2,
 					this->color
-			) == false
-			)
-			// End checking, add the postion if it satifies all conditions above
-			)
-		{
-			pos.push_back(s_2->getPosition());
+				) == false)
+			{
+				// End checking, add the postion if it satifies all conditions above
+				pos.push_back(Position(s_2->getPosition(), PosInfo::CastlingLeft));
+			}
 		}
-			
+
 
 		// Right castling: Ki B K R
-		Piece* rightRook = this->standOn->getRelativeSquare(0, -4)->getPiece();
-		
+		// 2 Squares on the Right
 		s_1 = this->standOn->getRelativeSquare(0, 1);
 		s_2 = this->standOn->getRelativeSquare(0, 2);
 
-		if (
-			// It's Rook
-			rightRook != nullptr &&
-			rightRook->getPieceName() != PieceName::Rook &&
-			// It's our troop
-			rightRook->getPieceColor() == this->color &&
-			// Left Rook has not moved
-			((Rook*)rightRook)->hasNotMoved() == true &&
-			// Check 3 squares that on the left path must bve empty
-			(
-				s_1->isEmpty() == true &&
-				s_2->isEmpty() == true
-			) && 
+		// The Path must be empty
+		if (s_1->isEmpty() == true &&
+			s_2->isEmpty() == true)
+		{
 			// Check squares that King go pass by is Dangerous
-			(
-				isDangerousSquare(
-					this->standOn,
-					this->color
+			if (isDangerousSquare(
+				this->standOn,
+				this->color
 			) == false &&
 				isDangerousSquare(
 					s_1,
 					this->color
-			) == false &&
+				) == false &&
 				isDangerousSquare(
 					s_2,
 					this->color
-			) == false
-			)
-			// End checking, add the postion if it satifies all conditions above
-			)
-		{
-			pos.push_back(s_2->getPosition());
+				) == false)
+			{
+				// End checking, add the postion if it satifies all conditions above
+				pos.push_back(Position(s_2->getPosition(), PosInfo::CastlingRight));
+			}
 		}
+
 	} while (false);
 
 	return pos;
 }
 
-void King::move(const MovePosition& dest)
+void King::move(const Position& dest)
 {
-	if (dest.getMoveType() == MoveType::CastlingLeft) {
+	if (dest.getMoveType() == PosInfo::CastlingLeft) {
 		this->leftRook->move(this->standOn->getRelativeSquare(0, -1)->getPosition());
 	}
-	else if (dest.getMoveType() == MoveType::CastlingRight) {
-		this->leftRook->move(this->standOn->getRelativeSquare(0, 1)->getPosition());
+	else if (dest.getMoveType() == PosInfo::CastlingRight) {
+		this->rightRook->move(this->standOn->getRelativeSquare(0, 1)->getPosition());
 	}
 	Piece::move(dest);
-	this->setMoved();
+	this->trigger();
 }
