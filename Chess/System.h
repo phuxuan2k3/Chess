@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Exception.h"
 
 
@@ -24,7 +24,8 @@ enum class PosInfo {
 	// These moves below affect other pieces
 	CastlingLeft,
 	CastlingRight,
-	//EnPassant ??,
+	FirstPawnMove, // Nếu vị trí là nước đi đầu tiên của con chốt
+	EnPassant // Bắt chốt qua đường
 };
 
 //=================================================================
@@ -125,6 +126,10 @@ public:
 	void setPiece(const Position& p, Piece* piece);
 
 	bool hasPiece(const Position& pos) const;
+
+	static bool EnPassantBlack; // Quân đen bắt tốt được
+	static bool EnPassantWhite; // quân trắng bắt tốt được 
+	static Piece* lastChoose; // con cờ được chọn cuối
 };
 
 //=================================================================

@@ -161,12 +161,37 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	}
 	this->board.setPiece(dest, pSrc);
 	this->board.setPiece(src, nullptr);
-
+	this->board.lastChoose = pSrc;
 	// Castling Move:
+
+	if (pSrc->getTroop() == Troop::White) {
+		this->board.EnPassantWhite = false;
+	}
+	else {
+		this->board.EnPassantBlack = false;
+	}
+
+
 	if (dest.getInfo() == PosInfo::CastlingLeft) {
 		this->move(((King*)pSrc)->getLeftRook(), src.getRelativePosition(0, -1), canGo);
 	}
 	else if (dest.getInfo() == PosInfo::CastlingRight) {
 		this->move(((King*)pSrc)->getRightRook(), src.getRelativePosition(0, 1), canGo);
+	} 
+	else if (dest.getInfo() == PosInfo::FirstPawnMove) {
+		if (pSrc->getTroop() == Troop::White) {
+			this->board.EnPassantBlack = true;
+		}
+		else {
+			this->board.EnPassantWhite = true;
+		}
 	}
+	else if (dest.getInfo() == PosInfo::EnPassant) {
+		int dir = (pSrc->getTroop() == Troop::White ? 1 : -1);
+		this->board.getPiece(dest.getRelativePosition(dir, 0))->setNull();
+		this->board.setPiece(dest.getRelativePosition(dir,0), nullptr);
+	}
+
+	cout << "Black: " << this->board.EnPassantBlack << endl;
+	cout << "White: " << this->board.EnPassantWhite << endl;
 }

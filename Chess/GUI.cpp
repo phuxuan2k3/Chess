@@ -59,6 +59,7 @@ void GUI::play()
 			//xu ly su kien nhap chuot vao ban co
 			else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
+				
 				sf::Vector2i mousePosition =
 					sf::Vector2i(
 						sf::Mouse::getPosition(this->window).x * 1.0f / this->windowWidthScale,

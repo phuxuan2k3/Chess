@@ -100,6 +100,7 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 		if (board.hasPiece(squareToMove) == true) {
 			break;
 		}
+		if (i == 2) squareToMove.setMoveType(PosInfo::FirstPawnMove);
 		pos.push_back(squareToMove);
 	}
 	
@@ -121,6 +122,34 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 	{
 		pos.push_back(squareToMove);
 	}
+
+	bool canEnPassant = (this->color == Troop::Black ? board.EnPassantBlack : board.EnPassantWhite);
+
+	squareToMove = src.getRelativePosition(1 * inv, -1);
+	if (board.hasPiece(src.getRelativePosition(0, -1)) && 
+		board.getPiece(src.getRelativePosition(0, -1))->getPieceType() == PieceType::Pawn &&
+		board.getPiece(src.getRelativePosition(0, -1)) == board.lastChoose &&
+		squareToMove.isNotNull() == true &&
+		canEnPassant == true &&
+		board.getPiece(src.getRelativePosition(0, -1))->getTroop() != board.getPiece(src)->getTroop()
+		) {
+		squareToMove.setMoveType(PosInfo::EnPassant);
+		pos.push_back(squareToMove);
+	}
+
+	squareToMove = src.getRelativePosition(1 * inv, 1);
+	if (board.hasPiece(src.getRelativePosition(0, 1)) && 
+		board.getPiece(src.getRelativePosition(0, 1))->getPieceType() == PieceType::Pawn &&
+		board.getPiece(src.getRelativePosition(0, 1)) == board.lastChoose &&
+		squareToMove.isNotNull() == true &&
+		canEnPassant == true &&
+		board.getPiece(src.getRelativePosition(0, 1))->getTroop() != board.getPiece(src)->getTroop()
+		) {
+		squareToMove.setMoveType(PosInfo::EnPassant);
+		pos.push_back(squareToMove);
+	}
+
+
 
 	return pos;
 }
