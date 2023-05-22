@@ -3,18 +3,18 @@
 
 
 
-bool isDangerousSquare(const Square* pos, Troop color)
+bool isDangerousSquare(const Position& src, const Board& board, Troop color)
 {
 	// Linear Part - Rook, Bishop, Queen
 
-	Piece* upward = linearSearchEnemy(pos, color, MoveDirection::Up);
-	Piece* downward = linearSearchEnemy(pos, color, MoveDirection::Down);
-	Piece* leftward = linearSearchEnemy(pos, color, MoveDirection::Left);
-	Piece* rightward = linearSearchEnemy(pos, color, MoveDirection::Right);
-	Piece* upleft = linearSearchEnemy(pos, color, MoveDirection::UpLeft);
-	Piece* upright = linearSearchEnemy(pos, color, MoveDirection::UpRight);
-	Piece* downleft = linearSearchEnemy(pos, color, MoveDirection::DownLeft);
-	Piece* downright = linearSearchEnemy(pos, color, MoveDirection::DownRight);
+	Piece* upward = linearSearchEnemy(src, board, color, MoveDirection::Up);
+	Piece* downward = linearSearchEnemy(src, board, color, MoveDirection::Down);
+	Piece* leftward = linearSearchEnemy(src, board, color, MoveDirection::Left);
+	Piece* rightward = linearSearchEnemy(src, board, color, MoveDirection::Right);
+	Piece* upleft = linearSearchEnemy(src, board, color, MoveDirection::UpLeft);
+	Piece* upright = linearSearchEnemy(src, board, color, MoveDirection::UpRight);
+	Piece* downleft = linearSearchEnemy(src, board, color, MoveDirection::DownLeft);
+	Piece* downright = linearSearchEnemy(src, board, color, MoveDirection::DownRight);
 
 	// R - Q
 	if (upward != nullptr) {
@@ -88,7 +88,7 @@ bool isDangerousSquare(const Square* pos, Troop color)
 		pawnEat[0][0] = 1;
 		pawnEat[1][0] = 1;
 	}
-	test = shortSearchEnemy(pos, color, pawnEat, 2);
+	test = shortSearchEnemy(src, board, color, pawnEat, 2);
 	if (test != nullptr) {
 		if (test->getPieceType() == PieceType::Pawn) {
 			return true;
@@ -106,7 +106,7 @@ bool isDangerousSquare(const Square* pos, Troop color)
 		{2, 1},
 		{2, -1},
 	};
-	test = shortSearchEnemy(pos, color, knightEat, 8);
+	test = shortSearchEnemy(src, board, color, knightEat, 8);
 	if (test != nullptr) {
 		if (test->getPieceType() == PieceType::Knight) {
 			return true;
@@ -124,7 +124,7 @@ bool isDangerousSquare(const Square* pos, Troop color)
 		{1, 0},
 		{1, 1},
 	};
-	test = shortSearchEnemy(pos, color, kingEat, 8);
+	test = shortSearchEnemy(src, board, color, kingEat, 8);
 	if (test != nullptr) {
 		if (test->getPieceType() == PieceType::King) {
 			return true;
@@ -215,8 +215,8 @@ string getSprite(PieceType pn, Troop pc)
 // Find enemy
 //===================================================
 
-Piece* linearSearchEnemy(const Square* standOn, Troop pieceColor, MoveDirection dir) {
-	Square* squareToMove = nullptr;
+Piece* linearSearchEnemy(const Position& src, const Board& board, Troop troop, MoveDirection dir) {
+	Position squareToMove;
 
 	int range_i = 0;
 	int range_j = 0;
@@ -264,18 +264,19 @@ Piece* linearSearchEnemy(const Square* standOn, Troop pieceColor, MoveDirection 
 	while (true) {
 		range_i += i;
 		range_j += j;
-		squareToMove = standOn->getRelativeSquare(range_i, range_j);
+		squareToMove = src.getRelativePosition(range_i, range_j);
 
 		// If it's out of range
-		if (squareToMove == nullptr) {
+		if (squareToMove.isNotNull() == false) {
 			break;
 		}
 		// If it's blocked by a Piece
-		if (squareToMove->isEmpty() == false) {
+		if (board.hasPiece(squareToMove) == true) {
+			Piece* blocker = board.getPiece(squareToMove);
 			// Enemy Piece
-			if (squareToMove->getPiece()->getTroop() != pieceColor) {
+			if (blocker->getTroop() != troop) {
 				// Found Enemy
-				return squareToMove->getPiece();
+				return blocker;
 			}
 			// Our Piece
 			else {
@@ -288,21 +289,22 @@ Piece* linearSearchEnemy(const Square* standOn, Troop pieceColor, MoveDirection 
 }
 
 // Count the Pawn case, cause it 
-Piece* shortSearchEnemy(const Square* standOn, Troop pieceColor, int moves[][2], int range) {
-	Square* squareToMove = nullptr;
+Piece* shortSearchEnemy(const Position& src, const Board& board, Troop troop, int moves[][2], int range) {
+	Position squareToMove;
 
 	for (int i = 0; i < range; ++i) {
-		squareToMove = standOn->getRelativeSquare(moves[i][0], moves[i][1]);
+		squareToMove = src.getRelativePosition(moves[i][0], moves[i][1]);
 
 		// If it's out of range
-		if (squareToMove == nullptr) {
+		if (squareToMove.isNotNull() == false) {
 			continue;
 		}
 		// If it's blocked by a Piece
-		if (squareToMove->isEmpty() == false) {
-			// Found enemy
-			if (squareToMove->getPiece()->getTroop() != pieceColor) {
-				return squareToMove->getPiece();
+		if (board.hasPiece(squareToMove) == true) {
+			Piece* blocker = board.getPiece(squareToMove);
+			// Found 1 enemy
+			if (blocker->getTroop() != troop) {
+				return blocker;
 			}
 			else {
 				continue;
@@ -317,8 +319,8 @@ Piece* shortSearchEnemy(const Square* standOn, Troop pieceColor, int moves[][2],
 // Moves
 //===================================================
 
-vector<Position> linearMove(const Square* standOn, Troop pieceColor, MoveDirection dir) {
-	Square* squareToMove = nullptr;
+vector<Position> linearMove(const Position& src, const Board& board, Troop troop, MoveDirection dir) {
+	Position squareToMove;
 	vector<Position> pos;
 
 	int range_i = 0;
@@ -367,17 +369,18 @@ vector<Position> linearMove(const Square* standOn, Troop pieceColor, MoveDirecti
 	while (true) {
 		range_i += i;
 		range_j += j;
-		squareToMove = standOn->getRelativeSquare(range_i, range_j);
+		squareToMove = src.getRelativePosition(range_i, range_j);
 
 		// If it's out of range
-		if (squareToMove == nullptr) {
+		if (squareToMove.isNotNull() == false) {
 			break;
 		}
 		// If it's blocked by a Piece
-		if (squareToMove->isEmpty() == false) {
+		if (board.hasPiece(squareToMove) == true) {
+			Piece* blocker = board.getPiece(squareToMove);
 			// Enemy Piece
-			if (squareToMove->getPiece()->getTroop() != pieceColor) {
-				pos.push_back(squareToMove->getPosition());
+			if (blocker->getTroop() != troop) {
+				pos.push_back(squareToMove);
 				break;
 			}
 			// Our Piece
@@ -385,31 +388,31 @@ vector<Position> linearMove(const Square* standOn, Troop pieceColor, MoveDirecti
 				break;
 			}
 		}
-		pos.push_back(squareToMove->getPosition());
+		pos.push_back(squareToMove);
 	}
 	return pos;
 }
 
-vector<Position> shortMove(const Square* standOn, Troop pieceColor, int moves[][2]) {
-	Square* squareToMove = nullptr;
+vector<Position> shortMove(const Position& src, const Board& board, Troop troop, int moves[][2]) {
+	Position squareToMove;
 	vector<Position> pos;
 
 	// 8 is the number of moves for King and Knight
 	for (int i = 0; i < 8; ++i) {
-		squareToMove = standOn->getRelativeSquare(moves[i][0], moves[i][1]);
+		squareToMove = src.getRelativePosition(moves[i][0], moves[i][1]);
 
 		// If it's out of range
-		if (squareToMove == nullptr) {
+		if (squareToMove.isNotNull() == false) {
 			continue;
 		}
 		// If it's blocked by a Piece
-		if (squareToMove->isEmpty() == false) {
+		if (board.hasPiece(squareToMove) == true) {
 			// Our Piece
-			if (squareToMove->getPiece()->getTroop() == pieceColor) {
+			if (board.getPiece(squareToMove)->getTroop() == troop) {
 				continue;
 			}
 		}
-		pos.push_back(squareToMove->getPosition());
+		pos.push_back(squareToMove);
 	}
 
 	return pos;

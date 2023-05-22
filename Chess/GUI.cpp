@@ -35,7 +35,6 @@ void GUI::play()
 	this->window.create(sf::VideoMode(950, 800), "");
 	this->draw();
 
-	int posIdx;
 	Position curPos;
 	Position prePos;
 	vector<Position> canGo;
@@ -70,12 +69,10 @@ void GUI::play()
 				if (mousePosition.x <= 800)
 				{
 					curPos = coordinateToPosition(mousePosition);
-					posIdx = hasPosition(canGo, curPos);
 
 					//neu chua chon mot quan co truoc do thi hien len duong di cua quan co duoc chon  va phai den turn
 					if (this->render->getState() == State::NotSelected &&
-						this->game->getRefBoard()->getPiece(curPos) != nullptr &&
-						this->game->getTurn() == this->game->getRefBoard()->getPiece(curPos)->getTroop())
+						this->game->isValidChoice(curPos) == true)
 					{
 						// WTF ????
 						//if ((GameState::getInstance()->turn == true &&
@@ -88,32 +85,31 @@ void GUI::play()
 						//			GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == false)))
 						//	)
 						//{
-						canGo = this->game->getRefBoard()->getPiece(curPos)->canGo();
-						
+						canGo = this->game->canGo(curPos);
 						// neu khong co nuoc di hop le, ta giu nguyen trang thai NotSelected
 						// nguoc lai, ta chuyen ve tran thai Selected
 						if (canGo.empty() == false) {
-							this->drawCanGo(curPos, toVec<Position, Position>(canGo));
+							this->render->setState(State::Selected);
+							this->drawCanGo(curPos, canGo);
 							prePos = curPos;
 						}
 					}
 
 					// neu da chon mot quan co truoc do va chon vao 1 nuoc di hop le
 					else if (this->render->getState() == State::Selected &&
-						posIdx != -1
-						)
+						this->game->isValidMove(prePos, curPos, canGo) == true)
 					{
-						curPos = canGo[posIdx];
-						this->game->getRefBoard()->getPiece(prePos)->move(curPos);
+						curPos = canGo[hasPosition(canGo, curPos)];		// Map curPos to canGo to get its type of move
+						this->game->move(prePos, curPos, canGo);
+						this->render->setState(State::NotSelected);
 						this->game->switchTurn();
 						this->draw();
 					}
 
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected
-					else if (this->render->getState() == State::Selected &&
-						hasPosition(canGo, curPos) == -1
-						)
+					else if (this->render->getState() == State::Selected)
 					{
+						this->render->setState(State::NotSelected);
 						this->draw();
 					}
 				}

@@ -3,19 +3,19 @@
 
 
 WrongAbleType::WrongAbleType() {
-	this->valid = true;
+	this->notNull = true;
 }
 
-void WrongAbleType::setInvalid() {
-	this->valid = false;
+void WrongAbleType::setNull() {
+	this->notNull = false;
 }
 
-void WrongAbleType::setValid() {
-	this->valid = true;
+void WrongAbleType::setNotNull() {
+	this->notNull = true;
 }
 
-bool WrongAbleType::isValid() const {
-	return this->valid;
+bool WrongAbleType::isNotNull() const {
+	return this->notNull;
 }
 
 //===================================================================
@@ -28,17 +28,17 @@ void Position::updateValid() {
 		this->i > 7 || 
 		this->j > 7) 
 	{
-		this->setInvalid();
+		this->setNull();
 	}
 	else {
-		this->setValid();
+		this->setNotNull();
 	}
 }
 
 Position::Position()
 {
-	this->i = 0;
-	this->j = 0;
+	this->i = -1;
+	this->j = -1;
 	this->info = PosInfo::Normal;
 	this->updateValid();
 }
@@ -123,15 +123,14 @@ Position Position::getRelativePosition(const int i, const int j) const {
 // Square
 //===================================================================
 
-Square::Square(const Board* const b, const Position& pos) : board(b)	// To initialize constant attribute, use pre constructor
+Square::Square() 
 {
 	this->piece = nullptr;
 }
 
-Square::Square(const Board* const b, Piece* p, const Position& pos) : board(b)
+Square::Square(Piece* p) 
 {
 	this->piece = p;
-	this->position = pos;
 }
 
 Piece* Square::getPiece() const {
@@ -142,35 +141,12 @@ void Square::setPiece(Piece* p) {
 	this->piece = p;
 }
 
-const Board* Square::getBoard() const {
-	return this->board;
-}
-
-// mark
-Position Square::getPosition() const {
-	return this->position;
-}
-
 bool Square::isEmpty() const {
 	return this->piece == nullptr;
 }
 
-// mark
-Square* Square::getRelativeSquare(const int i, const int j) const {
-	if (this == nullptr) {
-		throw UninitializedException();
-	}
-	Position pos;
-	pos = this->getPosition().getRelativePosition(i, j);
-	if (pos.isValid() == false) {
-		return nullptr;
-	}
-	Square* s = this->board->getSquare(pos);
-	return s;
-}
-
-Square::~Square() {
-	delete this->piece;
+Square::~Square() 
+{
 }
 
 //=======================================================
@@ -180,17 +156,7 @@ Square::~Square() {
 Board::Board() {
 	this->board = new Square * [8];
 	for (int i = 0; i < 8; ++i) {
-		this->board[i] = new Square[8]{
-			// Shadow copy Board cause there should be one instance of Board
-			Square(this, nullptr, Position(i,0)),
-			Square(this, nullptr, Position(i,1)),
-			Square(this, nullptr, Position(i,2)),
-			Square(this, nullptr, Position(i,3)),
-			Square(this, nullptr, Position(i,4)),
-			Square(this, nullptr, Position(i,5)),
-			Square(this, nullptr, Position(i,6)),
-			Square(this, nullptr, Position(i,7)),
-		};
+		this->board[i] = new Square[8];
 	}
 }
 
@@ -201,12 +167,16 @@ Board::~Board() {
 	delete[] this->board;
 }
 
-Square* Board::getSquare(const int i, const int j) const {
-	return &(this->board[i][j]);
+Square Board::getSquare(const int i, const int j) const {
+	Position p(i, j);
+	if (p.isNotNull() == false) {
+		throw OutsideBoard();
+	}
+	return this->board[i][j];
 }
 
-Square* Board::getSquare(const Position& pos) const {
-	return &(this->board[pos.get_i()][pos.get_j()]);
+Square Board::getSquare(const Position& pos) const {
+	return this->board[pos.get_i()][pos.get_j()];
 }
 
 Piece* Board::getPiece(const int i, const int j) const {
@@ -214,26 +184,22 @@ Piece* Board::getPiece(const int i, const int j) const {
 }
 
 Piece* Board::getPiece(const Position& pos) const {
-	return this->getSquare(pos)->getPiece();
+	return this->getSquare(pos).getPiece();
 }
 
 bool Board::hasPiece(const Position& pos) const {
-	return this->getSquare(pos)->isEmpty();
+	return !this->getSquare(pos).isEmpty();
 }
 
 // PlacePiece is different than setPiece about it also set piece.standOn
 // to the square that it gonna be placed on
 
-void Board::placePiece(Piece* piece, const int i, const int j) {
-	if (piece == nullptr) {
-		throw UninitializedException();
-	}
+void Board::setPiece(const int i, const int j, Piece* piece) {
 	this->board[i][j].setPiece(piece);
-	piece->setStandOn(&this->board[i][j]);
 }
 
-void Board::placePiece(Piece* piece, const Position& p) {
-	this->placePiece(piece, p.get_i(), p.get_j());
+void Board::setPiece(const Position& p, Piece* piece) {
+	this->setPiece(p.get_i(), p.get_j(), piece);
 }
 
 //===================================================================
@@ -242,9 +208,9 @@ void Board::placePiece(Piece* piece, const Position& p) {
 
 Piece::Piece(Troop color)
 {
-	this->type = PieceType::None;
+	// let the subclass initialize type
+	this->isFirstMove = true;
 	this->color = color;
-	this->standOn = nullptr;
 }
 
 PieceType Piece::getPieceType() const {
@@ -255,45 +221,7 @@ Troop Piece::getTroop() const {
 	return this->color;
 }
 
-void Piece::setEaten() {
-	this->standOn = nullptr;
-}
-
-bool Piece::isEaten() const {
-	return this->standOn == nullptr;
-}
-
-void Piece::move(const Position& dest) {
-	// Set this Piece standOn value to the dest on Board
-	Square* destSquare = this->getBoard()->getSquare(dest);
-
-	// If that Square is occupied by a Piece
-	if (destSquare->isEmpty() == false) {
-		destSquare->getPiece()->setEaten();	// Set that Piece standOn value to nullptr;
-	}
-	
-	// Set the current Square to empty
-	this->standOn->setPiece(nullptr);
-
-	this->standOn = destSquare;
-	destSquare->setPiece(this);
-}
-
-const Board* Piece::getBoard() const {
-	if (this->standOn == nullptr) {
-		throw UninitializedException();
-	}
-	return this->standOn->getBoard();
-}
-
-void Piece::setStandOn(Square* stand) {
-	this->standOn = stand;
-}
-
-Square* Piece::getStandOn() const {
-	return this->standOn;
-}
-
 Piece::~Piece()
 {
 }
+

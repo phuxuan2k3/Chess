@@ -5,15 +5,11 @@
 // mark = about to change
 
 enum class Troop {
-	None = -1,
-
 	Black = 0,
 	White = 1,
 };
 
 enum class PieceType {
-	None = -1,
-
 	Pawn,
 	Knight,
 	Bishop,
@@ -38,17 +34,17 @@ enum class PosInfo {
 
 class WrongAbleType {
 private:
-	bool valid;
+	bool notNull;
 
 public:
 	// Initialize as true
 	WrongAbleType();
 
-	void setInvalid();
-	void setValid();
-	bool isValid() const;
+	bool isNotNull() const;
+	void setNull();
+	void setNotNull();
 
-	virtual void updateValid() = 0;
+	virtual void updateValid() {}
 };
 
 //=================================================================
@@ -72,7 +68,7 @@ public:
 
 	Position getRelativePosition(const int i, const int j) const;
 
-	Position();
+	Position();	// Uninitialized Position is invalid
 	Position(int i, int j);
 	Position(const Position& p);
 	Position(int i, int j, PosInfo info);
@@ -99,21 +95,15 @@ class Square;
 
 class Square {
 private:
-	Position position;				// no need for position here <edit later>
-
-	Piece* piece;					// Reference to Piece that stands on it
-	const Board* const board;		// Reference to the Board its belong. A square can never change its board
+	Piece* piece;				// Reference to Piece that stands on it
 
 public:
-	Position getPosition() const;
-	Square* getRelativeSquare(const int i, const int j) const;	// Get reletive square on its board
 	Piece* getPiece() const;
 	void setPiece(Piece* p);
-	const Board* getBoard() const;
 	bool isEmpty() const;
 
-	Square(const Board* b, const Position& pos);
-	Square(const Board* b, Piece* p, const Position& pos);
+	Square();
+	Square(Piece* p);
 	~Square();
 };
 
@@ -127,25 +117,24 @@ public:
 	// Will not delete the Pieces
 	~Board();
 
-	Square* getSquare(const Position& pos) const;
-	Square* getSquare(const int i, const int j) const;
+	Square getSquare(const Position& pos) const;
+	Square getSquare(const int i, const int j) const;
 	Piece* getPiece(const Position& pos) const;
 	Piece* getPiece(const int i, const int j) const;
+	void setPiece(const int i, const int j, Piece* piece);
+	void setPiece(const Position& p, Piece* piece);
 
 	bool hasPiece(const Position& pos) const;
-	void placePiece(Piece* piece, const int i, const int j);
-	void placePiece(Piece* piece, const Position& p);
 };
 
 //=================================================================
 
-class Piece
+class Piece : public WrongAbleType
 {
 private:
 
 protected:
-	Square* standOn;						// Square that piece is standing on ~ Position
-											// Will determined by place function in Board
+	bool isFirstMove;
 	Troop color;
 	PieceType type;
 
@@ -159,14 +148,10 @@ public:
 
 	PieceType getPieceType() const;
 	Troop getTroop() const;
-	const Board* getBoard() const;			// Get the board it belong to
-	void setEaten();
-	bool isEaten() const;
-	void setStandOn(Square* stand);
-	Square* getStandOn() const;
 
-	virtual void move(const Position& dest);
-	virtual vector<Position> canGo() = 0;
+	// Do nothing on normal pieces: Knight, Bishop, Queen
+	virtual void triggerOnFirstMove() {}
+	virtual vector<Position> canGo(const Position& src, const Board& board) = 0;
 };
 
 

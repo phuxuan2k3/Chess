@@ -9,9 +9,6 @@
 GameState::GameState(Troop turn) {
 	this->turn = turn;
 
-	// Will replace this placePiece setting with placing pieces
-	// independently from constructor
-
 	// Default Placing
 
 	// Black
@@ -55,18 +52,17 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::White, 7, 7));
 
 	// Setup connection
-
 	// Black Side
-	setConnection(
-		(King*)this->board.getPiece(0, 4),
-		(Rook*)this->board.getPiece(0, 0),
-		(Rook*)this->board.getPiece(0, 7));
-
+	((King*)this->board.getPiece(0, 4))->setRooksPosition(
+		Position(0,0),
+		Position(0,7)
+	);
 	// White Side
-	setConnection(
-		(King*)this->board.getPiece(7, 4),
-		(Rook*)this->board.getPiece(7, 0),
-		(Rook*)this->board.getPiece(7, 7));
+	((King*)this->board.getPiece(7, 4))->setRooksPosition(
+		Position(7, 0),
+		Position(7, 7)
+	);
+
 }
 
 GameState::~GameState()
@@ -74,14 +70,6 @@ GameState::~GameState()
 	for (Piece* p : this->pieces) {
 		delete p;
 	}
-}
-
-Troop GameState::getTurn() const {
-	return this->turn;
-}
-
-const Board* GameState::getRefBoard() const {
-	return &(this->board);
 }
 
 void GameState::switchTurn() {
@@ -93,14 +81,14 @@ void GameState::switchTurn() {
 	}
 }
 
+const Board* GameState::getRefBoard() const {
+	return &this->board;
+}
+
 Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j) {
 	Piece* piece = nullptr;
-	Square* sq = this->getRefBoard()->getSquare(i, j);
-
 	switch (pn)
 	{
-	case PieceType::None:
-		break;
 	case PieceType::Pawn:
 		piece = new Pawn(pc);
 		break;
@@ -123,7 +111,7 @@ Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const in
 		break;
 	}
 
-	this->board.placePiece(piece, i, j);
+	this->board.setPiece(i, j, piece);
 	return piece;
 }
 
@@ -131,8 +119,54 @@ Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const Position& p) {
 	return this->initPieceOnBoard(pn, pc, p.get_i(), p.get_j());
 }
 
-void GameState::setConnection(King* king, Rook* lRook, Rook* rRook) {
-	king->setConnection(lRook, rRook);
-	lRook->setConnection(king);
-	rRook->setConnection(king);
+bool GameState::isValidChoice(const Position& pos) const {
+	Piece* piece = this->board.getPiece(pos);
+	// If there isn't any piece
+	if (piece == nullptr) {
+		return false;
+	}
+	// Not valid turn
+	if (piece->getTroop() != this->turn) {
+		return false;
+	}
+	return true;
+}
+
+vector<Position> GameState::canGo(const Position& pos) {
+	if (this->board.hasPiece(pos) == false) {
+		return vector<Position>();
+	}
+	return this->board.getPiece(pos)->canGo(pos, this->board);
+}
+
+bool GameState::isValidMove(const Position& src, const Position& dest, vector<Position> canGo) const {
+	// If the src Square chosen is empty, we do nothing
+	if (this->board.hasPiece(src) == false) {
+		return false;
+	}
+	// If dest Square is not in canGo
+	if (hasPosition(canGo, dest) == -1) {
+		return false;
+	}
+	return true;
+}
+
+void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
+	// Normal Move:
+	Piece* pSrc = this->board.getPiece(src);
+	pSrc->triggerOnFirstMove();
+	// If dest Square is occupied by a Piece
+	if (this->board.hasPiece(dest) == true) {
+		this->board.getPiece(dest)->setNull();
+	}
+	this->board.setPiece(dest, pSrc);
+	this->board.setPiece(src, nullptr);
+
+	// Castling Move:
+	if (dest.getInfo() == PosInfo::CastlingLeft) {
+		this->move(((King*)pSrc)->getLeftRook(), src.getRelativePosition(0, -1), canGo);
+	}
+	else if (dest.getInfo() == PosInfo::CastlingRight) {
+		this->move(((King*)pSrc)->getRightRook(), src.getRelativePosition(0, 1), canGo);
+	}
 }

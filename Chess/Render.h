@@ -18,6 +18,25 @@ enum class State {
 //===================================================
 // Handle the graphics part
 
+class RenderPiece : public WrongAbleType 
+{
+private:
+	PieceType pieceType;
+	Troop troop;
+
+public:
+	RenderPiece();
+	RenderPiece(PieceType pt, Troop t);
+	RenderPiece(const RenderPiece& piece);
+	~RenderPiece();
+
+	RenderPiece& operator = (const RenderPiece& piece);
+	void set(PieceType pt, Troop t);
+
+	// When drawing a Piece, you need to get its coordinate, width, height of its corresponding square
+	void draw(sf::RenderWindow& window, const sf::Vector2f& coordinate, const float width, const float height);
+};
+
 class RenderSquare
 {
 public:
@@ -25,17 +44,17 @@ public:
 	float height;
 	sf::Vector2f coordinate;
 	ThemeColor themeColor;
-	PieceType pieceType;
-	Troop pieceColor;
+	RenderPiece piece;
 
 	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate);
-	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceType type, Troop pieceColor);
-	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceType type, Troop pieceColor, float width, float height);
+	RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, float width, float height);
 	~RenderSquare();
 	
-	// Update functions
+	// Update size
 	void setSize(const float& width, const float& height);
-	void setPiece(PieceType type, Troop pieceColor);
+	void setPiece(PieceType pType, Troop troop);
+	void setPiece(const RenderPiece& piece);
+	void setNullPiece();
 
 	// Draw
 	void draw(sf::RenderWindow& window);
@@ -80,6 +99,7 @@ public:
 	RenderGame();
 
 	State getState() const;
+	void setState(State state);
 
 	// Update
 	void setBoard(const Board* board);

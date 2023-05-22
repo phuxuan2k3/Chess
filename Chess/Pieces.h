@@ -2,37 +2,45 @@
 #include "StaticFunc.h"
 
 
-// Pieces that has special first move: Pawn, King, Rook
-class FirstMovePiece {
+//class PieceConnection {
+//private:
+//	Position dest;
+//
+//public:
+//	PieceConnection();
+//
+//	void setConnection(const Position& dest);
+//	Position getDestPosition() const;
+//};
+
+class Castling 
+{
 private:
-	virtual void action() = 0;
+	bool castlable;
 
 protected:
-	bool moved;
+	Castling();
 
 public:
-	FirstMovePiece();
-	void trigger();
+	void unCastlable();
+	bool isCastlable() const;
 };
-
 
 //============== 6 Types Of Pieces =================
 
 class King;	// Forwarding this
 
-
-class Pawn : public Piece, public FirstMovePiece
+class Pawn : public Piece
 {
 private:
-	bool isFirstMove;
-	void action();
+	bool pawnFirstMove;
 
 public:
 	Pawn(Troop color);
 	~Pawn();
 
-	vector<Position> canGo();
-	void move(const Position& dest);
+	virtual void triggerOnFirstMove();
+	vector<Position> canGo(const Position& src, const Board& board);
 };
 
 
@@ -42,7 +50,7 @@ class Bishop : public Piece
 public:
 	Bishop(Troop color);
 
-	vector<Position> canGo();
+	vector<Position> canGo(const Position& src, const Board& board);
 };
 
 
@@ -52,24 +60,20 @@ class Knight : public Piece
 public:
 	Knight(Troop color);
 
-	vector<Position> canGo();
+	vector<Position> canGo(const Position& src, const Board& board);
 };
 
 
 
-class Rook : public Piece, public FirstMovePiece
+class Rook : public Piece, public Castling
 {
-private:
-	void action();
-	King* kingPiece;
 
 public:
 	Rook(Troop color);
 
-	vector<Position> canGo();
-	void move(const Position& dest);
+	vector<Position> canGo(const Position& src, const Board& board);
 
-	void setConnection(King* king);
+	virtual void triggerOnFirstMove();
 };
 
 
@@ -79,25 +83,24 @@ class Queen : public Piece
 public:
 	Queen(Troop color);
 
-	vector<Position> canGo();
+	vector<Position> canGo(const Position& src, const Board& board);
 };
 
 
 
-class King : public Piece, public FirstMovePiece
+class King : public Piece, public Castling
 {
 private:
-	void action();
-	bool castlable;		// Co the nhap thanh
-	Rook* leftRook;
-	Rook* rightRook;
+	Position leftRook;
+	Position rightRook;
 
 public:
 	King(Troop color);
 
-	vector<Position> canGo();
-	void move(const Position& dest);
+	vector<Position> canGo(const Position& src, const Board& board);
 
-	void setConnection(Rook* lR, Rook* rR);
-	void setUnCastable();
+	virtual void triggerOnFirstMove();
+	void setRooksPosition(const Position& lRook, const Position& rRook);	// To move Rook on castling
+	Position getLeftRook() const;
+	Position getRightRook() const;
 };

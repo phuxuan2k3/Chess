@@ -17,23 +17,11 @@ enum class MoveDirection {
 // Check Square is in Danger
 //===================================================
 
-bool isDangerousSquare(const Square* pos, Troop color);
+bool isDangerousSquare(const Position& src, const Board& board, Troop color);
 
 //===================================================
 // Mics
 //===================================================
-
-// Khong chia cai nay => ko bi loi <3
-
-// Convert Vector
-template<class T, class U>
-vector<U> toVec(vector<T> list) {
-	vector<U> listConv;
-	for (T m : list) {
-		listConv.push_back(m);
-	}
-	return listConv;
-}
 
 // Find item in vector of Position
 int hasPosition(vector<Position> list, Position item);
@@ -51,9 +39,9 @@ string getSprite(PieceType pn, Troop pc);
 //===================================================
 
 // Find if there's an enemy on a specific direction
-Piece* linearSearchEnemy(const Square* standOn, Troop pieceColor, MoveDirection dir);
+Piece* linearSearchEnemy(const Position& src, const Board& board, Troop pieceColor, MoveDirection dir);
 // Find if there's an enemy on a specific set of squares
-Piece* shortSearchEnemy(const Square* standOn, Troop pieceColor, int moves[][2], int range);
+Piece* shortSearchEnemy(const Position& src, const Board& board, Troop pieceColor, int moves[][2], int range);
 
 // Note: we can have more than 1 enemy pieces found, but we only need to
 // know whether a specific enemy piece
@@ -66,13 +54,13 @@ Piece* shortSearchEnemy(const Square* standOn, Troop pieceColor, int moves[][2],
 // If blocking piece is enemy piece, you can move on it (but not go over it)
 // Apply for: Rook, Bishop, Queen
 
-vector<Position> linearMove(const Square* standOn, Troop pieceColor, MoveDirection dir);
+vector<Position> linearMove(const Position& src, const Board& board, Troop pieceColor, MoveDirection dir);
 
 // Short Move: has a small amount of square that can be moved on. However, these moves
 // are absolute, which means blockers won't effect the general availible moves.
 // Apply for: Knight, King (they both have 8 moves)
 
-vector<Position> shortMove(const Square* standOn, Troop pieceColor, int moves[][2]);
+vector<Position> shortMove(const Position& src, const Board& board, Troop pieceColor, int moves[][2]);
 
 // Pawn will have its own move
 

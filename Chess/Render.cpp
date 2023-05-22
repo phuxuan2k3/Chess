@@ -3,6 +3,65 @@
 
 
 //===================================================
+// RenderPiece
+//===================================================
+
+RenderPiece::RenderPiece()
+{
+	// Just default parameter, don't care
+	this->pieceType = PieceType::Pawn;
+	this->troop = Troop::White;
+	// Initialize as null
+	this->setNull();
+}
+
+RenderPiece::RenderPiece(const RenderPiece& piece) {
+	this->pieceType = piece.pieceType;
+	this->troop = piece.troop;
+	this->setNotNull();
+}
+
+RenderPiece::RenderPiece(PieceType pt, Troop t) 
+{
+	this->pieceType = pt;
+	this->troop = t;
+}
+
+RenderPiece::~RenderPiece() 
+{
+}
+
+RenderPiece& RenderPiece::operator=(const RenderPiece& piece) {
+	this->pieceType = piece.pieceType;
+	this->troop = piece.troop;
+	this->setNotNull();
+	return *this;
+}
+
+void RenderPiece::set(PieceType pt, Troop t) {
+	this->pieceType = pt;
+	this->troop = t;
+	// Set it to not null (if it has been null before)
+	this->setNotNull();
+}
+
+void RenderPiece::draw(sf::RenderWindow& window, const sf::Vector2f& coordinate, const float width, const float height) {
+	sf::Texture texture;
+	string spriteName = getSprite(this->pieceType, this->troop);
+
+	texture.loadFromFile(spriteName + ".png", sf::IntRect(0, 0, width, height));
+	texture.setSmooth(true);
+	sf::Sprite sprite;
+	sprite.setTexture(texture);
+	sprite.setPosition(coordinate);
+	if (this->troop == Troop::White)
+	{
+		sprite.setColor(sf::Color(255, 255, 75));
+	}
+	window.draw(sprite);
+}
+
+//===================================================
 // RenderSquare
 //===================================================
 
@@ -12,28 +71,14 @@ RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate)
 	this->height = DEFAULT_SIZE;
 	this->coordinate = coordinate;
 	this->themeColor = color;
-	this->pieceType = PieceType::None;
-	this->pieceColor = Troop::None;
 }
 
-RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceType type, Troop pieceColor)
-{
-	this->width = DEFAULT_SIZE;
-	this->height = DEFAULT_SIZE;
-	this->coordinate = coordinate;
-	this->themeColor = color;
-	this->pieceType = type;
-	this->pieceColor = pieceColor;
-}
-
-RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, PieceType type, Troop pieceColor, float width, float height)
+RenderSquare::RenderSquare(ThemeColor color, const sf::Vector2f& coordinate, float width, float height)
 {
 	this->width = width;
 	this->height = height;
 	this->coordinate = coordinate;
 	this->themeColor = color;
-	this->pieceType = type;
-	this->pieceColor = pieceColor;
 }
 
 RenderSquare::~RenderSquare() 
@@ -46,11 +91,17 @@ void RenderSquare::setSize(const float& width, const float& height)
 	this->height = height;
 }
 
-void RenderSquare::setPiece(PieceType pieceType, Troop pieceColor) {
-	this->pieceColor = pieceColor;
-	this->pieceType = pieceType;
+void RenderSquare::setPiece(PieceType pType, Troop troop) {
+	this->piece.set(pType, troop);
 }
 
+void RenderSquare::setPiece(const RenderPiece& piece) {
+	this->piece = piece;
+}
+
+void RenderSquare::setNullPiece() {
+	this->piece.setNull();
+}
 
 void RenderSquare::draw(sf::RenderWindow& window)
 {
@@ -72,22 +123,9 @@ void RenderSquare::draw(sf::RenderWindow& window)
 	window.draw(square);
 
 	// Draw piece's sprite
-	if (this->pieceType != PieceType::None &&
-		this->pieceColor != Troop::None) 
+	if (this->piece.isNotNull() == true)
 	{
-		sf::Texture texture;
-		string spriteName = getSprite(this->pieceType, this->pieceColor);
-
-		texture.loadFromFile(spriteName + ".png", sf::IntRect(0, 0, this->width, this->height));
-		texture.setSmooth(true);
-		sf::Sprite sprite;
-		sprite.setTexture(texture);
-		sprite.setPosition(this->coordinate);
-		if (this->pieceColor == Troop::White)
-		{
-			sprite.setColor(sf::Color(255, 255, 75));
-		}
-		window.draw(sprite);
+		this->piece.draw(window, this->coordinate, this->width, this->height);
 	}
 }
 
@@ -165,7 +203,7 @@ void RenderBoard::setPieces() {
 		for (int j = 0; j < 8; ++j) {
 			p = this->board->getPiece(i, j);
 			if (p == nullptr) {
-				this->squareMat[i][j].setPiece(PieceType::None, Troop::None);
+				this->squareMat[i][j].setNullPiece();
 			}
 			else {
 				this->squareMat[i][j].setPiece(p->getPieceType(), p->getTroop());
@@ -223,12 +261,14 @@ State RenderGame::getState() const {
 	return this->state;
 }
 
+void RenderGame::setState(State state) {
+	this->state = state;
+}
+
 void RenderGame::draw(sf::RenderWindow& window) {
-	this->state = State::NotSelected;
 	this->b.draw(window);
 }
 
 void RenderGame::drawCanGo(sf::RenderWindow& window, vector<Position> squares) {
-	this->state = State::Selected;
 	this->b.drawCanGo(window, squares);
 }
