@@ -134,7 +134,8 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 	bool canEnPassant = (this->color == Troop::Black ? board.EnPassantBlack : board.EnPassantWhite);
 
 	squareToMove = src.getRelativePosition(1 * inv, -1);
-	if (board.hasPiece(src.getRelativePosition(0, -1)) && 
+	if (squareToMove.isNotNull() == true &&
+		board.hasPiece(src.getRelativePosition(0, -1)) && 
 		board.getPiece(src.getRelativePosition(0, -1))->getPieceType() == PieceType::Pawn &&
 		board.getPiece(src.getRelativePosition(0, -1)) == board.lastChoose &&
 		squareToMove.isNotNull() == true &&
@@ -146,7 +147,8 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 	}
 
 	squareToMove = src.getRelativePosition(1 * inv, 1);
-	if (board.hasPiece(src.getRelativePosition(0, 1)) && 
+	if (squareToMove.isNotNull() == true &&
+		board.hasPiece(src.getRelativePosition(0, 1)) && 
 		board.getPiece(src.getRelativePosition(0, 1))->getPieceType() == PieceType::Pawn &&
 		board.getPiece(src.getRelativePosition(0, 1)) == board.lastChoose &&
 		squareToMove.isNotNull() == true &&
