@@ -2,6 +2,7 @@
 
 
 
+
 //=======================================================
 // // GameState
 //=======================================================
@@ -152,7 +153,12 @@ bool GameState::isValidMove(const Position& src, const Position& dest, vector<Po
 }
 
 void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
-	// Normal Move:
+	//check move type
+	if (dest.getInfo() == PosInfo::Promote) {
+		cout << "Promote" << endl;
+	}
+	
+	// Normal Move:	
 	Piece* pSrc = this->board.getPiece(src);
 	pSrc->triggerOnFirstMove();
 	// If dest Square is occupied by a Piece
@@ -192,6 +198,4 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 		this->board.setPiece(dest.getRelativePosition(dir,0), nullptr);
 	}
 
-	cout << "Black: " << this->board.EnPassantBlack << endl;
-	cout << "White: " << this->board.EnPassantWhite << endl;
 }

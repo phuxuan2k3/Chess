@@ -71,16 +71,20 @@ void Pawn::triggerOnFirstMove() {
 }
 
 vector<Position> Pawn::canGo(const Position& src, const Board& board)
-{
+{	
+	int endBoard = 0;
 	int inv = 1;
 	Position squareToMove;
 	vector<Position> pos;
+	
 
 	if (this->color == Troop::White) {
 		inv = -1;	// White will go upward
+		endBoard = 0;
 	}
 	else {
 		inv = 1;	// Black will go downward
+		endBoard = 7;
 	}
 
 	// Checked if it can go 1 or 2 square ahead
@@ -100,8 +104,10 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 		if (board.hasPiece(squareToMove) == true) {
 			break;
 		}
+		if (squareToMove.get_i() == endBoard)  squareToMove.setMoveType(PosInfo::Promote);
 		if (i == 2) squareToMove.setMoveType(PosInfo::FirstPawnMove);
 		pos.push_back(squareToMove);
+		
 	}
 	
 	// Eatalbe moves
@@ -111,6 +117,7 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 		board.hasPiece(squareToMove) == true &&
 		board.getPiece(squareToMove)->getTroop() != this->getTroop())
 	{
+		if (squareToMove.get_i() == endBoard)  squareToMove.setMoveType(PosInfo::Promote);
 		pos.push_back(squareToMove);
 	}
 
@@ -120,6 +127,7 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 		board.hasPiece(squareToMove) == true &&
 		board.getPiece(squareToMove)->getTroop() != this->getTroop())
 	{
+		if (squareToMove.get_i() == endBoard)  squareToMove.setMoveType(PosInfo::Promote);
 		pos.push_back(squareToMove);
 	}
 

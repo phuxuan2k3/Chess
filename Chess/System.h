@@ -25,7 +25,8 @@ enum class PosInfo {
 	CastlingLeft,
 	CastlingRight,
 	FirstPawnMove, // Nếu vị trí là nước đi đầu tiên của con chốt
-	EnPassant // Bắt chốt qua đường
+	EnPassant, // Bắt chốt qua đường
+	Promote // Phong hậu
 };
 
 //=================================================================
