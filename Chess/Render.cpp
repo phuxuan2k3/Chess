@@ -131,12 +131,17 @@ void RenderSquare::draw(sf::RenderWindow& window)
 
 void RenderSquare::drawCanGo(sf::RenderWindow& window)
 {
+	sf::RectangleShape rec(sf::Vector2f(this->height,this->width));
+	rec.setPosition(this->coordinate);
+	rec.setFillColor(sf::Color::Transparent);
+	rec.setOutlineThickness(5.f);
+	rec.setOutlineColor(sf::Color::Green);
 	sf::CircleShape square(20);
 	square.setPosition(this->coordinate.x + 30, this->coordinate.y + 30);
 	square.setFillColor(sf::Color(255, 0, 0));
 	/*square.setOutlineColor(sf::Color(255, 0, 0));
 	square.setOutlineThickness(50);*/
-	window.draw(square);
+	window.draw(rec);
 }
 
 //===================================================
