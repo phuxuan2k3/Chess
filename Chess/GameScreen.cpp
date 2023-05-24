@@ -1,50 +1,25 @@
-#include "GUI.h"
+#include "GameScreen.h"
 
+GameScreen::GameScreen(float windowWidthScale, float windowHeightScale, RenderGame* render, GameState* game) : Screen(windowWidthScale, windowHeightScale, render, game) {}
 
-//===================================================
-// GUI
-//===================================================
-
-
-
-GUI::GUI() {
-	this->screen = nullptr;
-	this->window.create(sf::VideoMode(950, 800), "");
-	this->windowHeightScale = 1;
-	this->windowWidthScale = 1;
-	this->render = new RenderGame();
-	this->game = new GameState();
-	this->changeScreen = false;
-	this->end = false;
-	// Connect board
-	this->render->setBoard(this->game->getRefBoard());
+void GameScreen::drawGameScreen(RenderWindow& window) {
+	window.clear();
+	this->render->draw(window);
+	window.display();
 }
-
-// Change state to NotSelected
-void GUI::drawGameScreen() {
-	this->window.clear();
-	this->render->draw(this->window);
-	this->window.display();
+void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare, vector<Position> cango) {
+	window.clear();
+	this->render->draw(window);
+	this->render->drawCanGo(window, cango);
+	window.display();
 }
-
-// Change state to Selected
-void GUI::drawCanGo(const Position& selectedSquare, vector<Position> cango) {
-
-	this->window.clear();
-	this->render->draw(this->window);
-	this->render->drawCanGo(this->window, cango);
-	this->window.display();
-}
-
-void GUI::run()
-{
-	this->drawGameScreen();
-
+void GameScreen::run(RenderWindow& window) {
+	this->drawGameScreen(window);
 	Position curPos;
 	Position prePos;
 	vector<Position> canGo;
-	
-	while (this->window.isOpen())
+
+	while (window.isOpen())
 	{
 		sf::Event event;
 		if (window.pollEvent(event))
@@ -56,21 +31,21 @@ void GUI::run()
 
 			else if (event.type == sf::Event::Resized)
 			{
-				this->windowWidthScale = this->window.getSize().x * 1.0f / 950;
-				this->windowHeightScale = this->window.getSize().y * 1.0f / 800;
-				this->drawGameScreen();
+				this->windowWidthScale = window.getSize().x * 1.0f / 950;
+				this->windowHeightScale = window.getSize().y * 1.0f / 800;
+				this->drawGameScreen(window);
 			}
 
 			//xu ly su kien nhap chuot vao ban co
 			else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
-				
+
 				sf::Vector2i mousePosition =
 					sf::Vector2i(
-						sf::Mouse::getPosition(this->window).x * 1.0f / this->windowWidthScale,
-						sf::Mouse::getPosition(this->window).y * 1.0f / this->windowHeightScale
+						sf::Mouse::getPosition(window).x * 1.0f / this->windowWidthScale,
+						sf::Mouse::getPosition(window).y * 1.0f / this->windowHeightScale
 					);
-				
+
 				// nhap chuot vao ban co
 				if (mousePosition.x <= 800)
 				{
@@ -96,7 +71,7 @@ void GUI::run()
 						// nguoc lai, ta chuyen ve tran thai Selected
 						if (canGo.empty() == false) {
 							this->render->setState(State::Selected);
-							this->drawCanGo(curPos, canGo);
+							this->drawCanGo(window,curPos, canGo);
 							prePos = curPos;
 						}
 					}
@@ -109,14 +84,14 @@ void GUI::run()
 						this->game->move(prePos, curPos, canGo);
 						this->render->setState(State::NotSelected);
 						this->game->switchTurn();
-						this->drawGameScreen();
+						this->drawGameScreen(window);
 					}
 
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected
 					else if (this->render->getState() == State::Selected)
 					{
 						this->render->setState(State::NotSelected);
-						this->drawGameScreen();
+						this->drawGameScreen(window);
 					}
 				}
 			}
@@ -124,12 +99,3 @@ void GUI::run()
 	}
 }
 
-void GUI::setScreen(int index) {
-	if (index == 1) {
-		this->screen = new GameScreen(this->windowWidthScale,this->windowHeightScale,this->render,this->game);
-	}
-	else if (index == 0) {
-		this->end = true;
-	}
-	this->changeScreen = true;
-}
