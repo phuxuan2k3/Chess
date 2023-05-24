@@ -13,7 +13,7 @@ void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare,
 	this->render->drawCanGo(window, cango);
 	window.display();
 }
-void GameScreen::run(RenderWindow& window, Screen* screen) {
+void GameScreen::run(RenderWindow& window, Screen* screen, bool& end) {
 	this->drawGameScreen(window);
 	Position curPos;
 	Position prePos;
@@ -27,6 +27,7 @@ void GameScreen::run(RenderWindow& window, Screen* screen) {
 			if (event.type == sf::Event::Closed)
 			{
 				window.close();
+				end = true;
 			}
 
 			else if (event.type == sf::Event::Resized)

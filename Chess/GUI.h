@@ -13,7 +13,6 @@ private:
 	Screen* screen;
 	RenderGame* render;
 	GameState* game;
-	bool changeScreen;
 	bool end;
 
 public:
@@ -26,9 +25,7 @@ public:
 	void run2() {
 		while (true) {
 			if (this->end) break;
-			if (!this->changeScreen) continue;
-			this->changeScreen = false;
-			this->screen->run(this->window,this->screen);
+			this->screen->run(this->window,this->screen,this->end);
 		}
 	}
 

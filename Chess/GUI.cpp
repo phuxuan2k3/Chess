@@ -14,7 +14,6 @@ GUI::GUI() {
 	this->windowWidthScale = 1;
 	this->render = new RenderGame();
 	this->game = new GameState();
-	this->changeScreen = false;
 	this->end = false;
 	// Connect board
 	this->render->setBoard(this->game->getRefBoard());
@@ -135,5 +134,4 @@ void GUI::setScreen(int index) {
 	else if (index == 0) {
 		this->end = true;
 	}
-	this->changeScreen = true;
 }

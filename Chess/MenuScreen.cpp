@@ -2,7 +2,7 @@
 #include "SFML/Audio.hpp"
 
 MenuScreen::MenuScreen(float windowWidthScale, float windowHeightScale, RenderGame* render, GameState* game) : Screen(windowWidthScale, windowHeightScale, render, game) {}
-void MenuScreen::run(RenderWindow& window, Screen* screen) {
+void MenuScreen::run(RenderWindow& window, Screen* screen, bool& end) {
 	SoundBuffer buffer;
 	if (!buffer.loadFromFile("Audio/intro.wav"))
 		return ;
@@ -19,6 +19,7 @@ void MenuScreen::run(RenderWindow& window, Screen* screen) {
 			if (event.type == sf::Event::Closed)
 			{
 				window.close();
+				end = true;
 			}
 		}
 		RectangleShape rec(Vector2f(100,100));
