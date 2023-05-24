@@ -27,7 +27,7 @@ public:
 			if (this->end) break;
 			if (!this->changeScreen) continue;
 			this->changeScreen = false;
-			this->screen->run(this->window);
+			this->screen->run(this->window,this->screen);
 		}
 	}
 

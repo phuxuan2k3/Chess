@@ -13,7 +13,7 @@ void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare,
 	this->render->drawCanGo(window, cango);
 	window.display();
 }
-void GameScreen::run(RenderWindow& window) {
+void GameScreen::run(RenderWindow& window, Screen* screen) {
 	this->drawGameScreen(window);
 	Position curPos;
 	Position prePos;
