@@ -15,7 +15,7 @@ GUI::GUI() {
 }
 
 // Change state to NotSelected
-void GUI::draw() {
+void GUI::drawGame() {
 	this->window.clear();
 	this->render->draw(this->window);
 	this->window.display();
@@ -30,7 +30,7 @@ void GUI::drawCanGo(const Position& selectedSquare, vector<Position> cango) {
 	this->window.display();
 }
 
-void GUI::play()
+void GUI::run()
 {
 	this->window.create(sf::VideoMode(950, 800), "");
 	this->draw();

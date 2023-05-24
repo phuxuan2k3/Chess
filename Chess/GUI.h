@@ -14,8 +14,8 @@ private:
 
 public:
 	GUI();
-	void draw();
+	void drawGame();
 	void drawCanGo(const Position& selectedSquare, vector<Position> cango);
 
-	void play();
+	void run();
 };
