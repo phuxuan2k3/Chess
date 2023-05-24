@@ -17,16 +17,9 @@ private:
 
 public:
 	GUI();
-	void setScreen(int index);
 	void drawGameScreen();
 	void drawCanGo(const Position& selectedSquare, vector<Position> cango);
-
 	void run();
-	void run2() {
-		while (true) {
-			if (this->end) break;
-			this->screen->run(this->window,this->screen,this->end);
-		}
-	}
+	~GUI();
 
 };

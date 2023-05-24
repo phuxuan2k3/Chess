@@ -7,9 +7,8 @@ using namespace std;
 int main()
 {
 	GUI game;
-	//game.run();
-	game.setScreen(2);
-	game.run2();
+	game.run();
+	
 	
 	return 0;
 }

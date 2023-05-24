@@ -1,6 +1,6 @@
 #include "GameScreen.h"
 
-GameScreen::GameScreen(float windowWidthScale, float windowHeightScale, RenderGame* render, GameState* game) : Screen(windowWidthScale, windowHeightScale, render, game) {}
+GameScreen::GameScreen(float& windowWidthScale, float& windowHeightScale, RenderGame*& render, GameState*& game) : Screen(windowWidthScale, windowHeightScale, render, game) {}
 
 void GameScreen::drawGameScreen(RenderWindow& window) {
 	window.clear();
@@ -13,7 +13,7 @@ void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare,
 	this->render->drawCanGo(window, cango);
 	window.display();
 }
-void GameScreen::run(RenderWindow& window, Screen* screen, bool& end) {
+void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	this->drawGameScreen(window);
 	Position curPos;
 	Position prePos;

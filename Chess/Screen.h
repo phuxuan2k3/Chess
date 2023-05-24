@@ -12,6 +12,6 @@ protected:
 	RenderGame* render;
 	GameState* game;
 public:
-	Screen(float windowWidthScale, float windowHeightScale, RenderGame* render, GameState* game);
-	virtual void run(RenderWindow& window, Screen* screen,bool& end) = 0;
+	Screen(float& windowWidthScale, float& windowHeightScale, RenderGame*& render, GameState*& game);
+	virtual void run(RenderWindow& window, Screen*& screen,bool& end) = 0;
 };
