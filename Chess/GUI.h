@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Screen.h"
 #include "GameScreen.h"
+#include "MenuScreen.h"
 
 class GUI {
 private:

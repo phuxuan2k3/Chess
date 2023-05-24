@@ -125,8 +125,12 @@ void GUI::run()
 }
 
 void GUI::setScreen(int index) {
+	if (this->screen != nullptr) delete this->screen;
 	if (index == 1) {
 		this->screen = new GameScreen(this->windowWidthScale,this->windowHeightScale,this->render,this->game);
+	}
+	else if (index == 2) {	
+		this->screen = new MenuScreen(this->windowWidthScale, this->windowHeightScale, this->render, this->game);
 	}
 	else if (index == 0) {
 		this->end = true;
