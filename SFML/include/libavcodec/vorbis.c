@@ -30,7 +30,6 @@
 
 #include "avcodec.h"
 #include "vorbis.h"
-#include "vorbis_data.h"
 
 
 /* Helper functions */

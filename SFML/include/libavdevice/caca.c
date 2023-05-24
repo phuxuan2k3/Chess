@@ -21,7 +21,6 @@
 #include <caca.h>
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
-#include "libavformat/mux.h"
 #include "avdevice.h"
 
 typedef struct CACAContext {
@@ -42,9 +41,11 @@ typedef struct CACAContext {
     int             list_drivers;
 } CACAContext;
 
-static void caca_deinit(AVFormatContext *s)
+static int caca_write_trailer(AVFormatContext *s)
 {
     CACAContext *c = s->priv_data;
+
+    av_freep(&c->window_title);
 
     if (c->display) {
         caca_free_display(c->display);
@@ -58,6 +59,7 @@ static void caca_deinit(AVFormatContext *s)
         caca_free_canvas(c->canvas);
         c->canvas = NULL;
     }
+    return 0;
 }
 
 static void list_drivers(CACAContext *c)
@@ -135,7 +137,7 @@ static int caca_write_header(AVFormatContext *s)
     if (!c->canvas) {
         ret = AVERROR(errno);
         av_log(s, AV_LOG_ERROR, "Failed to create canvas\n");
-        return ret;
+        goto fail;
     }
 
     bpp = av_get_bits_per_pixel(av_pix_fmt_desc_get(encctx->format));
@@ -145,7 +147,7 @@ static int caca_write_header(AVFormatContext *s)
     if (!c->dither) {
         ret =  AVERROR(errno);
         av_log(s, AV_LOG_ERROR, "Failed to create dither\n");
-        return ret;
+        goto fail;
     }
 
 #define CHECK_DITHER_OPT(opt) do {                                              \
@@ -153,7 +155,7 @@ static int caca_write_header(AVFormatContext *s)
         ret = AVERROR(errno);                                                   \
         av_log(s, AV_LOG_ERROR, "Failed to set value '%s' for option '%s'\n",   \
                c->opt, #opt);                                                   \
-        return ret;                                                             \
+        goto fail;                                                              \
     }                                                                           \
 } while (0)
 
@@ -167,7 +169,7 @@ static int caca_write_header(AVFormatContext *s)
         ret = AVERROR(errno);
         av_log(s, AV_LOG_ERROR, "Failed to create display\n");
         list_drivers(c);
-        return ret;
+        goto fail;
     }
 
     if (!c->window_width || !c->window_height) {
@@ -178,9 +180,13 @@ static int caca_write_header(AVFormatContext *s)
     if (!c->window_title)
         c->window_title = av_strdup(s->url);
     caca_set_display_title(c->display, c->window_title);
-    caca_set_display_time(c->display, av_rescale_q(1, st->time_base, AV_TIME_BASE_Q));
+    caca_set_display_time(c->display, av_rescale_q(1, st->codec->time_base, AV_TIME_BASE_Q));
 
     return 0;
+
+fail:
+    caca_write_trailer(s);
+    return ret;
 }
 
 static int caca_write_packet(AVFormatContext *s, AVPacket *pkt)
@@ -221,15 +227,15 @@ static const AVClass caca_class = {
     .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
 };
 
-const FFOutputFormat ff_caca_muxer = {
-    .p.name         = "caca",
-    .p.long_name    = NULL_IF_CONFIG_SMALL("caca (color ASCII art) output device"),
+AVOutputFormat ff_caca_muxer = {
+    .name           = "caca",
+    .long_name      = NULL_IF_CONFIG_SMALL("caca (color ASCII art) output device"),
     .priv_data_size = sizeof(CACAContext),
-    .p.audio_codec  = AV_CODEC_ID_NONE,
-    .p.video_codec  = AV_CODEC_ID_RAWVIDEO,
+    .audio_codec    = AV_CODEC_ID_NONE,
+    .video_codec    = AV_CODEC_ID_RAWVIDEO,
     .write_header   = caca_write_header,
     .write_packet   = caca_write_packet,
-    .deinit         = caca_deinit,
-    .p.flags        = AVFMT_NOFILE,
-    .p.priv_class   = &caca_class,
+    .write_trailer  = caca_write_trailer,
+    .flags          = AVFMT_NOFILE,
+    .priv_class     = &caca_class,
 };

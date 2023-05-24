@@ -28,8 +28,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "config_components.h"
-
 #include <stdint.h>
 #include <string.h>
 
@@ -46,7 +44,6 @@
 #include "avio.h"
 #include "avio_internal.h"
 #include "internal.h"
-#include "mux.h"
 #include "riff.h"
 
 #define RF64_AUTO   (-1)
@@ -161,8 +158,9 @@ static av_cold int peak_init_writer(AVFormatContext *s)
         par->codec_id != AV_CODEC_ID_PCM_S16LE &&
         par->codec_id != AV_CODEC_ID_PCM_U8 &&
         par->codec_id != AV_CODEC_ID_PCM_U16LE) {
-        av_log(s, AV_LOG_ERROR, "Codec %s not supported for Peak Chunk\n",
-               avcodec_get_name(par->codec_id));
+        AVCodec *codec = avcodec_find_decoder(s->streams[0]->codecpar->codec_id);
+        av_log(s, AV_LOG_ERROR, "%s codec not supported for Peak Chunk\n",
+               codec ? codec->name : "NONE");
         return -1;
     }
 
@@ -173,12 +171,12 @@ static av_cold int peak_init_writer(AVFormatContext *s)
                "Writing 16 bit peak for 8 bit audio does not make sense\n");
         return AVERROR(EINVAL);
     }
-    if (par->ch_layout.nb_channels > INT_MAX / (wav->peak_bps * wav->peak_ppv))
+    if (par->channels > INT_MAX / (wav->peak_bps * wav->peak_ppv))
         return AVERROR(ERANGE);
-    wav->size_increment = par->ch_layout.nb_channels * wav->peak_bps * wav->peak_ppv;
+    wav->size_increment = par->channels * wav->peak_bps * wav->peak_ppv;
 
-    wav->peak_maxpos = av_calloc(par->ch_layout.nb_channels, sizeof(*wav->peak_maxpos));
-    wav->peak_maxneg = av_calloc(par->ch_layout.nb_channels, sizeof(*wav->peak_maxneg));
+    wav->peak_maxpos = av_mallocz_array(par->channels, sizeof(*wav->peak_maxpos));
+    wav->peak_maxneg = av_mallocz_array(par->channels, sizeof(*wav->peak_maxneg));
     if (!wav->peak_maxpos || !wav->peak_maxneg)
         goto nomem;
 
@@ -208,7 +206,7 @@ static int peak_write_frame(AVFormatContext *s)
     }
     wav->peak_output = tmp;
 
-    for (c = 0; c < par->ch_layout.nb_channels; c++) {
+    for (c = 0; c < par->channels; c++) {
         wav->peak_maxneg[c] = -wav->peak_maxneg[c];
 
         if (wav->peak_bps == 2 && wav->peak_format == PEAK_FORMAT_UINT8) {
@@ -280,7 +278,7 @@ static int peak_write_chunk(AVFormatContext *s)
     avio_wl32(pb, wav->peak_format);            /* 8 or 16 bit */
     avio_wl32(pb, wav->peak_ppv);               /* positive and negative */
     avio_wl32(pb, wav->peak_block_size);        /* frames per value */
-    avio_wl32(pb, par->ch_layout.nb_channels);  /* number of channels */
+    avio_wl32(pb, par->channels);               /* number of channels */
     avio_wl32(pb, wav->peak_num_frames);        /* number of peak frames */
     avio_wl32(pb, -1);                          /* audio sample frame position (not implemented) */
     avio_wl32(pb, 128);                         /* equal to size of header */
@@ -330,8 +328,9 @@ static int wav_write_header(AVFormatContext *s)
         /* format header */
         fmt = ff_start_tag(pb, "fmt ");
         if (ff_put_wav_header(s, pb, s->streams[0]->codecpar, 0) < 0) {
-            av_log(s, AV_LOG_ERROR, "Codec %s not supported in WAVE format\n",
-                   avcodec_get_name(s->streams[0]->codecpar->codec_id));
+            const AVCodecDescriptor *desc = avcodec_descriptor_get(s->streams[0]->codecpar->codec_id);
+            av_log(s, AV_LOG_ERROR, "%s codec not supported in WAVE format\n",
+                   desc ? desc->name : "unknown");
             return AVERROR(ENOSYS);
         }
         ff_end_tag(pb, fmt);
@@ -387,7 +386,7 @@ static int wav_write_packet(AVFormatContext *s, AVPacket *pkt)
                 wav->peak_maxpos[c] = FFMAX(wav->peak_maxpos[c], (int16_t)AV_RL16(pkt->data + i));
                 wav->peak_maxneg[c] = FFMIN(wav->peak_maxneg[c], (int16_t)AV_RL16(pkt->data + i));
             }
-            if (++c == s->streams[0]->codecpar->ch_layout.nb_channels) {
+            if (++c == s->streams[0]->codecpar->channels) {
                 c = 0;
                 if (++wav->peak_block_pos == wav->peak_block_size) {
                     int ret = peak_write_frame(s);
@@ -507,36 +506,26 @@ static const AVClass wav_muxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const FFOutputFormat ff_wav_muxer = {
-    .p.name            = "wav",
-    .p.long_name       = NULL_IF_CONFIG_SMALL("WAV / WAVE (Waveform Audio)"),
-    .p.mime_type       = "audio/x-wav",
-    .p.extensions      = "wav",
+AVOutputFormat ff_wav_muxer = {
+    .name              = "wav",
+    .long_name         = NULL_IF_CONFIG_SMALL("WAV / WAVE (Waveform Audio)"),
+    .mime_type         = "audio/x-wav",
+    .extensions        = "wav",
     .priv_data_size    = sizeof(WAVMuxContext),
-    .p.audio_codec     = AV_CODEC_ID_PCM_S16LE,
-    .p.video_codec     = AV_CODEC_ID_NONE,
+    .audio_codec       = AV_CODEC_ID_PCM_S16LE,
+    .video_codec       = AV_CODEC_ID_NONE,
     .write_header      = wav_write_header,
     .write_packet      = wav_write_packet,
     .write_trailer     = wav_write_trailer,
     .deinit            = wav_deinit,
-    .p.flags           = AVFMT_TS_NONSTRICT,
-    .p.codec_tag       = ff_wav_codec_tags_list,
-    .p.priv_class      = &wav_muxer_class,
+    .flags             = AVFMT_TS_NONSTRICT,
+    .codec_tag         = (const AVCodecTag* const []){ ff_codec_wav_tags, 0 },
+    .priv_class        = &wav_muxer_class,
 };
 #endif /* CONFIG_WAV_MUXER */
 
 #if CONFIG_W64_MUXER
 #include "w64.h"
-
-static av_cold int w64_init(AVFormatContext *ctx)
-{
-    if (ctx->nb_streams != 1) {
-        av_log(ctx, AV_LOG_ERROR, "This muxer only supports a single stream.\n");
-        return AVERROR(EINVAL);
-    }
-
-    return 0;
-}
 
 static void start_guid(AVIOContext *pb, const uint8_t *guid, int64_t *pos)
 {
@@ -569,8 +558,9 @@ static int w64_write_header(AVFormatContext *s)
     avio_write(pb, ff_w64_guid_wave, sizeof(ff_w64_guid_wave));
     start_guid(pb, ff_w64_guid_fmt, &start);
     if ((ret = ff_put_wav_header(s, pb, s->streams[0]->codecpar, 0)) < 0) {
-        av_log(s, AV_LOG_ERROR, "Codec %s not supported\n",
-               avcodec_get_name(s->streams[0]->codecpar->codec_id));
+        AVCodec *codec = avcodec_find_decoder(s->streams[0]->codecpar->codec_id);
+        av_log(s, AV_LOG_ERROR, "%s codec not supported\n",
+               codec ? codec->name : "NONE");
         return ret;
     }
     end_guid(pb, start);
@@ -616,18 +606,17 @@ static int w64_write_trailer(AVFormatContext *s)
     return 0;
 }
 
-const FFOutputFormat ff_w64_muxer = {
-    .p.name            = "w64",
-    .p.long_name       = NULL_IF_CONFIG_SMALL("Sony Wave64"),
-    .p.extensions      = "w64",
+AVOutputFormat ff_w64_muxer = {
+    .name              = "w64",
+    .long_name         = NULL_IF_CONFIG_SMALL("Sony Wave64"),
+    .extensions        = "w64",
     .priv_data_size    = sizeof(WAVMuxContext),
-    .p.audio_codec     = AV_CODEC_ID_PCM_S16LE,
-    .p.video_codec     = AV_CODEC_ID_NONE,
-    .init              = w64_init,
+    .audio_codec       = AV_CODEC_ID_PCM_S16LE,
+    .video_codec       = AV_CODEC_ID_NONE,
     .write_header      = w64_write_header,
     .write_packet      = wav_write_packet,
     .write_trailer     = w64_write_trailer,
-    .p.flags           = AVFMT_TS_NONSTRICT,
-    .p.codec_tag       = ff_wav_codec_tags_list,
+    .flags             = AVFMT_TS_NONSTRICT,
+    .codec_tag         = (const AVCodecTag* const []){ ff_codec_wav_tags, 0 },
 };
 #endif /* CONFIG_W64_MUXER */

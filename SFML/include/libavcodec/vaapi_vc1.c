@@ -20,10 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "config_components.h"
-
 #include "hwconfig.h"
-#include "mpegvideodec.h"
+#include "internal.h"
 #include "vaapi_decode.h"
 #include "vc1.h"
 #include "vc1data.h"
@@ -456,6 +454,8 @@ static int vaapi_vc1_end_frame(AVCodecContext *avctx)
     ret = ff_vaapi_decode_issue(avctx, pic);
     if (ret < 0)
         goto fail;
+
+    ff_mpeg_draw_horiz_band(s, 0, s->avctx->height);
 
 fail:
     return ret;

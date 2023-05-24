@@ -20,22 +20,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "libavutil/thread.h"
 
 #include "avcodec.h"
 #include "bytestream.h"
-#include "codec_internal.h"
 #include "copy_block.h"
-#include "decode.h"
 #include "mathops.h"
 #include "blockdsp.h"
 #include "get_bits.h"
+#include "internal.h"
 #include "aandcttab.h"
-
-#define CBP_VLC_BITS  9
 
 typedef struct MV30Context {
     GetBitContext  gb;
@@ -379,7 +377,10 @@ static int decode_coeffs(GetBitContext *gb, int16_t *coeffs, int nb_codes)
     memset(coeffs, 0, nb_codes * sizeof(*coeffs));
 
     for (int i = 0; i < nb_codes;) {
-        int value = get_vlc2(gb, cbp_tab.table, CBP_VLC_BITS, 1);
+        int value = get_vlc2(gb, cbp_tab.table, cbp_tab.bits, 1);
+
+        if (value < 0)
+            return AVERROR_INVALIDDATA;
 
         if (value > 0) {
             int x = get_bits(gb, value);
@@ -600,11 +601,12 @@ fail:
     return ret;
 }
 
-static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
+static int decode_frame(AVCodecContext *avctx, void *data,
                         int *got_frame, AVPacket *avpkt)
 {
     MV30Context *s = avctx->priv_data;
     GetBitContext *gb = &s->gb;
+    AVFrame *frame = data;
     int ret;
 
     if ((ret = init_get_bits8(gb, avpkt->data, avpkt->size)) < 0)
@@ -652,14 +654,18 @@ static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
     return avpkt->size;
 }
 
+static const uint16_t cbp_codes[] = {
+    0, 1, 4, 5, 6, 0xE, 0x1E, 0x3E, 0x7E, 0xFE, 0x1FE, 0x1FF,
+};
+
 static const uint8_t cbp_bits[] = {
     2, 2, 3, 3, 3, 4, 5, 6, 7, 8, 9, 9,
 };
 
 static av_cold void init_static_data(void)
 {
-    INIT_VLC_STATIC_FROM_LENGTHS(&cbp_tab, CBP_VLC_BITS, FF_ARRAY_ELEMS(cbp_bits),
-                                 cbp_bits, 1, NULL, 0, 0, 0, 0, 1 << CBP_VLC_BITS);
+    INIT_VLC_SPARSE_STATIC(&cbp_tab, 9, FF_ARRAY_ELEMS(cbp_bits),
+                           cbp_bits, 1, 1, cbp_codes, 2, 2, NULL, 0, 0, 512);
 }
 
 static av_cold int decode_init(AVCodecContext *avctx)
@@ -670,7 +676,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     avctx->color_range = AVCOL_RANGE_JPEG;
 
-    ff_blockdsp_init(&s->bdsp);
+    ff_blockdsp_init(&s->bdsp, avctx);
 
     s->prev_frame = av_frame_alloc();
     if (!s->prev_frame)
@@ -701,16 +707,17 @@ static av_cold int decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const FFCodec ff_mv30_decoder = {
-    .p.name           = "mv30",
-    CODEC_LONG_NAME("MidiVid 3.0"),
-    .p.type           = AVMEDIA_TYPE_VIDEO,
-    .p.id             = AV_CODEC_ID_MV30,
+AVCodec ff_mv30_decoder = {
+    .name             = "mv30",
+    .long_name        = NULL_IF_CONFIG_SMALL("MidiVid 3.0"),
+    .type             = AVMEDIA_TYPE_VIDEO,
+    .id               = AV_CODEC_ID_MV30,
     .priv_data_size   = sizeof(MV30Context),
     .init             = decode_init,
     .close            = decode_close,
-    FF_CODEC_DECODE_CB(decode_frame),
+    .decode           = decode_frame,
     .flush            = decode_flush,
-    .p.capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal    = FF_CODEC_CAP_INIT_CLEANUP,
+    .capabilities     = AV_CODEC_CAP_DR1,
+    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE |
+                        FF_CODEC_CAP_INIT_CLEANUP,
 };

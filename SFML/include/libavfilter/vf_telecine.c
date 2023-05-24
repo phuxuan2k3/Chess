@@ -29,7 +29,6 @@
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
-#include "filters.h"
 #include "formats.h"
 #include "internal.h"
 #include "video.h"
@@ -102,11 +101,19 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    int reject_flags = AV_PIX_FMT_FLAG_BITSTREAM |
-                       AV_PIX_FMT_FLAG_HWACCEL   |
-                       AV_PIX_FMT_FLAG_PAL;
+    AVFilterFormats *pix_fmts = NULL;
+    int fmt, ret;
 
-    return ff_set_common_formats(ctx, ff_formats_pixdesc_filter(0, reject_flags));
+    for (fmt = 0; av_pix_fmt_desc_get(fmt); fmt++) {
+        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
+        if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL ||
+              desc->flags & AV_PIX_FMT_FLAG_PAL     ||
+              desc->flags & AV_PIX_FMT_FLAG_BITSTREAM) &&
+            (ret = ff_add_format(&pix_fmts, fmt)) < 0)
+            return ret;
+    }
+
+    return ff_set_common_formats(ctx, pix_fmts);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -183,11 +190,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
     }
 
     if (s->occupied) {
-        ret = ff_inlink_make_frame_writable(inlink, &s->frame[nout]);
-        if (ret < 0) {
-            av_frame_free(&inpicref);
-            return ret;
-        }
+        av_frame_make_writable(s->frame[nout]);
         for (i = 0; i < s->nb_planes; i++) {
             // fill in the EARLIER field from the buffered pic
             av_image_copy_plane(s->frame[nout]->data[i] + s->frame[nout]->linesize[i] * s->first_field,
@@ -213,11 +216,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
 
     while (len >= 2) {
         // output THIS image as-is
-        ret = ff_inlink_make_frame_writable(inlink, &s->frame[nout]);
-        if (ret < 0) {
-            av_frame_free(&inpicref);
-            return ret;
-        }
+        av_frame_make_writable(s->frame[nout]);
         for (i = 0; i < s->nb_planes; i++)
             av_image_copy_plane(s->frame[nout]->data[i], s->frame[nout]->linesize[i],
                                 inpicref->data[i], inpicref->linesize[i],
@@ -279,6 +278,7 @@ static const AVFilterPad telecine_inputs[] = {
         .filter_frame  = filter_frame,
         .config_props  = config_input,
     },
+    { NULL }
 };
 
 static const AVFilterPad telecine_outputs[] = {
@@ -287,16 +287,17 @@ static const AVFilterPad telecine_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_telecine = {
+AVFilter ff_vf_telecine = {
     .name          = "telecine",
     .description   = NULL_IF_CONFIG_SMALL("Apply a telecine pattern."),
     .priv_size     = sizeof(TelecineContext),
     .priv_class    = &telecine_class,
     .init          = init,
     .uninit        = uninit,
-    FILTER_INPUTS(telecine_inputs),
-    FILTER_OUTPUTS(telecine_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .query_formats = query_formats,
+    .inputs        = telecine_inputs,
+    .outputs       = telecine_outputs,
 };

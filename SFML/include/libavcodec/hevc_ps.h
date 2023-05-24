@@ -29,7 +29,6 @@
 
 #include "avcodec.h"
 #include "get_bits.h"
-#include "h2645_vui.h"
 #include "hevc.h"
 
 typedef struct ShortTermRPS {
@@ -48,8 +47,22 @@ typedef struct HEVCWindow {
 } HEVCWindow;
 
 typedef struct VUI {
-    H2645VUI common;
+    AVRational sar;
 
+    int overscan_info_present_flag;
+    int overscan_appropriate_flag;
+
+    int video_signal_type_present_flag;
+    int video_format;
+    int video_full_range_flag;
+    int colour_description_present_flag;
+    uint8_t colour_primaries;
+    uint8_t transfer_characteristic;
+    uint8_t matrix_coeffs;
+
+    int chroma_loc_info_present_flag;
+    int chroma_sample_loc_type_top_field;
+    int chroma_sample_loc_type_bottom_field;
     int neutra_chroma_indication_flag;
 
     int field_seq_flag;

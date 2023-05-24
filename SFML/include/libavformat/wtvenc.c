@@ -25,12 +25,12 @@
  * @author Zhentan Feng <spyfeng at gmail dot com>
  */
 
+#include "libavutil/intreadwrite.h"
 #include "libavutil/avassert.h"
 #include "avformat.h"
 #include "avio_internal.h"
 #include "internal.h"
 #include "mpegts.h"
-#include "mux.h"
 #include "wtv.h"
 
 #define WTV_BIGSECTOR_SIZE (1 << WTV_BIGSECTOR_BITS)
@@ -241,7 +241,7 @@ static void put_videoinfoheader2(AVIOContext *pb, AVStream *st)
     avio_wl32(pb, 0);
     avio_wl32(pb, 0);
 
-    ff_put_bmp_header(pb, st->codecpar, 0, 1, 0);
+    ff_put_bmp_header(pb, st->codecpar, 0, 1);
 
     if (st->codecpar->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
         int padding = (st->codecpar->extradata_size & 3) ? 4 - (st->codecpar->extradata_size & 3) : 0;
@@ -670,12 +670,12 @@ static void write_table_entries_attrib(AVFormatContext *s)
 {
     WtvContext *wctx = s->priv_data;
     AVIOContext *pb = s->pb;
-    const AVDictionaryEntry *tag = NULL;
+    AVDictionaryEntry *tag = 0;
 
     ff_standardize_creation_time(s);
     //FIXME: translate special tags (e.g. WM/Bitrate) to binary representation
     ff_metadata_conv(&s->metadata, ff_asf_metadata_conv, NULL);
-    while ((tag = av_dict_iterate(s->metadata, tag)))
+    while ((tag = av_dict_get(s->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
         write_tag(pb, tag->key, tag->value);
 
     if (wctx->thumbnail.size) {
@@ -698,11 +698,11 @@ static void write_table_redirector_legacy_attrib(AVFormatContext *s)
 {
     WtvContext *wctx = s->priv_data;
     AVIOContext *pb = s->pb;
-    const AVDictionaryEntry *tag = NULL;
+    AVDictionaryEntry *tag = 0;
     int64_t pos = 0;
 
     //FIXME: translate special tags to binary representation
-    while ((tag = av_dict_iterate(s->metadata, tag))) {
+    while ((tag = av_dict_get(s->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
         avio_wl64(pb, pos);
         pos += metadata_header_size(tag->key) + strlen(tag->value)*2 + 2;
     }
@@ -829,15 +829,16 @@ static int write_trailer(AVFormatContext *s)
     return 0;
 }
 
-const FFOutputFormat ff_wtv_muxer = {
-    .p.name         = "wtv",
-    .p.long_name    = NULL_IF_CONFIG_SMALL("Windows Television (WTV)"),
-    .p.extensions   = "wtv",
+AVOutputFormat ff_wtv_muxer = {
+    .name           = "wtv",
+    .long_name      = NULL_IF_CONFIG_SMALL("Windows Television (WTV)"),
+    .extensions     = "wtv",
     .priv_data_size = sizeof(WtvContext),
-    .p.audio_codec  = AV_CODEC_ID_AC3,
-    .p.video_codec  = AV_CODEC_ID_MPEG2VIDEO,
+    .audio_codec    = AV_CODEC_ID_AC3,
+    .video_codec    = AV_CODEC_ID_MPEG2VIDEO,
     .write_header   = write_header,
     .write_packet   = write_packet,
     .write_trailer  = write_trailer,
-    .p.codec_tag    = ff_riff_codec_tags_list,
+    .codec_tag      = (const AVCodecTag* const []){ ff_codec_bmp_tags,
+                                                    ff_codec_wav_tags, 0 },
 };

@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
@@ -476,8 +475,6 @@ static int parse_timestamp(struct sbg_parser *p,
     }
     while (lex_char(p, '+')) {
         if (!lex_time(p, &dt))
-            return AVERROR_INVALIDDATA;
-        if (av_sat_add64(rel, dt) - dt != rel)
             return AVERROR_INVALIDDATA;
         rel += dt;
         r = 1;
@@ -1411,7 +1408,6 @@ static av_cold int sbg_read_header(AVFormatContext *avf)
     char *buf = NULL;
     struct sbg_script script = { 0 };
     AVStream *st;
-    FFStream *sti;
     struct ws_intervals inter = { 0 };
 
     r = read_whole_file(avf->pb, sbg->max_file_size, &buf);
@@ -1445,20 +1441,20 @@ static av_cold int sbg_read_header(AVFormatContext *avf)
     st = avformat_new_stream(avf, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    sti = ffstream(st);
     st->codecpar->codec_type     = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id       = AV_CODEC_ID_FFWAVESYNTH;
-    st->codecpar->ch_layout      = (AVChannelLayout)AV_CHANNEL_LAYOUT_STEREO;
+    st->codecpar->channels       = 2;
+    st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
     st->codecpar->sample_rate    = sbg->sample_rate;
     st->codecpar->frame_size     = sbg->frame_size;
     avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
-    sti->probe_packets = 0;
+    st->probe_packets = 0;
     st->start_time    = av_rescale(script.start_ts,
                                    sbg->sample_rate, AV_TIME_BASE);
     st->duration      = script.end_ts == AV_NOPTS_VALUE ? AV_NOPTS_VALUE :
                         av_rescale(script.end_ts - script.start_ts,
                                    sbg->sample_rate, AV_TIME_BASE);
-    sti->cur_dts      = st->start_time;
+    st->cur_dts       = st->start_time;
     r = encode_intervals(&script, st->codecpar, &inter);
     if (r < 0)
         goto fail;
@@ -1479,8 +1475,8 @@ static int sbg_read_packet(AVFormatContext *avf, AVPacket *packet)
     int64_t ts, end_ts;
     int ret;
 
-    ts = ffstream(avf->streams[0])->cur_dts;
-    end_ts = av_sat_add64(ts, avf->streams[0]->codecpar->frame_size);
+    ts = avf->streams[0]->cur_dts;
+    end_ts = ts + avf->streams[0]->codecpar->frame_size;
     if (avf->streams[0]->duration != AV_NOPTS_VALUE)
         end_ts = FFMIN(avf->streams[0]->start_time + avf->streams[0]->duration,
                        end_ts);
@@ -1502,7 +1498,7 @@ static int sbg_read_seek2(AVFormatContext *avf, int stream_index,
         return AVERROR(EINVAL);
     if (stream_index < 0)
         ts = av_rescale_q(ts, AV_TIME_BASE_Q, avf->streams[0]->time_base);
-    ffstream(avf->streams[0])->cur_dts = ts;
+    avf->streams[0]->cur_dts = ts;
     return 0;
 }
 
@@ -1532,7 +1528,7 @@ static const AVClass sbg_demuxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVInputFormat ff_sbg_demuxer = {
+AVInputFormat ff_sbg_demuxer = {
     .name           = "sbg",
     .long_name      = NULL_IF_CONFIG_SMALL("SBaGen binaural beats script"),
     .priv_data_size = sizeof(struct sbg_demuxer),

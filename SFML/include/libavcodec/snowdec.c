@@ -22,12 +22,15 @@
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
-#include "codec_internal.h"
 #include "snow_dwt.h"
+#include "internal.h"
 #include "snow.h"
 
 #include "rangecoder.h"
 #include "mathops.h"
+
+#include "mpegvideo.h"
+#include "h263.h"
 
 static av_always_inline void predict_slice_buffered(SnowContext *s, slice_buffer * sb, IDWTELEM * old_buffer, int plane_index, int add, int mb_y){
     Plane *p= &s->plane[plane_index];
@@ -419,6 +422,17 @@ static int decode_header(SnowContext *s){
     return 0;
 }
 
+static av_cold int decode_init(AVCodecContext *avctx)
+{
+    int ret;
+
+    if ((ret = ff_snow_common_init(avctx)) < 0) {
+        return ret;
+    }
+
+    return 0;
+}
+
 static int decode_blocks(SnowContext *s){
     int x, y;
     int w= s->b_width;
@@ -436,14 +450,15 @@ static int decode_blocks(SnowContext *s){
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, AVFrame *picture,
-                        int *got_frame, AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
+                        AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     SnowContext *s = avctx->priv_data;
     RangeCoder * const c= &s->c;
     int bytes_read;
+    AVFrame *picture = data;
     int level, orientation, plane_index;
     int res;
 
@@ -653,15 +668,16 @@ static av_cold int decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const FFCodec ff_snow_decoder = {
-    .p.name         = "snow",
-    CODEC_LONG_NAME("Snow"),
-    .p.type         = AVMEDIA_TYPE_VIDEO,
-    .p.id           = AV_CODEC_ID_SNOW,
+AVCodec ff_snow_decoder = {
+    .name           = "snow",
+    .long_name      = NULL_IF_CONFIG_SMALL("Snow"),
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = AV_CODEC_ID_SNOW,
     .priv_data_size = sizeof(SnowContext),
-    .init           = ff_snow_common_init,
+    .init           = decode_init,
     .close          = decode_end,
-    FF_CODEC_DECODE_CB(decode_frame),
-    .p.capabilities = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .decode         = decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1 /*| AV_CODEC_CAP_DRAW_HORIZ_BAND*/,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE |
+                      FF_CODEC_CAP_INIT_CLEANUP,
 };

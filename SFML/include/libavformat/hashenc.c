@@ -19,15 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "config_components.h"
-
+#include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/hash.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "avformat.h"
 #include "internal.h"
-#include "mux.h"
 
 struct HashContext {
     const AVClass *avclass;
@@ -44,17 +42,10 @@ struct HashContext {
 #define FORMAT_VERSION_OPT \
     { "format_version", "file format version", OFFSET(format_version), AV_OPT_TYPE_INT, {.i64 = 2}, 1, 2, ENC }
 
-#if CONFIG_HASH_MUXER || CONFIG_STREAMHASH_MUXER
-static const AVOption hash_streamhash_options[] = {
+#if CONFIG_HASH_MUXER
+static const AVOption hash_options[] = {
     HASH_OPT("sha256"),
     { NULL },
-};
-
-static const AVClass hash_streamhashenc_class = {
-    .class_name = "(stream) hash muxer",
-    .item_name  = av_default_item_name,
-    .option     = hash_streamhash_options,
-    .version    = LIBAVUTIL_VERSION_INT,
 };
 #endif
 
@@ -62,6 +53,13 @@ static const AVClass hash_streamhashenc_class = {
 static const AVOption framehash_options[] = {
     HASH_OPT("sha256"),
     FORMAT_VERSION_OPT,
+    { NULL },
+};
+#endif
+
+#if CONFIG_STREAMHASH_MUXER
+static const AVOption streamhash_options[] = {
+    HASH_OPT("sha256"),
     { NULL },
 };
 #endif
@@ -87,7 +85,7 @@ static int hash_init(struct AVFormatContext *s)
     int res;
     struct HashContext *c = s->priv_data;
     c->per_stream = 0;
-    c->hashes = av_mallocz(sizeof(*c->hashes));
+    c->hashes = av_mallocz_array(1, sizeof(*c->hashes));
     if (!c->hashes)
         return AVERROR(ENOMEM);
     res = av_hash_alloc(&c->hashes[0], c->hash_name);
@@ -104,7 +102,7 @@ static int streamhash_init(struct AVFormatContext *s)
     int res, i;
     struct HashContext *c = s->priv_data;
     c->per_stream = 1;
-    c->hashes = av_calloc(s->nb_streams, sizeof(*c->hashes));
+    c->hashes = av_mallocz_array(s->nb_streams, sizeof(*c->hashes));
     if (!c->hashes)
         return AVERROR(ENOMEM);
     for (i = 0; i < s->nb_streams; i++) {
@@ -158,7 +156,6 @@ static int hash_write_trailer(struct AVFormatContext *s)
 
     return 0;
 }
-#endif
 
 static void hash_free(struct AVFormatContext *s)
 {
@@ -171,21 +168,29 @@ static void hash_free(struct AVFormatContext *s)
     }
     av_freep(&c->hashes);
 }
+#endif
 
 #if CONFIG_HASH_MUXER
-const FFOutputFormat ff_hash_muxer = {
-    .p.name            = "hash",
-    .p.long_name       = NULL_IF_CONFIG_SMALL("Hash testing"),
+static const AVClass hashenc_class = {
+    .class_name = "hash muxer",
+    .item_name  = av_default_item_name,
+    .option     = hash_options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+AVOutputFormat ff_hash_muxer = {
+    .name              = "hash",
+    .long_name         = NULL_IF_CONFIG_SMALL("Hash testing"),
     .priv_data_size    = sizeof(struct HashContext),
-    .p.audio_codec     = AV_CODEC_ID_PCM_S16LE,
-    .p.video_codec     = AV_CODEC_ID_RAWVIDEO,
+    .audio_codec       = AV_CODEC_ID_PCM_S16LE,
+    .video_codec       = AV_CODEC_ID_RAWVIDEO,
     .init              = hash_init,
     .write_packet      = hash_write_packet,
     .write_trailer     = hash_write_trailer,
     .deinit            = hash_free,
-    .p.flags           = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
+    .flags             = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
                          AVFMT_TS_NEGATIVE,
-    .p.priv_class      = &hash_streamhashenc_class,
+    .priv_class        = &hashenc_class,
 };
 #endif
 
@@ -197,36 +202,43 @@ static const AVClass md5enc_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const FFOutputFormat ff_md5_muxer = {
-    .p.name            = "md5",
-    .p.long_name       = NULL_IF_CONFIG_SMALL("MD5 testing"),
+AVOutputFormat ff_md5_muxer = {
+    .name              = "md5",
+    .long_name         = NULL_IF_CONFIG_SMALL("MD5 testing"),
     .priv_data_size    = sizeof(struct HashContext),
-    .p.audio_codec     = AV_CODEC_ID_PCM_S16LE,
-    .p.video_codec     = AV_CODEC_ID_RAWVIDEO,
+    .audio_codec       = AV_CODEC_ID_PCM_S16LE,
+    .video_codec       = AV_CODEC_ID_RAWVIDEO,
     .init              = hash_init,
     .write_packet      = hash_write_packet,
     .write_trailer     = hash_write_trailer,
     .deinit            = hash_free,
-    .p.flags           = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
+    .flags             = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
                          AVFMT_TS_NEGATIVE,
-    .p.priv_class      = &md5enc_class,
+    .priv_class        = &md5enc_class,
 };
 #endif
 
 #if CONFIG_STREAMHASH_MUXER
-const FFOutputFormat ff_streamhash_muxer = {
-    .p.name            = "streamhash",
-    .p.long_name       = NULL_IF_CONFIG_SMALL("Per-stream hash testing"),
+static const AVClass streamhashenc_class = {
+    .class_name = "stream hash muxer",
+    .item_name  = av_default_item_name,
+    .option     = streamhash_options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+AVOutputFormat ff_streamhash_muxer = {
+    .name              = "streamhash",
+    .long_name         = NULL_IF_CONFIG_SMALL("Per-stream hash testing"),
     .priv_data_size    = sizeof(struct HashContext),
-    .p.audio_codec     = AV_CODEC_ID_PCM_S16LE,
-    .p.video_codec     = AV_CODEC_ID_RAWVIDEO,
+    .audio_codec       = AV_CODEC_ID_PCM_S16LE,
+    .video_codec       = AV_CODEC_ID_RAWVIDEO,
     .init              = streamhash_init,
     .write_packet      = hash_write_packet,
     .write_trailer     = hash_write_trailer,
     .deinit            = hash_free,
-    .p.flags           = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
+    .flags             = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
                          AVFMT_TS_NEGATIVE,
-    .p.priv_class      = &hash_streamhashenc_class,
+    .priv_class        = &streamhashenc_class,
 };
 #endif
 
@@ -257,7 +269,7 @@ static int framehash_init(struct AVFormatContext *s)
     int res;
     struct HashContext *c = s->priv_data;
     c->per_stream = 0;
-    c->hashes = av_mallocz(sizeof(*c->hashes));
+    c->hashes = av_mallocz_array(1, sizeof(*c->hashes));
     if (!c->hashes)
         return AVERROR(ENOMEM);
     res = av_hash_alloc(&c->hashes[0], c->hash_name);
@@ -293,19 +305,18 @@ static int framehash_write_packet(struct AVFormatContext *s, AVPacket *pkt)
     avio_write(s->pb, buf, strlen(buf));
 
     if (c->format_version > 1 && pkt->side_data_elems) {
-        int i;
+        int i, j;
         avio_printf(s->pb, ", S=%d", pkt->side_data_elems);
         for (i = 0; i < pkt->side_data_elems; i++) {
             av_hash_init(c->hashes[0]);
             if (HAVE_BIGENDIAN && pkt->side_data[i].type == AV_PKT_DATA_PALETTE) {
-                for (size_t j = 0; j < pkt->side_data[i].size; j += sizeof(uint32_t)) {
+                for (j = 0; j < pkt->side_data[i].size; j += sizeof(uint32_t)) {
                     uint32_t data = AV_RL32(pkt->side_data[i].data + j);
                     av_hash_update(c->hashes[0], (uint8_t *)&data, sizeof(uint32_t));
                 }
             } else
                 av_hash_update(c->hashes[0], pkt->side_data[i].data, pkt->side_data[i].size);
-            snprintf(buf, sizeof(buf) - (AV_HASH_MAX_SIZE * 2 + 1),
-                     ", %8"SIZE_SPECIFIER", ", pkt->side_data[i].size);
+            snprintf(buf, sizeof(buf) - (AV_HASH_MAX_SIZE * 2 + 1), ", %8d, ", pkt->side_data[i].size);
             len = strlen(buf);
             av_hash_final_hex(c->hashes[0], buf + len, sizeof(buf) - len);
             avio_write(s->pb, buf, strlen(buf));
@@ -314,6 +325,14 @@ static int framehash_write_packet(struct AVFormatContext *s, AVPacket *pkt)
 
     avio_printf(s->pb, "\n");
     return 0;
+}
+
+static void framehash_free(struct AVFormatContext *s)
+{
+    struct HashContext *c = s->priv_data;
+    if (c->hashes)
+        av_hash_freep(&c->hashes[0]);
+    av_freep(&c->hashes);
 }
 #endif
 
@@ -325,19 +344,19 @@ static const AVClass framehash_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const FFOutputFormat ff_framehash_muxer = {
-    .p.name            = "framehash",
-    .p.long_name       = NULL_IF_CONFIG_SMALL("Per-frame hash testing"),
+AVOutputFormat ff_framehash_muxer = {
+    .name              = "framehash",
+    .long_name         = NULL_IF_CONFIG_SMALL("Per-frame hash testing"),
     .priv_data_size    = sizeof(struct HashContext),
-    .p.audio_codec     = AV_CODEC_ID_PCM_S16LE,
-    .p.video_codec     = AV_CODEC_ID_RAWVIDEO,
+    .audio_codec       = AV_CODEC_ID_PCM_S16LE,
+    .video_codec       = AV_CODEC_ID_RAWVIDEO,
     .init              = framehash_init,
     .write_header      = framehash_write_header,
     .write_packet      = framehash_write_packet,
-    .deinit            = hash_free,
-    .p.flags           = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
+    .deinit            = framehash_free,
+    .flags             = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
                          AVFMT_TS_NEGATIVE,
-    .p.priv_class      = &framehash_class,
+    .priv_class        = &framehash_class,
 };
 #endif
 
@@ -349,18 +368,18 @@ static const AVClass framemd5_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const FFOutputFormat ff_framemd5_muxer = {
-    .p.name            = "framemd5",
-    .p.long_name       = NULL_IF_CONFIG_SMALL("Per-frame MD5 testing"),
+AVOutputFormat ff_framemd5_muxer = {
+    .name              = "framemd5",
+    .long_name         = NULL_IF_CONFIG_SMALL("Per-frame MD5 testing"),
     .priv_data_size    = sizeof(struct HashContext),
-    .p.audio_codec     = AV_CODEC_ID_PCM_S16LE,
-    .p.video_codec     = AV_CODEC_ID_RAWVIDEO,
+    .audio_codec       = AV_CODEC_ID_PCM_S16LE,
+    .video_codec       = AV_CODEC_ID_RAWVIDEO,
     .init              = framehash_init,
     .write_header      = framehash_write_header,
     .write_packet      = framehash_write_packet,
-    .deinit            = hash_free,
-    .p.flags           = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
+    .deinit            = framehash_free,
+    .flags             = AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT |
                          AVFMT_TS_NEGATIVE,
-    .p.priv_class      = &framemd5_class,
+    .priv_class        = &framemd5_class,
 };
 #endif

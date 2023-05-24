@@ -80,7 +80,8 @@ static int create_audio_stream(AVFormatContext *s, SIFFContext *c)
         return AVERROR(ENOMEM);
     ast->codecpar->codec_type            = AVMEDIA_TYPE_AUDIO;
     ast->codecpar->codec_id              = AV_CODEC_ID_PCM_U8;
-    ast->codecpar->ch_layout             = (AVChannelLayout)AV_CHANNEL_LAYOUT_MONO;
+    ast->codecpar->channels              = 1;
+    ast->codecpar->channel_layout        = AV_CH_LAYOUT_MONO;
     ast->codecpar->bits_per_coded_sample = 8;
     ast->codecpar->sample_rate           = c->rate;
     avpriv_set_pts_info(ast, 16, 1, c->rate);
@@ -248,7 +249,7 @@ static int siff_read_packet(AVFormatContext *s, AVPacket *pkt)
     return pkt->size;
 }
 
-const AVInputFormat ff_siff_demuxer = {
+AVInputFormat ff_siff_demuxer = {
     .name           = "siff",
     .long_name      = NULL_IF_CONFIG_SMALL("Beam Software SIFF"),
     .priv_data_size = sizeof(SIFFContext),

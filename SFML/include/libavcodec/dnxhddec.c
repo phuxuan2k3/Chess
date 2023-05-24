@@ -24,17 +24,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/mem_internal.h"
-#include "libavutil/pixdesc.h"
-
+#include "libavutil/imgutils.h"
 #include "avcodec.h"
 #include "blockdsp.h"
-#include "codec_internal.h"
-#include "decode.h"
 #define  UNCHECKED_BITSTREAM_READER 1
 #include "get_bits.h"
 #include "dnxhddata.h"
 #include "idctdsp.h"
+#include "internal.h"
 #include "profiles.h"
 #include "thread.h"
 
@@ -65,7 +62,7 @@ typedef struct DNXHDContext {
     int cur_field;                      ///< current interlaced field
     VLC ac_vlc, dc_vlc, run_vlc;
     IDCTDSPContext idsp;
-    uint8_t permutated_scantable[64];
+    ScanTable scantable;
     const CIDEntry *cid_table;
     int bit_depth; // 8, 10, 12 or 0 if not initialized at all.
     int is_444;
@@ -104,7 +101,7 @@ static av_cold int dnxhd_decode_init(AVCodecContext *avctx)
     avctx->coded_width  = FFALIGN(avctx->width,  16);
     avctx->coded_height = FFALIGN(avctx->height, 16);
 
-    ctx->rows = av_calloc(avctx->thread_count, sizeof(*ctx->rows));
+    ctx->rows = av_mallocz_array(avctx->thread_count, sizeof(RowContext));
     if (!ctx->rows)
         return AVERROR(ENOMEM);
 
@@ -115,19 +112,18 @@ static int dnxhd_init_vlc(DNXHDContext *ctx, uint32_t cid, int bitdepth)
 {
     int ret;
     if (cid != ctx->cid) {
-        const CIDEntry *cid_table = ff_dnxhd_get_cid_table(cid);
+        int index;
 
-        if (!cid_table) {
+        if ((index = ff_dnxhd_get_cid_table(cid)) < 0) {
             av_log(ctx->avctx, AV_LOG_ERROR, "unsupported cid %"PRIu32"\n", cid);
             return AVERROR(ENOSYS);
         }
-        if (cid_table->bit_depth != bitdepth &&
-            cid_table->bit_depth != DNXHD_VARIABLE) {
-            av_log(ctx->avctx, AV_LOG_ERROR, "bit depth mismatches %d %d\n",
-                   cid_table->bit_depth, bitdepth);
+        if (ff_dnxhd_cid_table[index].bit_depth != bitdepth &&
+            ff_dnxhd_cid_table[index].bit_depth != DNXHD_VARIABLE) {
+            av_log(ctx->avctx, AV_LOG_ERROR, "bit depth mismatches %d %d\n", ff_dnxhd_cid_table[index].bit_depth, bitdepth);
             return AVERROR_INVALIDDATA;
         }
-        ctx->cid_table = cid_table;
+        ctx->cid_table = &ff_dnxhd_cid_table[index];
         av_log(ctx->avctx, AV_LOG_VERBOSE, "Profile cid %"PRIu32".\n", cid);
 
         ff_free_vlc(&ctx->ac_vlc);
@@ -194,7 +190,7 @@ static int dnxhd_decode_header(DNXHDContext *ctx, AVFrame *frame,
         return AVERROR_INVALIDDATA;
     }
     if (buf[5] & 2) { /* interlaced */
-        ctx->cur_field = first_field ? buf[5] & 1 : !ctx->cur_field;
+        ctx->cur_field = buf[5] & 1;
         frame->interlaced_frame = 1;
         frame->top_field_first  = first_field ^ ctx->cur_field;
         av_log(ctx->avctx, AV_LOG_DEBUG,
@@ -273,10 +269,10 @@ static int dnxhd_decode_header(DNXHDContext *ctx, AVFrame *frame,
 
     ctx->avctx->bits_per_raw_sample = ctx->bit_depth = bitdepth;
     if (ctx->bit_depth != old_bit_depth) {
-        ff_blockdsp_init(&ctx->bdsp);
+        ff_blockdsp_init(&ctx->bdsp, ctx->avctx);
         ff_idctdsp_init(&ctx->idsp, ctx->avctx);
-        ff_permute_scantable(ctx->permutated_scantable, ff_zigzag_direct,
-                             ctx->idsp.idct_permutation);
+        ff_init_scantable(ctx->idsp.idct_permutation, &ctx->scantable,
+                          ff_zigzag_direct);
     }
 
     // make sure profile size constraints are respected
@@ -436,7 +432,7 @@ static av_always_inline int dnxhd_decode_dct_block(const DNXHDContext *ctx,
             break;
         }
 
-        j      = ctx->permutated_scantable[i];
+        j     = ctx->scantable.permutated[i];
         level *= scale[i];
         level += scale[i] >> 1;
         if (level_bias < 32 || weight_matrix[i] != level_bias)
@@ -613,12 +609,14 @@ static int dnxhd_decode_row(AVCodecContext *avctx, void *data,
     return 0;
 }
 
-static int dnxhd_decode_frame(AVCodecContext *avctx, AVFrame *picture,
+static int dnxhd_decode_frame(AVCodecContext *avctx, void *data,
                               int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     DNXHDContext *ctx = avctx->priv_data;
+    ThreadFrame frame = { .f = data };
+    AVFrame *picture = data;
     int first_field = 1;
     int ret, i;
 
@@ -649,7 +647,7 @@ decode_coding_unit:
         return ret;
 
     if (first_field) {
-        if ((ret = ff_thread_get_buffer(avctx, picture, 0)) < 0)
+        if ((ret = ff_thread_get_buffer(avctx, &frame, 0)) < 0)
             return ret;
         picture->pict_type = AV_PICTURE_TYPE_I;
         picture->key_frame = 1;
@@ -724,16 +722,16 @@ static av_cold int dnxhd_decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const FFCodec ff_dnxhd_decoder = {
-    .p.name         = "dnxhd",
-    CODEC_LONG_NAME("VC3/DNxHD"),
-    .p.type         = AVMEDIA_TYPE_VIDEO,
-    .p.id           = AV_CODEC_ID_DNXHD,
+AVCodec ff_dnxhd_decoder = {
+    .name           = "dnxhd",
+    .long_name      = NULL_IF_CONFIG_SMALL("VC3/DNxHD"),
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = AV_CODEC_ID_DNXHD,
     .priv_data_size = sizeof(DNXHDContext),
     .init           = dnxhd_decode_init,
     .close          = dnxhd_decode_close,
-    FF_CODEC_DECODE_CB(dnxhd_decode_frame),
-    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS |
+    .decode         = dnxhd_decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS |
                       AV_CODEC_CAP_SLICE_THREADS,
-    .p.profiles     = NULL_IF_CONFIG_SMALL(ff_dnxhd_profiles),
+    .profiles       = NULL_IF_CONFIG_SMALL(ff_dnxhd_profiles),
 };

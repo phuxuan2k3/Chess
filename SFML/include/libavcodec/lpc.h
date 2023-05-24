@@ -23,7 +23,6 @@
 #define AVCODEC_LPC_H
 
 #include <stdint.h>
-#include <stddef.h>
 #include "libavutil/avassert.h"
 #include "libavutil/lls.h"
 #include "aac_defines.h"
@@ -65,7 +64,7 @@ typedef struct LPCContext {
      * @param len     number of input samples
      * @param w_data  output samples
      */
-    void (*lpc_apply_welch_window)(const int32_t *data, ptrdiff_t len,
+    void (*lpc_apply_welch_window)(const int32_t *data, int len,
                                    double *w_data);
     /**
      * Perform autocorrelation on input samples with delay of 0 to lag.
@@ -80,7 +79,7 @@ typedef struct LPCContext {
      * @param autoc output autocorrelation coefficients.
      *              constraints: array size must be at least lag+1.
      */
-    void (*lpc_compute_autocorr)(const double *data, ptrdiff_t len, int lag,
+    void (*lpc_compute_autocorr)(const double *data, int len, int lag,
                                  double *autoc);
 
     // TODO: these should be allocated to reduce ABI compatibility issues

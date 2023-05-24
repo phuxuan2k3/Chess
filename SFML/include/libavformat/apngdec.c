@@ -151,17 +151,17 @@ static int apng_read_header(AVFormatContext *s)
     uint32_t len, tag;
     AVStream *st;
     int acTL_found = 0;
-    int64_t ret;
+    int64_t ret = AVERROR_INVALIDDATA;
 
     /* verify PNGSIG */
     if (avio_rb64(pb) != PNGSIG)
-        return AVERROR_INVALIDDATA;
+        return ret;
 
     /* parse IHDR (must be first chunk) */
     len = avio_rb32(pb);
     tag = avio_rl32(pb);
     if (len != 13 || tag != MKTAG('I', 'H', 'D', 'R'))
-        return AVERROR_INVALIDDATA;
+        return ret;
 
     st = avformat_new_stream(s, NULL);
     if (!st)
@@ -193,9 +193,11 @@ static int apng_read_header(AVFormatContext *s)
             int64_t size   = avio_size(pb);
             int64_t offset = avio_tell(pb);
             if (size < 0) {
-                return size;
+                ret = size;
+                goto fail;
             } else if (offset < 0) {
-                return offset;
+                ret = offset;
+                goto fail;
             } else if ((ret = ffio_ensure_seekback(pb, size - offset)) < 0) {
                 av_log(s, AV_LOG_WARNING, "Could not ensure seekback, will not loop\n");
                 ctx->num_play = 1;
@@ -203,18 +205,20 @@ static int apng_read_header(AVFormatContext *s)
         }
         if ((ctx->num_play == 1 || !acTL_found) &&
             ((ret = ffio_ensure_seekback(pb, 4 /* len */ + 4 /* tag */)) < 0))
-            return ret;
+            goto fail;
 
         len = avio_rb32(pb);
-        if (len > INT_MAX - 12)
-            return AVERROR_INVALIDDATA;
+        if (len > INT_MAX - 12) {
+            ret = AVERROR_INVALIDDATA;
+            goto fail;
+        }
 
         tag = avio_rl32(pb);
         switch (tag) {
         case MKTAG('a', 'c', 'T', 'L'):
             if ((ret = avio_seek(pb, -8, SEEK_CUR)) < 0 ||
                 (ret = append_extradata(st->codecpar, pb, len + 12)) < 0)
-                return ret;
+                goto fail;
             acTL_found = 1;
             ctx->num_frames = AV_RB32(st->codecpar->extradata + ret + 8);
             ctx->num_play   = AV_RB32(st->codecpar->extradata + ret + 12);
@@ -222,18 +226,22 @@ static int apng_read_header(AVFormatContext *s)
                                     ctx->num_frames, ctx->num_play);
             break;
         case MKTAG('f', 'c', 'T', 'L'):
-            if (!acTL_found || len != APNG_FCTL_CHUNK_SIZE) {
-                return AVERROR_INVALIDDATA;
+            if (!acTL_found) {
+               ret = AVERROR_INVALIDDATA;
+               goto fail;
             }
             if ((ret = avio_seek(pb, -8, SEEK_CUR)) < 0)
-                return ret;
+                goto fail;
             return 0;
         default:
             if ((ret = avio_seek(pb, -8, SEEK_CUR)) < 0 ||
                 (ret = append_extradata(st->codecpar, pb, len + 12)) < 0)
-                return ret;
+                goto fail;
         }
     }
+
+fail:
+    return ret;
 }
 
 static int decode_fctl_chunk(AVFormatContext *s, APNGDemuxContext *ctx, AVPacket *pkt)
@@ -336,7 +344,7 @@ static int apng_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     switch (tag) {
     case MKTAG('f', 'c', 'T', 'L'):
-        if (len != APNG_FCTL_CHUNK_SIZE)
+        if (len != 26)
             return AVERROR_INVALIDDATA;
 
         if ((ret = decode_fctl_chunk(s, ctx, pkt)) < 0)
@@ -421,7 +429,7 @@ static const AVClass demuxer_class = {
     .category   = AV_CLASS_CATEGORY_DEMUXER,
 };
 
-const AVInputFormat ff_apng_demuxer = {
+AVInputFormat ff_apng_demuxer = {
     .name           = "apng",
     .long_name      = NULL_IF_CONFIG_SMALL("Animated Portable Network Graphics"),
     .priv_data_size = sizeof(APNGDemuxContext),

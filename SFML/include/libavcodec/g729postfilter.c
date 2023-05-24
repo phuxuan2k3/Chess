@@ -18,15 +18,12 @@
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+#include <inttypes.h>
+#include <limits.h>
 
-#include <stdint.h>
-#include <string.h>
-
-#include "libavutil/common.h"
-#include "libavutil/intmath.h"
-
-#include "audiodsp.h"
+#include "avcodec.h"
 #include "g729.h"
+#include "acelp_pitch_delay.h"
 #include "g729postfilter.h"
 #include "celp_math.h"
 #include "acelp_filters.h"
@@ -353,7 +350,7 @@ static int16_t long_term_filter(AudioDSPContext *adsp, int pitch_delay_int,
         if (tmp > 0)
             L_temp0 >>= tmp;
         else
-            L_temp1 >>= -tmp;
+            L_temp1 >>= FFMIN(-tmp, 31);
 
         /* Check if longer filter increases the values of R'(k). */
         if (L_temp1 > L_temp0) {

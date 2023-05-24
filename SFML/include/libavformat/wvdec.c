@@ -256,7 +256,8 @@ static int wv_read_header(AVFormatContext *s)
     AV_WL16(st->codecpar->extradata, wc->header.version);
     st->codecpar->codec_type            = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id              = AV_CODEC_ID_WAVPACK;
-    av_channel_layout_from_mask(&st->codecpar->ch_layout, wc->chmask);
+    st->codecpar->channels              = wc->chan;
+    st->codecpar->channel_layout        = wc->chmask;
     st->codecpar->sample_rate           = wc->rate;
     st->codecpar->bits_per_coded_sample = wc->bpp;
     avpriv_set_pts_info(st, 64, 1, wc->rate);
@@ -328,7 +329,7 @@ static int wv_read_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 }
 
-const AVInputFormat ff_wv_demuxer = {
+AVInputFormat ff_wv_demuxer = {
     .name           = "wv",
     .long_name      = NULL_IF_CONFIG_SMALL("WavPack"),
     .priv_data_size = sizeof(WVContext),

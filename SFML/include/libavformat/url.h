@@ -25,6 +25,7 @@
 #define AVFORMAT_URL_H
 
 #include "avio.h"
+#include "libavformat/version.h"
 
 #include "libavutil/dict.h"
 #include "libavutil/log.h"
@@ -55,8 +56,8 @@ typedef struct URLProtocol {
     int     (*url_open)( URLContext *h, const char *url, int flags);
     /**
      * This callback is to be used by protocols which open further nested
-     * protocols. options are then to be passed to ffurl_open_whitelist()
-     * or ffurl_connect() for those nested protocols.
+     * protocols. options are then to be passed to ffurl_open()/ffurl_connect()
+     * for those nested protocols.
      */
     int     (*url_open2)(URLContext *h, const char *url, int flags, AVDictionary **options);
     int     (*url_accept)(URLContext *s, URLContext **c);
@@ -86,8 +87,8 @@ typedef struct URLProtocol {
                                      int *numhandles);
     int (*url_get_short_seek)(URLContext *h);
     int (*url_shutdown)(URLContext *h, int flags);
-    const AVClass *priv_data_class;
     int priv_data_size;
+    const AVClass *priv_data_class;
     int flags;
     int (*url_check)(URLContext *h, int mask);
     int (*url_open_dir)(URLContext *h);
@@ -146,6 +147,9 @@ int ffurl_open_whitelist(URLContext **puc, const char *filename, int flags,
                const AVIOInterruptCB *int_cb, AVDictionary **options,
                const char *whitelist, const char* blacklist,
                URLContext *parent);
+
+int ffurl_open(URLContext **puc, const char *filename, int flags,
+               const AVIOInterruptCB *int_cb, AVDictionary **options);
 
 /**
  * Accept an URLContext c on an URLContext s
@@ -328,7 +332,7 @@ int ff_make_absolute_url(char *buf, int size, const char *base,
  */
 AVIODirEntry *ff_alloc_dir_entry(void);
 
-const AVClass *ff_urlcontext_child_class_iterate(void **iter);
+const AVClass *ff_urlcontext_child_class_next(const AVClass *prev);
 
 /**
  * Construct a list of protocols matching a given whitelist and/or blacklist.
@@ -386,24 +390,5 @@ typedef struct URLComponents {
  *          malformed.
  */
 int ff_url_decompose(URLComponents *uc, const char *url, const char *end);
-
-/**
- * Move or rename a resource.
- *
- * @note url_src and url_dst should share the same protocol and authority.
- *
- * @param url_src url to resource to be moved
- * @param url_dst new url to resource if the operation succeeded
- * @return >=0 on success or negative on error.
- */
-int ffurl_move(const char *url_src, const char *url_dst);
-
-/**
- * Delete a resource.
- *
- * @param url resource to be deleted.
- * @return >=0 on success or negative on error.
- */
-int ffurl_delete(const char *url);
 
 #endif /* AVFORMAT_URL_H */

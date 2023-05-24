@@ -52,7 +52,6 @@
  * Reference: libavcodec/aacdec.c
  */
 
-#include "libavutil/attributes.h"
 #include "libavcodec/aac.h"
 #include "aacdec_mips.h"
 #include "libavcodec/aactab.h"
@@ -126,9 +125,9 @@ static void imdct_and_windowing_mips(AACContext *ac, SingleChannelElement *sce)
 
     if (ics->window_sequence[0] == EIGHT_SHORT_SEQUENCE) {
         for (i = 0; i < 1024; i += 128)
-            ac->mdct128_fn(ac->mdct128, buf + i, in + i, sizeof(float));
+            ac->mdct_small.imdct_half(&ac->mdct_small, buf + i, in + i);
     } else
-        ac->mdct1024_fn(ac->mdct1024, buf, in, sizeof(float));
+        ac->mdct.imdct_half(&ac->mdct, buf, in);
 
     /* window overlapping
      * NOTE: To simplify the overlapping code, all 'meaningless' short to long
@@ -341,7 +340,7 @@ static void update_ltp_mips(AACContext *ac, SingleChannelElement *sce)
     float *saved_ltp = sce->coeffs;
     const float *lwindow = ics->use_kb_window[0] ? ff_aac_kbd_long_1024 : ff_sine_1024;
     const float *swindow = ics->use_kb_window[0] ? ff_aac_kbd_short_128 : ff_sine_128;
-    uint32_t temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
+    float temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
 
     if (ics->window_sequence[0] == EIGHT_SHORT_SEQUENCE) {
         float *p_saved_ltp = saved_ltp + 576;

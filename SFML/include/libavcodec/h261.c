@@ -25,14 +25,16 @@
  * H.261 codec
  */
 
+#include "avcodec.h"
 #include "h261.h"
-#include "mpegvideo.h"
 
 #define IS_FIL(a)    ((a) & MB_TYPE_H261_FIL)
 
-static void h261_loop_filter(uint8_t *src, ptrdiff_t stride)
+uint8_t ff_h261_rl_table_store[2][2 * MAX_RUN + MAX_LEVEL + 3];
+
+static void h261_loop_filter(uint8_t *src, int stride)
 {
-    int x, y;
+    int x, y, xy, yz;
     int temp[64];
 
     for (x = 0; x < 8; x++) {
@@ -41,8 +43,8 @@ static void h261_loop_filter(uint8_t *src, ptrdiff_t stride)
     }
     for (y = 1; y < 7; y++) {
         for (x = 0; x < 8; x++) {
-            ptrdiff_t xy = y * stride + x;
-            ptrdiff_t yz = y * 8      + x;
+            xy       = y * stride + x;
+            yz       = y * 8      + x;
             temp[yz] = src[xy - stride] + 2 * src[xy] + src[xy + stride];
         }
     }
@@ -51,8 +53,8 @@ static void h261_loop_filter(uint8_t *src, ptrdiff_t stride)
         src[y * stride]     = (temp[y * 8]     + 2) >> 2;
         src[y * stride + 7] = (temp[y * 8 + 7] + 2) >> 2;
         for (x = 1; x < 7; x++) {
-            ptrdiff_t xy = y * stride + x;
-            ptrdiff_t yz = y * 8      + x;
+            xy      = y * stride + x;
+            yz      = y * 8      + x;
             src[xy] = (temp[yz - 1] + 2 * temp[yz] + temp[yz + 1] + 8) >> 4;
         }
     }
@@ -60,9 +62,9 @@ static void h261_loop_filter(uint8_t *src, ptrdiff_t stride)
 
 void ff_h261_loop_filter(MpegEncContext *s)
 {
-    H261Context *const h = s->private_ctx;
-    const ptrdiff_t linesize   = s->linesize;
-    const ptrdiff_t uvlinesize = s->uvlinesize;
+    H261Context *h       = (H261Context *)s;
+    const int linesize   = s->linesize;
+    const int uvlinesize = s->uvlinesize;
     uint8_t *dest_y      = s->dest[0];
     uint8_t *dest_cb     = s->dest[1];
     uint8_t *dest_cr     = s->dest[2];
@@ -76,4 +78,15 @@ void ff_h261_loop_filter(MpegEncContext *s)
     h261_loop_filter(dest_y + 8 * linesize + 8, linesize);
     h261_loop_filter(dest_cb, uvlinesize);
     h261_loop_filter(dest_cr, uvlinesize);
+}
+
+av_cold void ff_h261_common_init(void)
+{
+    static int done = 0;
+
+    if (done)
+        return;
+
+    ff_rl_init(&ff_h261_rl_tcoeff, ff_h261_rl_table_store);
+    done = 1;
 }

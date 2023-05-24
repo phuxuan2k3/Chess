@@ -26,10 +26,11 @@
  */
 
 #include "avcodec.h"
-#include "codec_internal.h"
 #include "get_bits.h"
 #include "golomb.h"
+#include "internal.h"
 #include "mathops.h"
+#include "mjpeg.h"
 #include "mjpegdec.h"
 #include "jpegls.h"
 #include "jpeglsdec.h"
@@ -117,13 +118,8 @@ int ff_jpegls_decode_lse(MJpegDecodeContext *s)
                 shift = 8 - s->avctx->bits_per_raw_sample;
             }
 
-            s->force_pal8++;
-            if (!pal) {
-                if (s->force_pal8 > 1)
-                    return AVERROR_INVALIDDATA;
-                return 1;
-            }
-
+            s->picture_ptr->format =
+            s->avctx->pix_fmt = AV_PIX_FMT_PAL8;
             for (i=s->palette_index; i<=maxtab; i++) {
                 uint8_t k = i << shift;
                 pal[k] = wt < 4 ? 0xFF000000 : 0;
@@ -278,7 +274,7 @@ static inline int ls_decode_line(JLSState *state, MJpegDecodeContext *s,
             /* decode aborted run */
             r = ff_log2_run[state->run_index[comp]];
             if (r)
-                r = get_bits(&s->gb, r);
+                r = get_bits_long(&s->gb, r);
             if (x + r * stride > w) {
                 r = (w - x) / stride;
             }
@@ -356,24 +352,22 @@ int ff_jpegls_decode_picture(MJpegDecodeContext *s, int near,
 {
     int i, t = 0;
     uint8_t *zero, *last, *cur;
-    JLSState *state = s->jls_state;
+    JLSState *state;
     int off = 0, stride = 1, width, shift, ret = 0;
     int decoded_height = 0;
 
-    if (!state) {
-        state = av_malloc(sizeof(*state));
-        if (!state)
-            return AVERROR(ENOMEM);
-        s->jls_state = state;
-    }
     zero = av_mallocz(s->picture_ptr->linesize[0]);
     if (!zero)
         return AVERROR(ENOMEM);
     last = zero;
     cur  = s->picture_ptr->data[0];
 
+    state = av_mallocz(sizeof(JLSState));
+    if (!state) {
+        av_free(zero);
+        return AVERROR(ENOMEM);
+    }
     /* initialize JPEG-LS state from JPEG parameters */
-    memset(state, 0, sizeof(*state));
     state->near   = near;
     state->bpp    = (s->bits < 2) ? 2 : s->bits;
     state->maxval = s->maxval;
@@ -545,20 +539,21 @@ int ff_jpegls_decode_picture(MJpegDecodeContext *s, int near,
     }
 
 end:
+    av_free(state);
     av_free(zero);
 
     return ret;
 }
 
-const FFCodec ff_jpegls_decoder = {
-    .p.name         = "jpegls",
-    CODEC_LONG_NAME("JPEG-LS"),
-    .p.type         = AVMEDIA_TYPE_VIDEO,
-    .p.id           = AV_CODEC_ID_JPEGLS,
+AVCodec ff_jpegls_decoder = {
+    .name           = "jpegls",
+    .long_name      = NULL_IF_CONFIG_SMALL("JPEG-LS"),
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = AV_CODEC_ID_JPEGLS,
     .priv_data_size = sizeof(MJpegDecodeContext),
     .init           = ff_mjpeg_decode_init,
     .close          = ff_mjpeg_decode_end,
-    FF_CODEC_DECODE_CB(ff_mjpeg_decode_frame),
-    .p.capabilities = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .decode         = ff_mjpeg_decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

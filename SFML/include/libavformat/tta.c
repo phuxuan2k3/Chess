@@ -134,7 +134,7 @@ static int tta_read_header(AVFormatContext *s)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id = AV_CODEC_ID_TTA;
-    st->codecpar->ch_layout.nb_channels = channels;
+    st->codecpar->channels = channels;
     st->codecpar->sample_rate = samplerate;
     st->codecpar->bits_per_coded_sample = bps;
 
@@ -151,22 +151,21 @@ static int tta_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     TTAContext *c = s->priv_data;
     AVStream *st = s->streams[0];
-    FFStream *const sti = ffstream(st);
     int size, ret;
 
     // FIXME!
     if (c->currentframe >= c->totalframes)
         return AVERROR_EOF;
 
-    if (sti->nb_index_entries < c->totalframes) {
+    if (st->nb_index_entries < c->totalframes) {
         av_log(s, AV_LOG_ERROR, "Index entry disappeared\n");
         return AVERROR_INVALIDDATA;
     }
 
-    size = sti->index_entries[c->currentframe].size;
+    size = st->index_entries[c->currentframe].size;
 
     ret = av_get_packet(s->pb, pkt, size);
-    pkt->dts = sti->index_entries[c->currentframe++].timestamp;
+    pkt->dts = st->index_entries[c->currentframe++].timestamp;
     pkt->duration = c->currentframe == c->totalframes ? c->last_frame_size :
                                                         c->frame_size;
     return ret;
@@ -179,7 +178,7 @@ static int tta_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     int index = av_index_search_timestamp(st, timestamp, flags);
     if (index < 0)
         return -1;
-    if (avio_seek(s->pb, ffstream(st)->index_entries[index].pos, SEEK_SET) < 0)
+    if (avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET) < 0)
         return -1;
 
     c->currentframe = index;
@@ -187,7 +186,7 @@ static int tta_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     return 0;
 }
 
-const AVInputFormat ff_tta_demuxer = {
+AVInputFormat ff_tta_demuxer = {
     .name           = "tta",
     .long_name      = NULL_IF_CONFIG_SMALL("TTA (True Audio)"),
     .priv_data_size = sizeof(TTAContext),
