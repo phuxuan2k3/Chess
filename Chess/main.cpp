@@ -8,7 +8,7 @@ int main()
 {
 	GUI game;
 	//game.run();
-	game.setScreen(1);
+	game.setScreen(2);
 	game.run2();
 	
 	return 0;
