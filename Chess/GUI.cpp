@@ -59,13 +59,13 @@ void GUI::play()
 			//xu ly su kien nhap chuot vao ban co
 			else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
-				
+
 				sf::Vector2i mousePosition =
 					sf::Vector2i(
 						sf::Mouse::getPosition(this->window).x * 1.0f / this->windowWidthScale,
 						sf::Mouse::getPosition(this->window).y * 1.0f / this->windowHeightScale
 					);
-				
+
 				// nhap chuot vao ban co
 				if (mousePosition.x <= 800)
 				{
@@ -113,6 +113,12 @@ void GUI::play()
 						this->render->setState(State::NotSelected);
 						this->draw();
 					}
+				}
+				//TESTTTTTTTTT
+				else
+				{
+					this->game->undo();
+					this->draw();
 				}
 			}
 		}

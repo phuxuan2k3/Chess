@@ -18,6 +18,11 @@ Castling::Castling() {
 	this->castlable = true;
 }
 
+void Castling::setCastlable(bool c)
+{
+	this->castlable = c;
+}
+
 void Castling::unCastlable() {
 	this->castlable = false;
 }
@@ -71,12 +76,12 @@ void Pawn::triggerOnFirstMove() {
 }
 
 vector<Position> Pawn::canGo(const Position& src, const Board& board)
-{	
+{
 	int endBoard = 0;
 	int inv = 1;
 	Position squareToMove;
 	vector<Position> pos;
-	
+
 
 	if (this->color == Troop::White) {
 		inv = -1;	// White will go upward
@@ -105,11 +110,11 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 			break;
 		}
 		if (squareToMove.get_i() == endBoard)  squareToMove.setMoveType(PosInfo::Promote);
-		if (i == 2) squareToMove.setMoveType(PosInfo::FirstPawnMove);
+		if (i == 2) squareToMove.setMoveType(PosInfo::PawnMovedTwoStep);
 		pos.push_back(squareToMove);
-		
+
 	}
-	
+
 	// Eatalbe moves
 	squareToMove = src.getRelativePosition(1 * inv, 1);
 	// If it's not out of range and has enemy Piece
@@ -135,7 +140,7 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 
 	squareToMove = src.getRelativePosition(1 * inv, -1);
 	if (squareToMove.isNotNull() == true &&
-		board.hasPiece(src.getRelativePosition(0, -1)) && 
+		board.hasPiece(src.getRelativePosition(0, -1)) &&
 		board.getPiece(src.getRelativePosition(0, -1))->getPieceType() == PieceType::Pawn &&
 		board.getPiece(src.getRelativePosition(0, -1)) == board.lastChoose &&
 		squareToMove.isNotNull() == true &&
@@ -148,7 +153,7 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 
 	squareToMove = src.getRelativePosition(1 * inv, 1);
 	if (squareToMove.isNotNull() == true &&
-		board.hasPiece(src.getRelativePosition(0, 1)) && 
+		board.hasPiece(src.getRelativePosition(0, 1)) &&
 		board.getPiece(src.getRelativePosition(0, 1))->getPieceType() == PieceType::Pawn &&
 		board.getPiece(src.getRelativePosition(0, 1)) == board.lastChoose &&
 		squareToMove.isNotNull() == true &&
@@ -158,8 +163,6 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 		squareToMove.setMoveType(PosInfo::EnPassant);
 		pos.push_back(squareToMove);
 	}
-
-
 
 	return pos;
 }
@@ -200,7 +203,7 @@ void Rook::triggerOnFirstMove() {
 //===================================================
 
 vector<Position> Knight::canGo(const Position& src, const Board& board) {
-	int moves[8][2] = { 
+	int moves[8][2] = {
 		{-2, 1},
 		{-2, -1},
 		{-1, 2},
@@ -404,4 +407,88 @@ vector<Position> King::canGo(const Position& src, const Board& board)
 	}
 
 	return pos;
+}
+
+Pawn::Pawn(const Pawn& p)
+{
+	this->color = p.color;
+	this->pawnFirstMove = p.pawnFirstMove;
+	this->isFirstMove = p.isFirstMove;
+	this->type = p.type;
+}
+
+Bishop::Bishop(const Bishop& b)
+{
+	this->color = b.color;
+	this->isFirstMove = b.isFirstMove;
+	this->type = b.type;
+}
+
+Knight::Knight(const Knight& k)
+{
+	this->color = k.color;
+	this->isFirstMove = k.isFirstMove;
+	this->type = k.type;
+}
+
+Queen::Queen(const Queen& q)
+{
+	this->color = q.color;
+	this->isFirstMove = q.isFirstMove;
+	this->type = q.type;
+}
+
+Rook::Rook(const Rook& r)
+{
+	this->color = r.color;
+	this->isFirstMove = r.isFirstMove;
+	this->type = r.type;
+	this->setCastlable(r.isCastlable());
+}
+
+King::King(const King& ki)
+{
+	this->color = ki.color;
+	this->isFirstMove = ki.isFirstMove;
+	this->type = ki.type;
+	this->setCastlable(ki.isCastlable());
+
+	this->leftRook = ki.leftRook;
+	this->rightRook = ki.rightRook;
+}
+
+Piece* Pawn::deepCopyPiece(Piece* p)
+{
+	Piece* newPiece = new Pawn(*(dynamic_cast<Pawn*>(p)));
+	return newPiece;
+}
+
+Piece* Bishop::deepCopyPiece(Piece* p)
+{
+	Piece* newPiece = new Bishop(*(dynamic_cast<Bishop*>(p)));
+	return newPiece;
+}
+
+Piece* Queen::deepCopyPiece(Piece* p)
+{
+	Piece* newPiece = new Queen(*(dynamic_cast<Queen*>(p)));
+	return newPiece;
+}
+
+Piece* Knight::deepCopyPiece(Piece* p)
+{
+	Piece* newPiece = new Knight(*(dynamic_cast<Knight*>(p)));
+	return newPiece;
+}
+
+Piece* Rook::deepCopyPiece(Piece* p)
+{
+	Piece* newPiece = new Rook(*(dynamic_cast<Rook*>(p)));
+	return newPiece;
+}
+
+Piece* King::deepCopyPiece(Piece* p)
+{
+	Piece* newPiece = new King(*(dynamic_cast<King*>(p)));
+	return newPiece;
 }

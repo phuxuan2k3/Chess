@@ -22,7 +22,7 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 5));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 7));
-	
+
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::Black, 0, 0));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 1));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 2));
@@ -55,8 +55,8 @@ GameState::GameState(Troop turn) {
 	// Setup connection
 	// Black Side
 	((King*)this->board.getPiece(0, 4))->setRooksPosition(
-		Position(0,0),
-		Position(0,7)
+		Position(0, 0),
+		Position(0, 7)
 	);
 	// White Side
 	((King*)this->board.getPiece(7, 4))->setRooksPosition(
@@ -157,13 +157,28 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	if (dest.getInfo() == PosInfo::Promote) {
 		cout << "Promote" << endl;
 	}
-	
+
 	// Normal Move:	
+
+	this->vecterMoves.deleteFrom(this->vecterMoves.getCurState() + 1);
+
+	//this->vecterMoves.pushBack(this->board.getPiece(src), this->board.getPiece(dest), src, dest);
+
+	Piece* copyPSrc = this->board.getPiece(src)->deepCopyPiece(this->board.getPiece(src));
+	Piece* copyPDes = nullptr;
+
 	Piece* pSrc = this->board.getPiece(src);
 	pSrc->triggerOnFirstMove();
+
 	// If dest Square is occupied by a Piece
 	if (this->board.hasPiece(dest) == true) {
+		copyPDes = this->board.getPiece(dest)->deepCopyPiece(this->board.getPiece(dest));
+
+		//delete piece
+		delete this->board.getPiece(dest);
 		this->board.getPiece(dest)->setNull();
+		this->board.setPiece(dest, nullptr);
+
 	}
 	this->board.setPiece(dest, pSrc);
 	this->board.setPiece(src, nullptr);
@@ -179,12 +194,16 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 
 
 	if (dest.getInfo() == PosInfo::CastlingLeft) {
+		Piece* leftRook = this->board.getPiece(((King*)pSrc)->getLeftRook());
+		copyPDes = leftRook->deepCopyPiece(leftRook);
 		this->move(((King*)pSrc)->getLeftRook(), src.getRelativePosition(0, -1), canGo);
 	}
 	else if (dest.getInfo() == PosInfo::CastlingRight) {
+		Piece* rightRook = this->board.getPiece(((King*)pSrc)->getRightRook());
+		copyPDes = rightRook->deepCopyPiece(rightRook);
 		this->move(((King*)pSrc)->getRightRook(), src.getRelativePosition(0, 1), canGo);
-	} 
-	else if (dest.getInfo() == PosInfo::FirstPawnMove) {
+	}
+	else if (dest.getInfo() == PosInfo::PawnMovedTwoStep) {
 		if (pSrc->getTroop() == Troop::White) {
 			this->board.EnPassantBlack = true;
 		}
@@ -194,8 +213,58 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	}
 	else if (dest.getInfo() == PosInfo::EnPassant) {
 		int dir = (pSrc->getTroop() == Troop::White ? 1 : -1);
+
+		Piece* pawn = this->board.getPiece(dest.getRelativePosition(dir, 0));
+		copyPDes = pawn->deepCopyPiece(pawn);
+
+		//delete piece
+		delete this->board.getPiece(dest.getRelativePosition(dir, 0));
 		this->board.getPiece(dest.getRelativePosition(dir, 0))->setNull();
-		this->board.setPiece(dest.getRelativePosition(dir,0), nullptr);
+		this->board.setPiece(dest.getRelativePosition(dir, 0), nullptr);
 	}
 
+	this->vecterMoves.pushBack(copyPSrc, copyPDes, src, dest);
+}
+
+void GameState::undo()
+{
+	if (this->vecterMoves.getCurState() >= 0)
+	{
+		Move lastMove = this->vecterMoves.getAt(this->vecterMoves.getCurState());
+
+		//delete
+		delete this->board.getPiece(lastMove.getDesPos());
+		this->board.getPiece(lastMove.getDesPos())->setNull();
+		this->board.setPiece(lastMove.getDesPos(), nullptr);
+
+		this->board.setPiece(lastMove.getSrcPos(), lastMove.getMover());
+		int dir = 0;
+		switch (lastMove.getDesPos().getInfo())
+		{
+		case PosInfo::CastlingLeft:
+			this->board.setPiece(((King*)lastMove.getMover())->getLeftRook(), lastMove.getEaten());
+			break;
+		case PosInfo::CastlingRight:
+			this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getEaten());
+			break;
+		case PosInfo::EnPassant:
+			dir = (lastMove.getMover()->getTroop() == Troop::White ? 1 : -1);
+			this->board.setPiece(lastMove.getDesPos().getRelativePosition(dir, 0), lastMove.getEaten());
+			break;
+		default:
+			this->board.setPiece(lastMove.getDesPos(), lastMove.getEaten());
+			break;
+		}
+		this->turn = lastMove.getMover()->getTroop();
+		this->vecterMoves.setCurState(this->vecterMoves.getCurState() - 1);
+
+		if (this->vecterMoves.getCurState() >= 0)
+		{
+			this->board.lastChoose = this->vecterMoves.getAt(this->vecterMoves.getCurState()).getMover();
+		}
+		else
+		{
+			this->board.lastChoose = nullptr;
+		}
+	}
 }

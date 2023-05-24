@@ -1,5 +1,6 @@
 #pragma once
 #include "Pieces.h"
+#include "HistoryMove.h"
 
 //=================================================================
 // Handle the algorithm part
@@ -12,6 +13,8 @@ private:
 	Troop turn;
 	Board board;
 	vector<Piece*> pieces;
+
+	VectorMoves vecterMoves;
 
 	Piece* initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j);
 	Piece* initPieceOnBoard(PieceType pn, Troop pc, const Position& p);
@@ -31,4 +34,5 @@ public:
 	vector<Position> canGo(const Position& pos);
 	// Return true on successful moves, false otherwise.
 	void move(const Position& src, const Position& dest, vector<Position> canGo);
+	void undo();
 };

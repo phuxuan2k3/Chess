@@ -24,9 +24,12 @@ enum class PosInfo {
 	// These moves below affect other pieces
 	CastlingLeft,
 	CastlingRight,
-	FirstPawnMove, // Nếu vị trí là nước đi đầu tiên của con chốt
+	PawnMovedTwoStep, // Nếu con tốt đi 2 bước đầu tiên
 	EnPassant, // Bắt chốt qua đường
-	Promote // Phong hậu
+	Promote, // Phong hậu
+	RookFirstMove,
+	KingFirstMove,
+	PawnFirstMove,
 };
 
 //=================================================================
@@ -158,6 +161,7 @@ public:
 	// Do nothing on normal pieces: Knight, Bishop, Queen
 	virtual void triggerOnFirstMove() {}
 	virtual vector<Position> canGo(const Position& src, const Board& board) = 0;
+	virtual Piece* deepCopyPiece(Piece* p) = 0;
 };
 
 

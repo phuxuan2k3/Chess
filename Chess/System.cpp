@@ -25,8 +25,8 @@ bool WrongAbleType::isNotNull() const {
 void Position::updateValid() {
 	if (this->i < 0 ||
 		this->j < 0 ||
-		this->i > 7 || 
-		this->j > 7) 
+		this->i > 7 ||
+		this->j > 7)
 	{
 		this->setNull();
 	}
@@ -51,7 +51,7 @@ Position::Position(int i, int j)
 	this->updateValid();
 }
 
-Position::Position(const Position& p) 
+Position::Position(const Position& p)
 {
 	this->i = p.get_i();
 	this->j = p.get_j();
@@ -59,7 +59,7 @@ Position::Position(const Position& p)
 	this->updateValid();
 }
 
-Position::Position(int i, int j, PosInfo info) 
+Position::Position(int i, int j, PosInfo info)
 {
 	this->i = i;
 	this->j = j;
@@ -69,7 +69,7 @@ Position::Position(int i, int j, PosInfo info)
 
 bool Position::operator== (const Position& pos)
 {
-	return this->i == pos.i 
+	return this->i == pos.i
 		&& this->j == pos.j
 		&& this->info == pos.info;
 }
@@ -123,12 +123,12 @@ Position Position::getRelativePosition(const int i, const int j) const {
 // Square
 //===================================================================
 
-Square::Square() 
+Square::Square()
 {
 	this->piece = nullptr;
 }
 
-Square::Square(Piece* p) 
+Square::Square(Piece* p)
 {
 	this->piece = p;
 }
@@ -145,7 +145,7 @@ bool Square::isEmpty() const {
 	return this->piece == nullptr;
 }
 
-Square::~Square() 
+Square::~Square()
 {
 }
 
@@ -210,6 +210,10 @@ void Board::setPiece(const Position& p, Piece* piece) {
 // Piece
 //===================================================================
 
+Piece::Piece()
+{
+}
+
 Piece::Piece(Troop color)
 {
 	// let the subclass initialize type
@@ -228,4 +232,3 @@ Troop Piece::getTroop() const {
 Piece::~Piece()
 {
 }
-
