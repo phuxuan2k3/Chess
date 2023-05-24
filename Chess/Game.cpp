@@ -234,33 +234,44 @@ void GameState::undo()
 
 		//delete
 		delete this->board.getPiece(lastMove.getDesPos());
-		this->board.getPiece(lastMove.getDesPos())->setNull();
+	//	this->board.getPiece(lastMove.getDesPos())->setNull();
 		this->board.setPiece(lastMove.getDesPos(), nullptr);
 
-		this->board.setPiece(lastMove.getSrcPos(), lastMove.getMover());
+		this->board.setPiece(lastMove.getSrcPos(), lastMove.getCopyMover());
 		int dir = 0;
+		Position rookPos;
 		switch (lastMove.getDesPos().getInfo())
 		{
 		case PosInfo::CastlingLeft:
-			this->board.setPiece(((King*)lastMove.getMover())->getLeftRook(), lastMove.getEaten());
+			this->board.setPiece(((King*)lastMove.getMover())->getLeftRook(), lastMove.getCopyEaten());
+			//delete rook
+			rookPos = lastMove.getDesPos().getRelativePosition(0, 1);
+			delete this->board.getPiece(rookPos);
+			this->board.getPiece(rookPos)->setNull();
+			this->board.setPiece(rookPos, nullptr);
 			break;
 		case PosInfo::CastlingRight:
-			this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getEaten());
+			this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getCopyEaten());
+			//delete rook
+			rookPos = lastMove.getDesPos().getRelativePosition(0, -1);
+			delete this->board.getPiece(rookPos);
+			this->board.getPiece(rookPos)->setNull();
+			this->board.setPiece(rookPos, nullptr);
 			break;
 		case PosInfo::EnPassant:
-			dir = (lastMove.getMover()->getTroop() == Troop::White ? 1 : -1);
-			this->board.setPiece(lastMove.getDesPos().getRelativePosition(dir, 0), lastMove.getEaten());
+			dir = (lastMove.getCopyMover()->getTroop() == Troop::White ? 1 : -1);
+			this->board.setPiece(lastMove.getDesPos().getRelativePosition(dir, 0), lastMove.getCopyEaten());
 			break;
 		default:
-			this->board.setPiece(lastMove.getDesPos(), lastMove.getEaten());
+			this->board.setPiece(lastMove.getDesPos(), lastMove.getCopyEaten());
 			break;
 		}
-		this->turn = lastMove.getMover()->getTroop();
+		this->turn = lastMove.getCopyMover()->getTroop();
 		this->vecterMoves.setCurState(this->vecterMoves.getCurState() - 1);
 
 		if (this->vecterMoves.getCurState() >= 0)
 		{
-			this->board.lastChoose = this->vecterMoves.getAt(this->vecterMoves.getCurState()).getMover();
+			this->board.lastChoose = this->vecterMoves.getAt(this->vecterMoves.getCurState()).getCopyMover();
 		}
 		else
 		{

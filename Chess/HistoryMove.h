@@ -13,6 +13,8 @@ public:
 	Move(Piece* mover, Piece* eaten, const Position& srcPos, const Position& desPos);
 	~Move();
 	void deleteMove();
+	Piece* getCopyMover();
+	Piece* getCopyEaten();
 	Piece* getMover();
 	Piece* getEaten();
 	Position getSrcPos();

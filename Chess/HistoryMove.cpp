@@ -25,18 +25,28 @@ void Move::deleteMove()
 	delete this->eatenPiece;
 }
 
-Piece* Move::getMover()
+Piece* Move::getCopyMover()
 {
 	return this->moverPiece->deepCopyPiece(this->moverPiece);
 }
 
-Piece* Move::getEaten()
+Piece* Move::getCopyEaten()
 {
 	if (this->eatenPiece)
 	{
 		return this->eatenPiece->deepCopyPiece(this->eatenPiece);
 	}
 	return nullptr;
+}
+
+Piece* Move::getMover()
+{
+	return this->moverPiece;
+}
+
+Piece* Move::getEaten()
+{
+	return this->eatenPiece;
 }
 
 Position Move::getSrcPos()
