@@ -232,10 +232,15 @@ void GameState::undo()
 	{
 		Move lastMove = this->vecterMoves.getAt(this->vecterMoves.getCurState());
 
+		this->vecterMoves.setCurState(this->vecterMoves.getCurState() - 1);
+
 		//delete
-		delete this->board.getPiece(lastMove.getDesPos());
-	//	this->board.getPiece(lastMove.getDesPos())->setNull();
-		this->board.setPiece(lastMove.getDesPos(), nullptr);
+		if (this->board.getPiece(lastMove.getDesPos()))
+		{
+			delete this->board.getPiece(lastMove.getDesPos());
+			this->board.getPiece(lastMove.getDesPos())->setNull();
+			this->board.setPiece(lastMove.getDesPos(), nullptr);
+		}
 
 		this->board.setPiece(lastMove.getSrcPos(), lastMove.getCopyMover());
 		int dir = 0;
@@ -243,20 +248,22 @@ void GameState::undo()
 		switch (lastMove.getDesPos().getInfo())
 		{
 		case PosInfo::CastlingLeft:
-			this->board.setPiece(((King*)lastMove.getMover())->getLeftRook(), lastMove.getCopyEaten());
-			//delete rook
-			rookPos = lastMove.getDesPos().getRelativePosition(0, 1);
-			delete this->board.getPiece(rookPos);
-			this->board.getPiece(rookPos)->setNull();
-			this->board.setPiece(rookPos, nullptr);
+			this->undo();
+			//this->board.setPiece(((King*)lastMove.getMover())->getLeftRook(), lastMove.getCopyEaten());
+			////delete rook
+			//rookPos = lastMove.getDesPos().getRelativePosition(0, 1);
+			//delete this->board.getPiece(rookPos);
+			//this->board.getPiece(rookPos)->setNull();
+			//this->board.setPiece(rookPos, nullptr);
 			break;
 		case PosInfo::CastlingRight:
-			this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getCopyEaten());
-			//delete rook
-			rookPos = lastMove.getDesPos().getRelativePosition(0, -1);
-			delete this->board.getPiece(rookPos);
-			this->board.getPiece(rookPos)->setNull();
-			this->board.setPiece(rookPos, nullptr);
+			this->undo();
+			//this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getCopyEaten());
+			////delete rook
+			//rookPos = lastMove.getDesPos().getRelativePosition(0, -1);
+			//delete this->board.getPiece(rookPos);
+			//this->board.getPiece(rookPos)->setNull();
+			//this->board.setPiece(rookPos, nullptr);
 			break;
 		case PosInfo::EnPassant:
 			dir = (lastMove.getCopyMover()->getTroop() == Troop::White ? 1 : -1);
@@ -267,7 +274,6 @@ void GameState::undo()
 			break;
 		}
 		this->turn = lastMove.getCopyMover()->getTroop();
-		this->vecterMoves.setCurState(this->vecterMoves.getCurState() - 1);
 
 		if (this->vecterMoves.getCurState() >= 0)
 		{
