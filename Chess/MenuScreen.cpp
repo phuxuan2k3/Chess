@@ -23,32 +23,37 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	Color hoverColor = Color::Green;
 
 	//int textSize = sqrt(window.getSize().x * window.getSize().x + window.getSize().y * window.getSize().y) * 0.05;
-	int textSize = window.getSize().y * 0.1;
-	//Plaey Button
+	int textSize = window.getSize().y * 0.08;
+	int x = window.getSize().x * 0.08;
+	int y = window.getSize().y * 0.5;
+	//Chess
+	Text Chess;
+	Chess.setFont(font);
+	Chess.setString("Chess");
+	Chess.setCharacterSize(textSize * 2);
+	Chess.setFillColor(sf::Color::White);
+	Chess.setPosition(x, y * 0.2);
+	//Play Button
 	Text playBut;
 	playBut.setFont(font);
 	playBut.setString("Play");
 	playBut.setCharacterSize(textSize);
 	playBut.setFillColor(sf::Color::White);
-	playBut.setPosition(window.getSize().x * 0.1, window.getSize().y * 0.5);
-	window.draw(playBut);
-	//Plaey Button
+	playBut.setPosition(x, y);
+	//Load Button
 	Text loadBut;
 	loadBut.setFont(font);
 	loadBut.setString("Load");
 	loadBut.setCharacterSize(textSize);
 	loadBut.setFillColor(sf::Color::White);
-	loadBut.setPosition(window.getSize().x * 0.1, window.getSize().y * 0.5 + textSize);
-	window.draw(loadBut);
-	//Plaey Button
+	loadBut.setPosition(x, y + textSize);
+	//Exit Button
 	Text Exit;
 	Exit.setFont(font);
 	Exit.setString("Exit");
 	Exit.setCharacterSize(textSize);
 	Exit.setFillColor(sf::Color::White);
-	Exit.setPosition(window.getSize().x * 0.1, window.getSize().y * 0.5 + 2 * textSize);
-	window.draw(Exit);
-	
+	Exit.setPosition(x, y + 2 * textSize);
 
 	while (window.isOpen())
 	{
@@ -129,6 +134,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 		window.draw(loadBut);
 		window.draw(playBut);
 		window.draw(Exit);
+		window.draw(Chess);
 		window.display();
 		i++;
 		if (i == 3504) i = 253;
