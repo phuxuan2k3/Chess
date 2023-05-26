@@ -10,7 +10,7 @@
 //	PieceConnection();
 //
 //	void setConnection(const Position& dest);
-//	Position getDestPosition() const;
+//	Position getDestPosition() const; 
 //};
 
 class Castling 
@@ -38,7 +38,7 @@ private:
 public:
 	Pawn(Troop color);
 	~Pawn();
-
+	void triggerPromotion();
 	virtual void triggerOnFirstMove();
 	vector<Position> canGo(const Position& src, const Board& board);
 };

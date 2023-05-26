@@ -14,43 +14,47 @@ GameState::GameState(Troop turn) {
 
 	// Black
 
-	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 0));
+	/*pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 0));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 1));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 2));
+	
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 3));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 4));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 5));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 6));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 7));
+	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 7));*/
 	
+	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::Black, 1, 2));
+
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::Black, 0, 0));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 1));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 2));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Queen, Troop::Black, 0, 3));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 1));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 2));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Queen, Troop::Black, 0, 3));
 	pieces.push_back(this->initPieceOnBoard(PieceType::King, Troop::Black, 0, 4));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 5));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 6));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 5));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::Black, 0, 7));
 
 	// White
 
-	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 0));
+	/*pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 0));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 1));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 2));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 3));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 4));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 5));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 6));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 7));
+	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 6));*/
+	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 2, 6));
 
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::White, 7, 0));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::White, 7, 1));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::White, 7, 2));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Queen, Troop::White, 7, 3));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::White, 7, 1));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::White, 7, 2));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Queen, Troop::White, 7, 3));
 	pieces.push_back(this->initPieceOnBoard(PieceType::King, Troop::White, 7, 4));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::White, 7, 5));
-	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::White, 7, 6));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::White, 7, 5));
+	//pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::White, 7, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::White, 7, 7));
+
+
 
 	// Setup connection
 	// Black Side
@@ -86,6 +90,32 @@ const Board* GameState::getRefBoard() const {
 	return &this->board;
 }
 
+void GameState::PromotType(PieceType type, const Position& pos)
+{
+
+	if (type == PieceType::Bishop) {
+		Piece* promote = new Bishop(this->turn);
+		this->board.setPiece(pos, promote);
+	}
+	if (type == PieceType::Knight) {
+		Piece* promote = new Knight(this->turn);
+		this->board.setPiece(pos, promote);
+
+	}
+	if (type == PieceType::Rook) {
+		Piece* promote = new Rook(this->turn);
+		this->board.setPiece(pos, promote);
+
+	}
+	if (type == PieceType::Queen) {
+		Piece* promote = new Queen(this->turn);
+		this->board.setPiece(pos, promote);
+
+	}
+}
+
+
+
 Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j) {
 	Piece* piece = nullptr;
 	switch (pn)
@@ -119,6 +149,8 @@ Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const in
 Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const Position& p) {
 	return this->initPieceOnBoard(pn, pc, p.get_i(), p.get_j());
 }
+
+
 
 bool GameState::isValidChoice(const Position& pos) const {
 	Piece* piece = this->board.getPiece(pos);
@@ -155,8 +187,11 @@ bool GameState::isValidMove(const Position& src, const Position& dest, vector<Po
 void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
 	//check move type
 	if (dest.getInfo() == PosInfo::Promote) {
-		cout << "Promote" << endl;
+		this->promote = 1;
+
+		
 	}
+		
 	
 	// Normal Move:	
 	Piece* pSrc = this->board.getPiece(src);

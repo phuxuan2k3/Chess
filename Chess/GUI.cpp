@@ -1,5 +1,4 @@
 #include "GUI.h"
-
 //===================================================
 // GUI
 //===================================================
@@ -11,6 +10,7 @@ GUI::GUI() {
 	this->game = new GameState();
 
 	// Connect board
+	
 	this->render->setBoard(this->game->getRefBoard());
 }
 
@@ -30,6 +30,11 @@ void GUI::drawCanGo(const Position& selectedSquare, vector<Position> cango) {
 	this->window.display();
 }
 
+void GUI::chessPos()
+{
+	RenderPromote obj;
+	obj.setRelaPos(this->window.getPosition());
+}
 void GUI::play()
 {
 	this->window.create(sf::VideoMode(950, 800), "");
@@ -55,6 +60,7 @@ void GUI::play()
 				this->windowHeightScale = this->window.getSize().y * 1.0f / 800;
 				this->draw();
 			}
+
 
 			//xu ly su kien nhap chuot vao ban co
 			else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
@@ -103,10 +109,21 @@ void GUI::play()
 						curPos = canGo[hasPosition(canGo, curPos)];		// Map curPos to canGo to get its type of move
 						this->game->move(prePos, curPos, canGo);
 						this->render->setState(State::NotSelected);
-						this->game->switchTurn();
+						
 						this->draw();
-					}
+						if (this->game->promote == 1) {
+							chessPos();
+							//this->game->PromoType = RenderPromote::drawPromotion();
+							this->game->PromotType(RenderPromote::drawPromotion(), curPos);
 
+							this->game->promote = 0;
+							this->draw();
+
+						}
+						this->game->switchTurn();
+			
+
+					}
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected
 					else if (this->render->getState() == State::Selected)
 					{

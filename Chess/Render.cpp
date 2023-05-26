@@ -1,5 +1,6 @@
 #include "Render.h"
-
+#include<chrono>
+#include<thread>
 
 
 //===================================================
@@ -273,4 +274,128 @@ void RenderGame::draw(sf::RenderWindow& window) {
 
 void RenderGame::drawCanGo(sf::RenderWindow& window, vector<Position> squares) {
 	this->b.drawCanGo(window, squares);
+}
+sf::Vector2i RenderPromote::relativeToChess;
+
+ PieceType RenderPromote::drawPromotion()
+{
+	 int clicked = 0;
+
+	sf::RenderWindow window;
+	window.create(sf::VideoMode(485, 100), "Promotion");
+	sf::WindowHandle handle = window.getSystemHandle();
+	relativeToChess.x += 200;
+	relativeToChess.y -= 110;
+	window.setPosition(relativeToChess);
+
+
+	while (window.isOpen())
+	{
+
+
+		sf::Event event;
+
+		if (window.pollEvent(event))
+		{
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+				clicked ++;
+		 }
+
+
+
+			if (event.type == sf::Event::Closed)
+			{
+				window.close();
+			}
+
+			else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			{
+				sf::Vector2i mousePosition = sf::Vector2i(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
+				cout << clicked;
+				if (mousePosition.x <= 90 and mousePosition.y < 90 and mousePosition.y >0)
+				{
+					return PieceType::Bishop;
+					
+					window.close();
+
+				}
+				if (mousePosition.x >= 126 and mousePosition.x < 225 and mousePosition.y < 90 and mousePosition.y >0)
+				{
+					
+					return PieceType::Knight;
+
+					window.close();
+
+				}
+				if (mousePosition.x >= 251 and mousePosition.x < 350 and mousePosition.y < 90 and mousePosition.y >0)
+				{
+					return PieceType::Rook;
+
+					window.close();
+
+				}
+				if (mousePosition.x > 385 and mousePosition.x <= 485 and mousePosition.y < 90 and mousePosition.y >0)
+				{
+					return PieceType::Queen;
+
+					window.close();
+				}
+			}
+		}
+		sf::RectangleShape rectangle(sf::Vector2f(90, 90));
+		rectangle.setPosition(sf::Vector2f(10, 0));
+		rectangle.setFillColor(sf::Color(212, 211, 211));
+		rectangle.setOutlineThickness(10);
+		window.draw(rectangle);
+
+		rectangle.setPosition(sf::Vector2f(135, 0));
+		rectangle.setFillColor(sf::Color(212, 211, 211));
+		rectangle.setOutlineThickness(10);
+		window.draw(rectangle);
+
+		rectangle.setPosition(sf::Vector2f(260, 0));
+		rectangle.setFillColor(sf::Color(212, 211, 211));
+		rectangle.setOutlineThickness(10);
+		window.draw(rectangle);
+
+		rectangle.setPosition(sf::Vector2f(385, 0));
+		rectangle.setFillColor(sf::Color(212, 211, 211));
+		rectangle.setOutlineThickness(10);
+		window.draw(rectangle);
+
+		sf::Texture texture;
+		sf::Sprite sprite;
+		texture.loadFromFile("b.png", sf::IntRect(5, 10, 90, 90));
+		texture.setSmooth(true);
+		sprite.setTexture(texture);
+		sprite.setPosition(10, 0);
+		window.draw(sprite);
+
+		texture.loadFromFile("kn.png", sf::IntRect(5, 10, 90, 90));
+		texture.setSmooth(true);
+		sprite.setTexture(texture);
+		sprite.setPosition(135, 0);
+		window.draw(sprite);
+
+		texture.loadFromFile("r.png", sf::IntRect(5, 10, 90, 90));
+		texture.setSmooth(true);
+		sprite.setTexture(texture);
+		sprite.setPosition(260, 0);
+		window.draw(sprite);
+
+		texture.loadFromFile("q.png", sf::IntRect(5, 10, 90, 90));
+		texture.setSmooth(true);
+		sprite.setTexture(texture);
+		sprite.setPosition(385, 0);
+		window.draw(sprite);
+
+		window.display();
+	}
+}
+
+
+
+void RenderPromote::setRelaPos(sf::Vector2i pos)
+{
+	relativeToChess = pos;
 }

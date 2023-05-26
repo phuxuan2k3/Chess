@@ -29,7 +29,7 @@ public:
 	RenderPiece(PieceType pt, Troop t);
 	RenderPiece(const RenderPiece& piece);
 	~RenderPiece();
-
+	
 	RenderPiece& operator = (const RenderPiece& piece);
 	void set(PieceType pt, Troop t);
 
@@ -109,3 +109,12 @@ public:
 	void drawCanGo(sf::RenderWindow& window, vector<Position> squares);
 };
 
+class RenderPromote
+{
+public:
+ static sf::Vector2i relativeToChess;
+ static PieceType drawPromotion();
+ static void setRelaPos(sf::Vector2i pos);
+
+
+};
