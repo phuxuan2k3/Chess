@@ -104,6 +104,10 @@ void GUI::play()
 						this->game->move(prePos, curPos, canGo);
 						this->render->setState(State::NotSelected);
 						this->game->switchTurn();
+						if (this->game->checkEndGame() != EndGameType::NoEndGame)
+						{
+							cout << "End Game";
+						}
 						this->draw();
 					}
 

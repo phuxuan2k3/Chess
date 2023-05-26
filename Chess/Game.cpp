@@ -8,6 +8,7 @@
 //=======================================================
 
 GameState::GameState(Troop turn) {
+	this->iEndGame = nullptr;
 	this->turn = turn;
 
 	// Default Placing
@@ -72,6 +73,8 @@ GameState::GameState(Troop turn) {
 
 GameState::~GameState()
 {
+	delete this->iEndGame;
+
 	for (Piece* p : this->pieces) {
 		delete p;
 	}
@@ -169,6 +172,24 @@ bool GameState::isValidMove(const Position& src, const Position& dest, vector<Po
 		return false;
 	}
 	return true;
+}
+
+bool GameState::isCanGo(Troop turn)
+{
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (this->board.board[i][j].getPiece() != nullptr and this->board.board[i][j].getPiece()->getTroop() == turn)
+			{
+				if (this->canGo(Position(i, j)).empty() == false)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
@@ -296,13 +317,13 @@ void GameState::undo()
 			break;
 		case PosInfo::CastlingRight:
 			this->undo();
-		   //this->board.getPiece(lastMove.getDesPos())->setNull();
-			//this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getCopyEaten());
-			////delete rook
-			//rookPos = lastMove.getDesPos().getRelativePosition(0, -1);
-			//delete this->board.getPiece(rookPos);
-			//this->board.getPiece(rookPos)->setNull();
-			//this->board.setPiece(rookPos, nullptr);
+			//this->board.getPiece(lastMove.getDesPos())->setNull();
+			 //this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getCopyEaten());
+			 ////delete rook
+			 //rookPos = lastMove.getDesPos().getRelativePosition(0, -1);
+			 //delete this->board.getPiece(rookPos);
+			 //this->board.getPiece(rookPos)->setNull();
+			 //this->board.setPiece(rookPos, nullptr);
 			break;
 		case PosInfo::EnPassant:
 			dir = (lastMove.getCopyMover()->getTroop() == Troop::White ? 1 : -1);
@@ -327,4 +348,25 @@ void GameState::undo()
 			this->board.lastChoose = nullptr;
 		}
 	}
+}
+
+EndGameType GameState::checkEndGame()
+{
+	this->iEndGame = new LoseByCheckmate;
+	EndGameType res = this->iEndGame->check(this->isCanGo(this->turn), this->turn == Troop::White ? this->whiteKing : this->blackKing, this->board);
+	if (res != EndGameType::NoEndGame)
+	{
+		return res;
+	}
+	delete this->iEndGame;
+
+	this->iEndGame = new DrawByStalemate;
+	res = this->iEndGame->check(this->isCanGo(this->turn), this->turn == Troop::White ? this->whiteKing : this->blackKing, this->board);
+	if (res != EndGameType::NoEndGame)
+	{
+		return res;
+	}
+	delete this->iEndGame;
+
+	return EndGameType::NoEndGame;
 }
