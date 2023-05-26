@@ -7,7 +7,7 @@
 //===================================================
 
 GUI::GUI() {
-	this->window.create(sf::VideoMode(950, 800), "");
+	this->window.create(sf::VideoMode(1200, 800), "Chess", sf::Style::Close);
 	this->windowHeightScale = 1;
 	this->windowWidthScale = 1;
 	this->render = new RenderGame();

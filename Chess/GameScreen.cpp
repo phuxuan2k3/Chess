@@ -61,17 +61,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					if (this->render->getState() == State::NotSelected &&
 						this->game->isValidChoice(curPos) == true)
 					{
-						// WTF ????
-						//if ((GameState::getInstance()->turn == true &&
-						//	(((GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == true &&
-						//		dynamic_cast<King*>(this->b.Board.board[vt.i][vt.j].piece)) ||
-						//		GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[28]->pos.i, GameState::getInstance()->pieces[28]->pos.j), GameState::getInstance()->turn) == false))) ||
-						//	(GameState::getInstance()->turn == false &&
-						//		(((GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == true &&
-						//			dynamic_cast<King*>(this->b.Board.board[vt.i][vt.j].piece)) ||
-						//			GameHandle::isDangerousSquare(this->b.Board, Position(GameState::getInstance()->pieces[4]->pos.i, GameState::getInstance()->pieces[4]->pos.j), GameState::getInstance()->turn) == false)))
-						//	)
-						//{
+					
 						canGo = this->game->canGo(curPos);
 						// neu khong co nuoc di hop le, ta giu nguyen trang thai NotSelected
 						// nguoc lai, ta chuyen ve tran thai Selected
