@@ -286,7 +286,7 @@ void GameState::undo()
 		{
 		case PosInfo::CastlingLeft:
 			this->undo();
-			this->board.getPiece(lastMove.getDesPos())->setNull();
+			//this->board.getPiece(lastMove.getDesPos())->setNull();
 			//this->board.setPiece(((King*)lastMove.getMover())->getLeftRook(), lastMove.getCopyEaten());
 			////delete rook
 			//rookPos = lastMove.getDesPos().getRelativePosition(0, 1);
@@ -296,7 +296,7 @@ void GameState::undo()
 			break;
 		case PosInfo::CastlingRight:
 			this->undo();
-			this->board.getPiece(lastMove.getDesPos())->setNull();
+		   //this->board.getPiece(lastMove.getDesPos())->setNull();
 			//this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getCopyEaten());
 			////delete rook
 			//rookPos = lastMove.getDesPos().getRelativePosition(0, -1);
