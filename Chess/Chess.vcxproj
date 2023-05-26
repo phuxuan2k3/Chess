@@ -155,6 +155,7 @@
     <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="HistoryMove.cpp" />
     <ClCompile Include="MenuScreen.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="GameScreen.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="HistoryMove.h" />
     <ClInclude Include="MenuScreen.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="Header.h" />

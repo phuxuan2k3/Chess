@@ -54,6 +54,9 @@
     <ClCompile Include="Screen.cpp">
       <Filter>Source Files\Screen</Filter>
     </ClCompile>
+    <ClCompile Include="HistoryMove.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Render.h">
@@ -88,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="GameScreen.h">
       <Filter>Header Files\Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="HistoryMove.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
