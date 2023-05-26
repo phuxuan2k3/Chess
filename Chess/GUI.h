@@ -22,4 +22,6 @@ public:
 	void run();
 	~GUI();
 
+	void chessPos();
+	void play();
 };

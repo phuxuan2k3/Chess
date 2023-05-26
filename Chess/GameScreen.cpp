@@ -13,6 +13,11 @@ void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare,
 	this->render->drawCanGo(window, cango);
 	window.display();
 }
+void GameScreen::chessPos(RenderWindow& window)
+{
+	RenderPromote obj;
+	obj.setRelaPos(window.getPosition());
+}
 void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	this->drawGameScreen(window);
 	Position curPos;
@@ -84,8 +89,17 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						curPos = canGo[hasPosition(canGo, curPos)];		// Map curPos to canGo to get its type of move
 						this->game->move(prePos, curPos, canGo);
 						this->render->setState(State::NotSelected);
-						this->game->switchTurn();
+						if (this->game->promote == 1) {
+							this->chessPos(window);
+							//this->game->PromoType = RenderPromote::drawPromotion();
+							this->game->PromotType(RenderPromote::drawPromotion(), curPos);
+
+							this->game->promote = 0;
+							this->drawGameScreen(window);
+
+						}
 						this->drawGameScreen(window);
+						this->game->switchTurn();
 					}
 
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected

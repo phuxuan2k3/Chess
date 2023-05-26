@@ -90,6 +90,31 @@ const Board* GameState::getRefBoard() const {
 	return &this->board;
 }
 
+void GameState::PromotType(PieceType type, const Position& pos)
+{
+	if (type == PieceType::Bishop) {
+		Piece* promote = new Bishop(this->turn);
+		this->board.setPiece(pos, promote);
+	}
+	if (type == PieceType::Knight) {
+		Piece* promote = new Knight(this->turn);
+		this->board.setPiece(pos, promote);
+
+	}
+	if (type == PieceType::Rook) {
+		Piece* promote = new Rook(this->turn);
+		this->board.setPiece(pos, promote);
+
+	}
+	if (type == PieceType::Queen) {
+		Piece* promote = new Queen(this->turn);
+		this->board.setPiece(pos, promote);
+
+	}
+}
+
+
+
 Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j) {
 	Piece* piece = nullptr;
 	switch (pn)
@@ -123,6 +148,8 @@ Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const in
 Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const Position& p) {
 	return this->initPieceOnBoard(pn, pc, p.get_i(), p.get_j());
 }
+
+
 
 bool GameState::isValidChoice(const Position& pos) const {
 	Piece* piece = this->board.getPiece(pos);
@@ -174,7 +201,9 @@ bool GameState::isValidMove(const Position& src, const Position& dest, vector<Po
 void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
 	//check move type
 	if (dest.getInfo() == PosInfo::Promote) {
-		cout << "Promote" << endl;
+		this->promote = 1;
+
+		
 	}
 
 	// Normal Move:	

@@ -25,12 +25,14 @@ public:
 	GameState(Troop turn = Troop::White);
 	// Will delete the pieces
 	~GameState();
-
+	bool promote = 0;
+	PieceType PromoType;
 	void switchTurn();
 	// To connect the board in RenderGame
 	const Board* getRefBoard() const;
-
+	void PromotType(PieceType type, const Position& pos);
 	// Determine if position chosen or move is valid
+	Position getPiecePos();
 	bool isValidChoice(const Position& pos) const;
 	bool isValidMove(const Position& src, const Position& dest, vector<Position> canGo) const;
 	// Return empty vector if pos is invalid, or that troop has no moves availible

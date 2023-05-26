@@ -1,11 +1,10 @@
 #include "GUI.h"
-
-
 //===================================================
 // GUI
 //===================================================
-
-
+//===================================================
+// GUI
+//===================================================
 
 GUI::GUI() {
 	this->window.create(sf::VideoMode(950, 800), "");
@@ -16,7 +15,7 @@ GUI::GUI() {
 	this->end = false;
 	// Connect board
 	this->render->setBoard(this->game->getRefBoard());
-	this->screen = new MenuScreen(this->windowWidthScale,this->windowWidthScale,this->render,this->game);
+	this->screen = new MenuScreen(this->windowWidthScale, this->windowWidthScale, this->render, this->game);
 }
 
 // Change state to NotSelected

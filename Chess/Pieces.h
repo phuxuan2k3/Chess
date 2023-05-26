@@ -10,7 +10,7 @@
 //	PieceConnection();
 //
 //	void setConnection(const Position& dest);
-//	Position getDestPosition() const;
+//	Position getDestPosition() const; 
 //};
 
 class Castling
@@ -39,7 +39,7 @@ public:
 	Pawn(Troop color);
 	Pawn(const Pawn& p);
 	~Pawn();
-
+	void triggerPromotion();
 	virtual void triggerOnFirstMove();
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);

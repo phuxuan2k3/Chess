@@ -7,5 +7,7 @@ public:
 	void drawGameScreen(RenderWindow& window);
 	void drawCanGo(RenderWindow& window,const Position& selectedSquare, vector<Position> cango);
 	void run(RenderWindow& window, Screen*& screen, bool& end);
+
+	void chessPos(RenderWindow& window);
 };
 
