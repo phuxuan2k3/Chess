@@ -1,21 +1,26 @@
 #include "GUI.h"
 
+
 //===================================================
 // GUI
 //===================================================
 
+
+
 GUI::GUI() {
+	this->window.create(sf::VideoMode(950, 800), "");
 	this->windowHeightScale = 1;
 	this->windowWidthScale = 1;
 	this->render = new RenderGame();
 	this->game = new GameState();
-
+	this->end = false;
 	// Connect board
 	this->render->setBoard(this->game->getRefBoard());
+	this->screen = new MenuScreen(this->windowWidthScale,this->windowWidthScale,this->render,this->game);
 }
 
 // Change state to NotSelected
-void GUI::draw() {
+void GUI::drawGameScreen() {
 	this->window.clear();
 	this->render->draw(this->window);
 	this->window.display();
@@ -30,31 +35,13 @@ void GUI::drawCanGo(const Position& selectedSquare, vector<Position> cango) {
 	this->window.display();
 }
 
-void GUI::play()
+void GUI::run()
 {
-	this->window.create(sf::VideoMode(950, 800), "");
-	this->draw();
-
-	Position curPos;
-	Position prePos;
-	vector<Position> canGo;
-
-	while (this->window.isOpen())
-	{
-		sf::Event event;
-		if (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed)
-			{
-				window.close();
-			}
-
-			else if (event.type == sf::Event::Resized)
-			{
-				this->windowWidthScale = this->window.getSize().x * 1.0f / 950;
-				this->windowHeightScale = this->window.getSize().y * 1.0f / 800;
-				this->draw();
-			}
+	while (true) {
+		if (this->end) break;
+		this->screen->run(this->window, this->screen, this->end);
+	}
+}
 
 			//xu ly su kien nhap chuot vao ban co
 			else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
@@ -123,4 +110,6 @@ void GUI::play()
 			}
 		}
 	}
+GUI::~GUI() {
+	delete this->screen;
 }
