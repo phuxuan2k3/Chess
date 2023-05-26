@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EndGame.cpp" />
     <ClCompile Include="Exception.cpp" />
     <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="GUI.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="System.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EndGame.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="GameScreen.h" />
     <ClInclude Include="GUI.h" />
