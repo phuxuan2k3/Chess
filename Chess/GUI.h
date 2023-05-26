@@ -4,6 +4,7 @@
 #include "Screen.h"
 #include "GameScreen.h"
 #include "MenuScreen.h"
+#include "GameBar.h"
 
 class GUI {
 private:
@@ -17,11 +18,6 @@ private:
 
 public:
 	GUI();
-	void drawGameScreen();
-	void drawCanGo(const Position& selectedSquare, vector<Position> cango);
 	void run();
 	~GUI();
-
-	void chessPos();
-	void play();
 };

@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="EndGame.cpp" />
     <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="GameBar.cpp" />
     <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -168,6 +169,7 @@
   <ItemGroup>
     <ClInclude Include="EndGame.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="GameBar.h" />
     <ClInclude Include="GameScreen.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Game.h" />

@@ -1,16 +1,20 @@
 #include "GameScreen.h"
 
-GameScreen::GameScreen(float& windowWidthScale, float& windowHeightScale, RenderGame*& render, GameState*& game) : Screen(windowWidthScale, windowHeightScale, render, game) {}
+GameScreen::GameScreen(float& windowWidthScale, float& windowHeightScale, RenderGame*& render, GameState*& game) : Screen(windowWidthScale, windowHeightScale, render, game) {
+	this->gameb = GameBar::getInstance();
+}
 
 void GameScreen::drawGameScreen(RenderWindow& window) {
 	window.clear();
 	this->render->draw(window);
+	this->gameb->showGameBar(window);
 	window.display();
 }
 void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare, vector<Position> cango) {
 	window.clear();
 	this->render->draw(window);
 	this->render->drawCanGo(window, cango);
+	this->gameb->showGameBar(window);
 	window.display();
 }
 void GameScreen::chessPos(RenderWindow& window)

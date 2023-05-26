@@ -18,22 +18,6 @@ GUI::GUI() {
 	this->screen = new MenuScreen(this->windowWidthScale, this->windowWidthScale, this->render, this->game);
 }
 
-// Change state to NotSelected
-void GUI::drawGameScreen() {
-	this->window.clear();
-	this->render->draw(this->window);
-	this->window.display();
-}
-
-// Change state to Selected
-void GUI::drawCanGo(const Position& selectedSquare, vector<Position> cango) {
-
-	this->window.clear();
-	this->render->draw(this->window);
-	this->render->drawCanGo(this->window, cango);
-	this->window.display();
-}
-
 void GUI::run()
 {
 	while (true) {
