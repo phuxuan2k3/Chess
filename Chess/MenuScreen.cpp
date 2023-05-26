@@ -16,6 +16,15 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	sound.setBuffer(buffer);
 	sound.setLoop(true);
 	sound.play();
+
+	SoundBuffer hoverB;
+	hoverB.loadFromFile("Audio/clickMenu.wav");
+	Sound hover;
+	hover.setLoop(false);
+	hover.setBuffer(hoverB);
+	hover.setVolume(50);
+	bool choosing = false;
+
 	//text
 	Font font;
 	font.loadFromFile("Font/Wildheart-Regular.otf");
@@ -78,26 +87,39 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				if (playBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
 				{
 					playBut.setFillColor(hoverColor);
+					loadBut.setFillColor(defaultColor);
+					Exit.setFillColor(defaultColor);
+					if (!choosing) {
+						choosing = true;
+						hover.play();
+					}
+				}
+				else if (loadBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
+				{
+					loadBut.setFillColor(hoverColor);
+					playBut.setFillColor(defaultColor);
+					Exit.setFillColor(defaultColor);
+					if (!choosing) {
+						choosing = true;
+						hover.play();
+					}
+				}
+				else if (Exit.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
+				{
+					Exit.setFillColor(hoverColor);
+					playBut.setFillColor(defaultColor);
+					loadBut.setFillColor(defaultColor);
+					if (!choosing) {
+						choosing = true;
+						hover.play();
+					}
 				}
 				else
 				{
 					playBut.setFillColor(defaultColor);
-				}
-				if (loadBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
-				{
-					loadBut.setFillColor(hoverColor);
-				}
-				else
-				{
 					loadBut.setFillColor(defaultColor);
-				}
-				if (Exit.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
-				{
-					Exit.setFillColor(hoverColor);
-				}
-				else
-				{
 					Exit.setFillColor(defaultColor);
+					choosing = false;
 				}
 			}
 			if (event.type == sf::Event::MouseButtonPressed)

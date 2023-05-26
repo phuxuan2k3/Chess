@@ -24,6 +24,15 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	Position prePos;
 	vector<Position> canGo;
 
+	//Am thanh
+	SoundBuffer soundB;
+	soundB.loadFromFile("Audio/themSong.wav");
+	Sound themSong;
+	themSong.setBuffer(soundB);
+	themSong.setLoop(true);
+	themSong.setVolume(50);
+	themSong.play();
+
 	while (window.isOpen())
 	{
 		sf::Event event;
