@@ -1,5 +1,5 @@
 #include "Game.h"
-
+#include "StaticFunc.h"
 
 
 
@@ -28,6 +28,8 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 2));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Queen, Troop::Black, 0, 3));
 	pieces.push_back(this->initPieceOnBoard(PieceType::King, Troop::Black, 0, 4));
+	((King*)(this->board.getPiece(0, 4)))->setPosition(Position(0, 4));
+	this->blackKing = (King*)this->board.getPiece(0, 4);
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 5));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::Black, 0, 7));
@@ -48,6 +50,8 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::White, 7, 2));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Queen, Troop::White, 7, 3));
 	pieces.push_back(this->initPieceOnBoard(PieceType::King, Troop::White, 7, 4));
+	((King*)(this->board.getPiece(7, 4)))->setPosition(Position(7, 4));
+	this->whiteKing = (King*)this->board.getPiece(7, 4);
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::White, 7, 5));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::White, 7, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::White, 7, 7));
@@ -137,7 +141,22 @@ vector<Position> GameState::canGo(const Position& pos) {
 	if (this->board.hasPiece(pos) == false) {
 		return vector<Position>();
 	}
-	return this->board.getPiece(pos)->canGo(pos, this->board);
+
+	//Test after move whether king is dangerous
+	vector<Position> res = this->board.getPiece(pos)->canGo(pos, this->board);
+	for (int i = res.size() - 1; i >= 0; i--)
+	{
+		this->move(pos, res[i], res);
+		King* testwk = this->whiteKing;
+		King* testbk = this->blackKing;
+		if (isDangerousSquare((this->board.getPiece(res[i])->getTroop() == Troop::White ? this->whiteKing : this->blackKing)->getPosition(), this->board, this->board.getPiece(res[i])->getTroop()))
+		{
+			res.erase(res.begin() + i);
+		}
+		this->undo();
+	}
+
+	return res;
 }
 
 bool GameState::isValidMove(const Position& src, const Position& dest, vector<Position> canGo) const {
@@ -162,7 +181,11 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 
 	this->vecterMoves.deleteFrom(this->vecterMoves.getCurState() + 1);
 
-	//this->vecterMoves.pushBack(this->board.getPiece(src), this->board.getPiece(dest), src, dest);
+	//if a king move, set its position
+	if (King* king = dynamic_cast<King*>(this->board.getPiece(src)))
+	{
+		king->setPosition(dest);
+	}
 
 	Piece* copyPSrc = this->board.getPiece(src)->deepCopyPiece(this->board.getPiece(src));
 	Piece* copyPDes = nullptr;
@@ -176,7 +199,6 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 
 		//delete piece
 		delete this->board.getPiece(dest);
-		this->board.getPiece(dest)->setNull();
 		this->board.setPiece(dest, nullptr);
 
 	}
@@ -223,6 +245,7 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 		this->board.setPiece(dest.getRelativePosition(dir, 0), nullptr);
 	}
 
+	this->board.getPiece(dest)->setNotNull();
 	this->vecterMoves.pushBack(copyPSrc, copyPDes, src, dest);
 }
 
@@ -234,21 +257,36 @@ void GameState::undo()
 
 		this->vecterMoves.setCurState(this->vecterMoves.getCurState() - 1);
 
+		if (King* king = dynamic_cast<King*>(lastMove.getMover()))
+		{
+			king->setPosition(lastMove.getSrcPos());
+		}
+
 		//delete
 		if (this->board.getPiece(lastMove.getDesPos()))
 		{
-			delete this->board.getPiece(lastMove.getDesPos());
 			this->board.getPiece(lastMove.getDesPos())->setNull();
+			delete this->board.getPiece(lastMove.getDesPos());
+			//this->board.getPiece(lastMove.getDesPos())->setNull();
 			this->board.setPiece(lastMove.getDesPos(), nullptr);
 		}
 
-		this->board.setPiece(lastMove.getSrcPos(), lastMove.getCopyMover());
+		Piece* newMover = lastMove.getCopyMover();
+		this->board.setPiece(lastMove.getSrcPos(), newMover);
+		this->board.getPiece(lastMove.getSrcPos())->setNotNull();
+		//set king in gamestate a gain because new king is created
+		if (King* king = dynamic_cast<King*>(newMover))
+		{
+			(newMover->getTroop() == Troop::White ? this->whiteKing : this->blackKing) = king;
+		}
+
 		int dir = 0;
 		Position rookPos;
 		switch (lastMove.getDesPos().getInfo())
 		{
 		case PosInfo::CastlingLeft:
 			this->undo();
+			this->board.getPiece(lastMove.getDesPos())->setNull();
 			//this->board.setPiece(((King*)lastMove.getMover())->getLeftRook(), lastMove.getCopyEaten());
 			////delete rook
 			//rookPos = lastMove.getDesPos().getRelativePosition(0, 1);
@@ -258,6 +296,7 @@ void GameState::undo()
 			break;
 		case PosInfo::CastlingRight:
 			this->undo();
+			this->board.getPiece(lastMove.getDesPos())->setNull();
 			//this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getCopyEaten());
 			////delete rook
 			//rookPos = lastMove.getDesPos().getRelativePosition(0, -1);
@@ -270,14 +309,18 @@ void GameState::undo()
 			this->board.setPiece(lastMove.getDesPos().getRelativePosition(dir, 0), lastMove.getCopyEaten());
 			break;
 		default:
-			this->board.setPiece(lastMove.getDesPos(), lastMove.getCopyEaten());
+			if (lastMove.getEaten())
+			{
+				this->board.setPiece(lastMove.getDesPos(), lastMove.getCopyEaten());
+				this->board.getPiece(lastMove.getDesPos())->setNotNull();
+			}
 			break;
 		}
-		this->turn = lastMove.getCopyMover()->getTroop();
+		this->turn = lastMove.getMover()->getTroop();
 
 		if (this->vecterMoves.getCurState() >= 0)
 		{
-			this->board.lastChoose = this->vecterMoves.getAt(this->vecterMoves.getCurState()).getCopyMover();
+			this->board.lastChoose = this->vecterMoves.getAt(this->vecterMoves.getCurState()).getMover();
 		}
 		else
 		{

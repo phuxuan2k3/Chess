@@ -299,6 +299,16 @@ void King::triggerOnFirstMove() {
 	this->unCastlable();
 }
 
+Position King::getPosition()
+{
+	return this->kingPos;
+}
+
+void King::setPosition(const Position& p)
+{
+	this->kingPos = p;
+}
+
 vector<Position> King::canGo(const Position& src, const Board& board)
 {
 	vector<Position> pos;
@@ -455,6 +465,8 @@ King::King(const King& ki)
 
 	this->leftRook = ki.leftRook;
 	this->rightRook = ki.rightRook;
+
+	this->kingPos = ki.kingPos;
 }
 
 Piece* Pawn::deepCopyPiece(Piece* p)

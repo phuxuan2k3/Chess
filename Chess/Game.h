@@ -14,6 +14,9 @@ private:
 	Board board;
 	vector<Piece*> pieces;
 
+	King* whiteKing;
+	King* blackKing;
+
 	VectorMoves vecterMoves;
 
 	Piece* initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j);

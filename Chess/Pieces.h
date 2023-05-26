@@ -97,12 +97,17 @@ public:
 class King : public Piece, public Castling
 {
 private:
+	Position kingPos; // positon of the king
 	Position leftRook;
 	Position rightRook;
 
 public:
 	King(Troop color);
 	King(const King& ki);
+
+	Position getPosition();
+	void setPosition(const Position& p);
+
 	vector<Position> canGo(const Position& src, const Board& board);
 
 	virtual void triggerOnFirstMove();
