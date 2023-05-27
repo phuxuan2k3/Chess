@@ -101,6 +101,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 							this->drawGameScreen(window);
 
 						}
+						GameBar::updateTurn();
 						this->drawGameScreen(window);
 						this->game->switchTurn();
 					}
