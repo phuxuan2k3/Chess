@@ -26,7 +26,6 @@ void GameBar::updateTurn() {
 	else {
 		turn = Troop::White;
 	}
-	cout << "con cac" << endl;
 }
 
 void GameBar::showGameBar(RenderWindow& window) {
@@ -52,8 +51,6 @@ void GameBar::showGameBar(RenderWindow& window) {
 	turnText.setOutlineThickness(2);
 	turnText.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.15 * window.getSize().y);
 	window.draw(turnText);
-
-
 
 
 }
