@@ -9,11 +9,16 @@ private:
 	static Troop turn; 
 	static GameBar* instance;
 	static Text turnText;
+	static Text selectedText;
+
+	static PieceType type;
 	GameBar();
-public:
+public:	
+
 	static void updateTurn();
 	static GameBar* getInstance();
 	static void deleteInstance();
+	static void updateSelected(PieceType type);
 	void showGameBar(RenderWindow& window);
 };
 

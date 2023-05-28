@@ -132,13 +132,22 @@ void RenderSquare::draw(sf::RenderWindow& window)
 
 void RenderSquare::drawCanGo(sf::RenderWindow& window)
 {
-	sf::RectangleShape rec(sf::Vector2f(this->width - 10, this->height - 10));
-	rec.setPosition(this->coordinate.x + 5, this->coordinate.y + 5 );
-	rec.setFillColor(sf::Color::Transparent);
-	rec.setOutlineThickness(5.f);
-	rec.setOutlineColor(sf::Color::Green);
+	sf::RectangleShape rec(sf::Vector2f(this->width, this->height ));
+	rec.setPosition(this->coordinate.x , this->coordinate.y  );
+	rec.setFillColor(sf::Color(61,152,230,150));
 	/*square.setOutlineColor(sf::Color(255, 0, 0));
 	square.setOutlineThickness(50);*/
+	window.draw(rec);
+}
+
+void RenderSquare::drawSelected(sf::RenderWindow& window, Position pos)
+{
+	sf::RectangleShape rec(sf::Vector2f(this->width, this->height));
+	rec.setPosition(this->coordinate.x, this->coordinate.y);
+	rec.setFillColor(sf::Color::Transparent);
+	rec.setOutlineColor(sf::Color(0, 249, 78, 210));
+	rec.setOutlineThickness(-5);
+
 	window.draw(rec);
 }
 
@@ -239,6 +248,12 @@ void RenderBoard::drawCanGo(sf::RenderWindow& window, vector<Position> squares) 
 	}
 }
 
+void RenderBoard::drawSelected(sf::RenderWindow& window, Position pos)
+{
+	this->squareMat[pos.get_i()][pos.get_j()].drawSelected(window,pos);
+}
+
+
 RenderBoard::~RenderBoard()
 {
 	for (int i = 0; i < 8; ++i) {
@@ -274,6 +289,11 @@ void RenderGame::draw(sf::RenderWindow& window) {
 
 void RenderGame::drawCanGo(sf::RenderWindow& window, vector<Position> squares) {
 	this->b.drawCanGo(window, squares);
+}
+void RenderGame::drawSelected(sf::RenderWindow& window, Position pos)
+{
+	this->b.drawSelected(window, pos);
+
 }
 sf::Vector2i RenderPromote::relativeToChess;
 
