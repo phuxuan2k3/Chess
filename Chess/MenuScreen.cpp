@@ -49,20 +49,13 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	playBut.setCharacterSize(textSize);
 	playBut.setFillColor(sf::Color::White);
 	playBut.setPosition(x, y);
-	//Load Button
-	Text loadBut;
-	loadBut.setFont(font);
-	loadBut.setString("Load");
-	loadBut.setCharacterSize(textSize);
-	loadBut.setFillColor(sf::Color::White);
-	loadBut.setPosition(x, y + textSize);
 	//Exit Button
 	Text Exit;
 	Exit.setFont(font);
 	Exit.setString("Exit");
 	Exit.setCharacterSize(textSize);
 	Exit.setFillColor(sf::Color::White);
-	Exit.setPosition(x, y + 2 * textSize);
+	Exit.setPosition(x, y +   textSize);
 
 	while (window.isOpen())
 	{
@@ -87,28 +80,17 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				if (playBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
 				{
 					playBut.setFillColor(hoverColor);
-					loadBut.setFillColor(defaultColor);
 					Exit.setFillColor(defaultColor);
 					if (!choosing) {
 						choosing = true;
 						hover.play();
 					}
 				}
-				else if (loadBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
-				{
-					loadBut.setFillColor(hoverColor);
-					playBut.setFillColor(defaultColor);
-					Exit.setFillColor(defaultColor);
-					if (!choosing) {
-						choosing = true;
-						hover.play();
-					}
-				}
+
 				else if (Exit.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
 				{
 					Exit.setFillColor(hoverColor);
 					playBut.setFillColor(defaultColor);
-					loadBut.setFillColor(defaultColor);
 					if (!choosing) {
 						choosing = true;
 						hover.play();
@@ -117,7 +99,6 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				else
 				{
 					playBut.setFillColor(defaultColor);
-					loadBut.setFillColor(defaultColor);
 					Exit.setFillColor(defaultColor);
 					choosing = false;
 				}
@@ -127,7 +108,6 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 				if (playBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
 				{
-					cout << "Click" << endl;
 					Screen* temp = screen;
 					screen = new GameScreen(this->windowWidthScale,this->windowHeightScale,this->render,this->game);
 					delete temp;
@@ -152,8 +132,6 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 		sprite.setTexture(texture);
 		sprite.setScale(1.0 * window.getSize().x / texture.getSize().x, 1.0 * window.getSize().y / texture.getSize().y);
 		window.draw(sprite);
-
-		window.draw(loadBut);
 		window.draw(playBut);
 		window.draw(Exit);
 		window.draw(Chess);

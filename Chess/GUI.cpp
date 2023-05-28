@@ -28,4 +28,6 @@ void GUI::run()
 
 GUI::~GUI() {
 	delete this->screen;
+	delete this->render;
+	delete this->game;
 }

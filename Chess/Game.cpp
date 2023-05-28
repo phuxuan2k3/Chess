@@ -11,7 +11,7 @@ GameState::GameState(Troop turn) {
 	this->iEndGame = nullptr;
 	this->turn = turn;
 
-	// Default Placing
+	// Default Placing 
 
 	// Black
 
@@ -73,7 +73,7 @@ GameState::GameState(Troop turn) {
 
 GameState::~GameState()
 {
-	delete this->iEndGame;
+	if(this->iEndGame != nullptr) delete this->iEndGame;
 
 	for (Piece* p : this->pieces) {
 		delete p;

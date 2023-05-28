@@ -4,8 +4,11 @@ GameBar* GameBar::instance = NULL;
 Troop GameBar::turn = Troop::White;
 Text GameBar::turnText;
 Sprite GameBar::undoBut;
-Text GameBar::save;
+Sprite GameBar::homeBut;
 Text GameBar::reset;
+int GameBar::canUndo = 0;
+
+
 GameBar::GameBar() {
 	
 };
@@ -17,7 +20,7 @@ GameBar* GameBar::getInstance() {
 	return instance;
 }
 void GameBar::deleteInstance() {
-	if (instance) return;
+	if (!instance) return;
 	delete instance;
 	instance = NULL;
 }
@@ -55,22 +58,23 @@ void GameBar::showGameBar(RenderWindow& window) {
 	turnText.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.15 * window.getSize().y);
 	window.draw(turnText);
 
-	// save
-	save.setFont(turrnFont);
-	save.setString("Save");
-	save.setCharacterSize(turnSize * 0.6);
-	save.setFillColor(Color::Black);
-	save.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 50, 0.15 * window.getSize().y + 100);
-	window.draw(save);
-	// reset
-
 	float butScale = 0.3;
+	//home button
+	Texture homeTexture;
+	homeTexture.loadFromFile("Image/homebut.png");
+	homeTexture.setSmooth(true);
+	homeBut.setTexture(homeTexture);
+	homeBut.setPosition(bg.getPosition().x + 80 , turnText.getPosition().y + 300);
+	homeBut.setScale(butScale, butScale);
+	window.draw(homeBut);
+
+
 	// Undo button
 	Texture undoTexture;
 	undoTexture.loadFromFile("Image/undoBut.png");
 	undoTexture.setSmooth(true);
 	undoBut.setTexture(undoTexture);
-	undoBut.setPosition(turnText.getPosition().x - 10, turnText.getPosition().y + 300);
+	undoBut.setPosition(bg.getPosition().x + 80 * 2, turnText.getPosition().y + 300);
 	undoBut.setScale(butScale, butScale);
 	window.draw(undoBut);
 

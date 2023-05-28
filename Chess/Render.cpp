@@ -242,7 +242,7 @@ void RenderBoard::drawCanGo(sf::RenderWindow& window, vector<Position> squares) 
 RenderBoard::~RenderBoard()
 {
 	for (int i = 0; i < 8; ++i) {
-		delete[] this->squareMat[i];
+			delete[] this->squareMat[i];
 	}
 	delete[] this->squareMat;
 }

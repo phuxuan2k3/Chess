@@ -11,8 +11,9 @@ private:
 public:
 	static Troop turn; 
 	static Sprite undoBut;
+	static Sprite homeBut;
 	static Text turnText;
-	static Text save;
+	static int canUndo;
 	static Text reset;
 	static void updateTurn();
 	static GameBar* getInstance();

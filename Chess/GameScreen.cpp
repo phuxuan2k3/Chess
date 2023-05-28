@@ -23,7 +23,7 @@ void GameScreen::chessPos(RenderWindow& window)
 	obj.setRelaPos(window.getPosition());
 }
 void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
-	int canUndo = 0;
+	
 	this->drawGameScreen(window);
 	Position curPos;
 	Position prePos;
@@ -105,7 +105,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
 						this->game->switchTurn();
-						canUndo += 1;
+						GameBar::canUndo += 1;
 					}
 
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected
@@ -116,16 +116,26 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					}
 				}
 				if (GameBar::undoBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
-					if (canUndo != 0) {
+					if (GameBar::canUndo != 0) {
 						game->undo();
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
-						canUndo -= 1;
+						GameBar::canUndo -= 1;
 					}
 
+				} 
+				if (GameBar::homeBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
+					Screen* temp = screen;
+					screen = new MenuScreen(this->windowWidthScale, this->windowHeightScale, this->render, this->game);
+					break;
 				}
+			
+				
 			}
 		}
 	}
 }
 
+GameScreen::~GameScreen() {
+	gameb->deleteInstance();
+}
