@@ -66,7 +66,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					);
 
 				// nhap chuot vao ban co
-				if (mousePosition.x < 800 and mousePosition.x > 0)
+				if (mousePosition.x < 800 && mousePosition.x > 0 && mousePosition.y < 800)
 				{
 					curPos = coordinateToPosition(mousePosition);
 

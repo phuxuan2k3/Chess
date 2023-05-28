@@ -3,6 +3,7 @@
 GameBar* GameBar::instance = NULL;
 Troop GameBar::turn = Troop::White;
 Text GameBar::turnText;
+Sprite GameBar::undoBut;
 GameBar::GameBar() {
 	
 };
@@ -51,6 +52,18 @@ void GameBar::showGameBar(RenderWindow& window) {
 	turnText.setOutlineThickness(2);
 	turnText.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.15 * window.getSize().y);
 	window.draw(turnText);
+
+	float butScale = 0.3;
+	// Undo button
+	Texture undoTexture;
+	undoTexture.loadFromFile("Image/undoBut.png");
+	undoTexture.setSmooth(true);
+	undoBut.setTexture(undoTexture);
+	undoBut.setPosition(turnText.getPosition().x, turnText.getPosition().y + 100);
+	undoBut.setScale(butScale, butScale);
+	window.draw(undoBut);
+
+	
 
 
 }

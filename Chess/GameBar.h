@@ -8,6 +8,7 @@ class GameBar {
 private:
 	static Troop turn; 
 	static GameBar* instance;
+	static Sprite undoBut;
 	static Text turnText;
 	GameBar();
 public:
