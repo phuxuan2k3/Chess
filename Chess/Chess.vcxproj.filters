@@ -60,6 +60,9 @@
     <ClCompile Include="EndGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameBar.cpp">
+      <Filter>Source Files\Screen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Render.h">
@@ -100,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="EndGame.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameBar.h">
+      <Filter>Header Files\Screen</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
