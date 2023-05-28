@@ -6,12 +6,14 @@ using namespace sf;
 
 class GameBar {
 private:
-	static Troop turn; 
 	static GameBar* instance;
-	static Sprite undoBut;
-	static Text turnText;
 	GameBar();
 public:
+	static Troop turn; 
+	static Sprite undoBut;
+	static Text turnText;
+	static Text save;
+	static Text reset;
 	static void updateTurn();
 	static GameBar* getInstance();
 	static void deleteInstance();
