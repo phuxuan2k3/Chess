@@ -10,6 +10,7 @@
 GameState::GameState(Troop turn) {
 	this->iEndGame = nullptr;
 	this->turn = turn;
+	this->lastChoose = NullPiece::getInstance();
 
 	// Default Placing 
 
@@ -73,11 +74,8 @@ GameState::GameState(Troop turn) {
 
 GameState::~GameState()
 {
-	if(this->iEndGame != nullptr) delete this->iEndGame;
-
-	for (Piece* p : this->pieces) {
-		delete p;
-	}
+	if (this->iEndGame != nullptr) 
+		delete this->iEndGame;
 }
 
 void GameState::switchTurn() {
@@ -115,8 +113,6 @@ void GameState::PromotType(PieceType type, const Position& pos)
 
 	}
 }
-
-
 
 Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j) {
 	Piece* piece = nullptr;
@@ -219,165 +215,183 @@ bool GameState::isCanGo(Troop turn)
 	return false;
 }
 
+
+//// Set king's position
+//if (King* king = dynamic_cast<King*>(this->board.getPiece(src)))
+//{
+//	king->setPosition(dest);
+//}
+// Trigger event moved on the piece that chosen
+
+
 void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
-	//check move type
-	if (dest.getInfo() == PosInfo::Promote) {
-		this->promote = 1;
-
-		
-	}
-
-	// Normal Move:	
-
-	this->vecterMoves.deleteFrom(this->vecterMoves.getCurState() + 1);
-
-	//if a king move, set its position
-	if (King* king = dynamic_cast<King*>(this->board.getPiece(src)))
-	{
-		king->setPosition(dest);
-	}
-
-	Piece* copyPSrc = this->board.getPiece(src)->deepCopyPiece(this->board.getPiece(src));
-	Piece* copyPDes = nullptr;
+	// Change move history => No redo once moved
+	this->vecterMoves.triggerChanged();
 
 	Piece* pSrc = this->board.getPiece(src);
-	pSrc->triggerOnFirstMove();
+	Piece* pEaten = nullptr;
+	Position eatPos;
 
-	// If dest Square is occupied by a Piece
+	// Check promote
+	if (dest.getInfo() == PosInfo::Promote) {
+		this->promote = 1;
+	}
+
+	// If dest Square is occupied by a Piece => Just remove it from square, dont delete pls
 	if (this->board.hasPiece(dest) == true) {
-		copyPDes = this->board.getPiece(dest)->deepCopyPiece(this->board.getPiece(dest));
-
-		//delete piece
-		delete this->board.getPiece(dest);
+		pEaten = this->board.getPiece(dest);
+		eatPos = dest;
 		this->board.setPiece(dest, nullptr);
-
 	}
-	this->board.setPiece(dest, pSrc);
-	this->board.setPiece(src, nullptr);
-	this->board.lastChoose = pSrc;
 	// Castling Move:
-
-	if (pSrc->getTroop() == Troop::White) {
-		this->board.EnPassantWhite = false;
-	}
-	else {
-		this->board.EnPassantBlack = false;
-	}
-
-
-	if (dest.getInfo() == PosInfo::CastlingLeft) {
+	else if (dest.getInfo() == PosInfo::CastlingLeft) {
 		Piece* leftRook = this->board.getPiece(((King*)pSrc)->getLeftRook());
-		copyPDes = leftRook->deepCopyPiece(leftRook);
 		this->move(((King*)pSrc)->getLeftRook(), src.getRelativePosition(0, -1), canGo);
 	}
 	else if (dest.getInfo() == PosInfo::CastlingRight) {
 		Piece* rightRook = this->board.getPiece(((King*)pSrc)->getRightRook());
-		copyPDes = rightRook->deepCopyPiece(rightRook);
 		this->move(((King*)pSrc)->getRightRook(), src.getRelativePosition(0, 1), canGo);
 	}
-	else if (dest.getInfo() == PosInfo::PawnMovedTwoStep) {
-		if (pSrc->getTroop() == Troop::White) {
-			this->board.EnPassantBlack = true;
-		}
-		else {
-			this->board.EnPassantWhite = true;
-		}
-	}
+	// Enpassant
 	else if (dest.getInfo() == PosInfo::EnPassant) {
 		int dir = (pSrc->getTroop() == Troop::White ? 1 : -1);
-
-		Piece* pawn = this->board.getPiece(dest.getRelativePosition(dir, 0));
-		copyPDes = pawn->deepCopyPiece(pawn);
-
-		//delete piece
-		delete this->board.getPiece(dest.getRelativePosition(dir, 0));
-		this->board.getPiece(dest.getRelativePosition(dir, 0))->setNull();
-		this->board.setPiece(dest.getRelativePosition(dir, 0), nullptr);
+		Position EnPassantPos = dest.getRelativePosition(dir, 0);
+		pEaten = this->board.getPiece(EnPassantPos);
+		eatPos = EnPassantPos;
+		this->board.setPiece(EnPassantPos, nullptr);
 	}
 
-	this->board.getPiece(dest)->setNotNull();
-	this->vecterMoves.pushBack(copyPSrc, copyPDes, src, dest);
+	// Set piece to its destinaiton
+	this->board.setPiece(dest, pSrc);
+	this->board.setPiece(src, nullptr);
+
+	// Update into history
+	this->vecterMoves.update(pSrc, src, dest, pEaten, eatPos);
+
+	// Update last chosen piece
+	this->lastChoose->setNotLastChosen();
+	this->lastChoose = pSrc;
+	this->lastChoose->setLastChosen();
+
+	// Only update after moved
+	pSrc->triggerOnMoved(dest);
+
 }
 
-void GameState::undo()
-{
-	if (this->vecterMoves.getCurState() >= 0)
+
+void GameState::undo() {
+	// Current state to undo, cause it save information of the piece before it get to this current postion
+	MoveEvent* currentState = this->vecterMoves.getCur();
+	// If the state is 'empty' (starting or reached the current (for redo))
+	if (currentState == nullptr) {
+		// Do nothing
+		return;
+	}
+
+	if (this->board.hasPiece(currentState->getMoverDest()) == false) {
+		throw exception();
+	}
+
+	Piece* pieceThatReturn = this->board.getPiece(currentState->getMoverDest());
+
+	// Return undo piece to its previous position and copy its previous properties into it.
+	this->board.setPiece(currentState->getMoverDest(), nullptr);
+	this->board.setPiece(currentState->getMoverSrc(), pieceThatReturn);
+	currentState->loadMoverInfo(pieceThatReturn);
+
+	// Revive eaten piece: place back the pointer
+	if (currentState->isEatMove() == true) {
+		this->board.setPiece(currentState->getEatenPos(), currentState->reviveEaten());
+	}
+
+	// Special: Castling - moved twice, so we undo twice
+	if (currentState->getMoverDest().getInfo() == PosInfo::CastlingRight ||
+		currentState->getMoverDest().getInfo() == PosInfo::CastlingLeft)
 	{
-		Move lastMove = this->vecterMoves.getAt(this->vecterMoves.getCurState());
-
-		this->vecterMoves.setCurState(this->vecterMoves.getCurState() - 1);
-
-		if (King* king = dynamic_cast<King*>(lastMove.getMover()))
-		{
-			king->setPosition(lastMove.getSrcPos());
-		}
-
-		//delete
-		if (this->board.getPiece(lastMove.getDesPos()))
-		{
-			this->board.getPiece(lastMove.getDesPos())->setNull();
-			delete this->board.getPiece(lastMove.getDesPos());
-			//this->board.getPiece(lastMove.getDesPos())->setNull();
-			this->board.setPiece(lastMove.getDesPos(), nullptr);
-		}
-
-		Piece* newMover = lastMove.getCopyMover();
-		this->board.setPiece(lastMove.getSrcPos(), newMover);
-		this->board.getPiece(lastMove.getSrcPos())->setNotNull();
-		//set king in gamestate a gain because new king is created
-		if (King* king = dynamic_cast<King*>(newMover))
-		{
-			(newMover->getTroop() == Troop::White ? this->whiteKing : this->blackKing) = king;
-		}
-
-		int dir = 0;
-		Position rookPos;
-		switch (lastMove.getDesPos().getInfo())
-		{
-		case PosInfo::CastlingLeft:
-			this->undo();
-			//this->board.getPiece(lastMove.getDesPos())->setNull();
-			//this->board.setPiece(((King*)lastMove.getMover())->getLeftRook(), lastMove.getCopyEaten());
-			////delete rook
-			//rookPos = lastMove.getDesPos().getRelativePosition(0, 1);
-			//delete this->board.getPiece(rookPos);
-			//this->board.getPiece(rookPos)->setNull();
-			//this->board.setPiece(rookPos, nullptr);
-			break;
-		case PosInfo::CastlingRight:
-			this->undo();
-			//this->board.getPiece(lastMove.getDesPos())->setNull();
-			 //this->board.setPiece(((King*)lastMove.getMover())->getRightRook(), lastMove.getCopyEaten());
-			 ////delete rook
-			 //rookPos = lastMove.getDesPos().getRelativePosition(0, -1);
-			 //delete this->board.getPiece(rookPos);
-			 //this->board.getPiece(rookPos)->setNull();
-			 //this->board.setPiece(rookPos, nullptr);
-			break;
-		case PosInfo::EnPassant:
-			dir = (lastMove.getCopyMover()->getTroop() == Troop::White ? 1 : -1);
-			this->board.setPiece(lastMove.getDesPos().getRelativePosition(dir, 0), lastMove.getCopyEaten());
-			break;
-		default:
-			if (lastMove.getEaten())
-			{
-				this->board.setPiece(lastMove.getDesPos(), lastMove.getCopyEaten());
-				this->board.getPiece(lastMove.getDesPos())->setNotNull();
-			}
-			break;
-		}
-		this->turn = lastMove.getMover()->getTroop();
-
-		if (this->vecterMoves.getCurState() >= 0)
-		{
-			this->board.lastChoose = this->vecterMoves.getAt(this->vecterMoves.getCurState()).getMover();
-		}
-		else
-		{
-			this->board.lastChoose = nullptr;
-		}
+		this->undo();
 	}
+
+	// Set state to previous one
+	this->vecterMoves.goBack();
+
+	// Last piece chosen. Note: since it has gone back, the piece used here is the previous state's piece
+	// also the last chosen piece
+	// Reached its start
+	if (this->vecterMoves.getCur() == nullptr) {
+		this->lastChoose = NullPiece::getInstance();
+	}
+	else {
+		// Get its reference
+		// Note: it has already set to be chosen because of the copy into memory (?)
+		this->lastChoose->setNotLastChosen();
+		this->lastChoose = this->vecterMoves.getCur()->getMover();
+		this->lastChoose->setLastChosen();
+	}
+
 }
+
+//
+//void GameState::undo()
+//{
+//	if (this->vecterMoves.getCurState() >= 0)
+//	{
+//		MoveEvent lastMove = this->vecterMoves.getAt(this->vecterMoves.getCurState());
+//
+//		this->vecterMoves.setCurState(this->vecterMoves.getCurState() - 1);
+//
+//		if (King* king = dynamic_cast<King*>(lastMove.getMover()))
+//		{
+//			king->setPosition(lastMove.getMoverSrc());
+//		}
+//
+//		//delete piece at its current position
+//		if (this->board.getPiece(lastMove.getMoverDest()))
+//		{
+//			delete this->board.getPiece(lastMove.getMoverDest());
+//			this->board.setPiece(lastMove.getMoverDest(), nullptr);
+//		}
+//
+		//Piece* newMover = lastMove.getCopyMover();
+		//this->board.setPiece(lastMove.getMoverSrc(), newMover);
+		////set king in gamestate a gain because new king is created
+		//if (King* king = dynamic_cast<King*>(newMover))
+		//{
+		//	(newMover->getTroop() == Troop::White ? this->whiteKing : this->blackKing) = king;
+		//}
+//
+//		int dir = 0;
+//		Position rookPos;
+//		switch (lastMove.getMoverDest().getInfo())
+//		{
+//		case PosInfo::CastlingLeft:
+//			this->undo();
+//			break;
+//		case PosInfo::CastlingRight:
+//			this->undo();
+//			break;
+//		case PosInfo::EnPassant:
+//			dir = (lastMove.getCopyMover()->getTroop() == Troop::White ? 1 : -1);
+//			this->board.setPiece(lastMove.getMoverDest().getRelativePosition(dir, 0), lastMove.getCopyEaten());
+//			break;
+//		default:
+//			if (lastMove.getEaten())
+//			{
+//				this->board.setPiece(lastMove.getMoverDest(), lastMove.getCopyEaten());
+//			}
+//			break;
+//		}
+//		this->turn = lastMove.getMover()->getTroop();
+//
+//		if (this->vecterMoves.getCurState() >= 0)
+//		{
+//			this->lastChoose = this->vecterMoves.getAt(this->vecterMoves.getCurState()).getMover();
+//		}
+//		else
+//		{
+//			this->lastChoose = NullPiece::getInstance();
+//		}
+//	}
+//}
 
 EndGameType GameState::checkEndGame()
 {

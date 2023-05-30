@@ -159,9 +159,6 @@ Board::Board() {
 	for (int i = 0; i < 8; ++i) {
 		this->board[i] = new Square[8];
 	}
-	EnPassantBlack = false;
-	EnPassantWhite = false;
-	lastChoose = nullptr;
 }
 
 Board::~Board() {
@@ -195,9 +192,6 @@ bool Board::hasPiece(const Position& pos) const {
 	return !this->getSquare(pos).isEmpty();
 }
 
-// PlacePiece is different than setPiece about it also set piece.standOn
-// to the square that it gonna be placed on
-
 void Board::setPiece(const int i, const int j, Piece* piece) {
 	this->board[i][j].setPiece(piece);
 }
@@ -217,8 +211,20 @@ Piece::Piece()
 Piece::Piece(Troop color)
 {
 	// let the subclass initialize type
-	this->isFirstMove = true;
+	this->lastChosen = false;
 	this->color = color;
+}
+
+Piece::Piece(const Piece& p) {
+	this->color = p.color;
+	this->type = p.type;
+	this->lastChosen = p.lastChosen;
+}
+
+void Piece::set(const Piece* p) {
+	this->color = p->color;
+	this->lastChosen = p->lastChosen;
+	this->type = p->type;
 }
 
 PieceType Piece::getPieceType() const {
@@ -227,6 +233,38 @@ PieceType Piece::getPieceType() const {
 
 Troop Piece::getTroop() const {
 	return this->color;
+}
+
+bool Piece::isLastChosen() const {
+	return this->lastChosen;
+}
+
+void Piece::setLastChosen() {
+	this->lastChosen = true;
+
+}
+void Piece::setNotLastChosen() {
+	this->lastChosen = false;
+}
+
+bool Piece::isKing() const {
+	return false;
+}
+
+bool Piece::isNullPiece() const {
+	return false;
+}
+
+void Piece::triggerOnMoved(const Position& dest) 
+{
+}
+
+bool Piece::canBeEnpassant(Troop requestor) {
+	return false;
+}
+
+bool Piece::canCastle(Troop requestor) {
+	return false;
 }
 
 Piece::~Piece()

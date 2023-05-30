@@ -1,15 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="System.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="StaticFunc.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Pieces.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Screen.cpp">
       <Filter>Render</Filter>
     </ClCompile>
@@ -25,15 +16,6 @@
     <ClCompile Include="GameBar.cpp">
       <Filter>Render</Filter>
     </ClCompile>
-    <ClCompile Include="EndGame.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="HistoryMove.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="GUI.cpp">
       <Filter>Communicate</Filter>
     </ClCompile>
@@ -43,17 +25,26 @@
     <ClCompile Include="Exception.cpp">
       <Filter>Mics</Filter>
     </ClCompile>
+    <ClCompile Include="EndGame.cpp">
+      <Filter>Game\Endgame</Filter>
+    </ClCompile>
+    <ClCompile Include="HistoryMove.cpp">
+      <Filter>Game\UndoRedo</Filter>
+    </ClCompile>
+    <ClCompile Include="Pieces.cpp">
+      <Filter>Game\BasicComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticFunc.cpp">
+      <Filter>Game\BasicComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="System.cpp">
+      <Filter>Game\BasicComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="System.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticFunc.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Pieces.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="Screen.h">
       <Filter>Render</Filter>
     </ClInclude>
@@ -69,15 +60,6 @@
     <ClInclude Include="GameBar.h">
       <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="EndGame.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="HistoryMove.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="GUI.h">
       <Filter>Communicate</Filter>
     </ClInclude>
@@ -86,6 +68,24 @@
     </ClInclude>
     <ClInclude Include="Exception.h">
       <Filter>Mics</Filter>
+    </ClInclude>
+    <ClInclude Include="EndGame.h">
+      <Filter>Game\Endgame</Filter>
+    </ClInclude>
+    <ClInclude Include="HistoryMove.h">
+      <Filter>Game\UndoRedo</Filter>
+    </ClInclude>
+    <ClInclude Include="Pieces.h">
+      <Filter>Game\BasicComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticFunc.h">
+      <Filter>Game\BasicComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="System.h">
+      <Filter>Game\BasicComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +103,15 @@
     </Filter>
     <Filter Include="Mics">
       <UniqueIdentifier>{e7d73ccd-41db-44a0-a127-5695076a691b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\UndoRedo">
+      <UniqueIdentifier>{4b01931e-69ad-4ab4-8a0c-977d6b4d23a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Endgame">
+      <UniqueIdentifier>{85fc41c0-38f3-425e-8e85-eb5eb8c8be36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\BasicComponent">
+      <UniqueIdentifier>{210b4d21-17aa-4e97-8bd3-84c90568e253}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

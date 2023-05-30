@@ -2,44 +2,41 @@
 #include "StaticFunc.h"
 
 
-//class PieceConnection {
-//private:
-//	Position dest;
-//
-//public:
-//	PieceConnection();
-//
-//	void setConnection(const Position& dest);
-//	Position getDestPosition() const; 
-//};
 
-class Castling
+class FirstMovePiece
 {
 private:
-	bool castlable; //isFirstMove
+	bool firstMove;
 
-protected:
-	Castling();
-	void setCastlable(bool c);
 public:
-	void unCastlable();
-	bool isCastlable() const;
+	FirstMovePiece();
+	FirstMovePiece(const FirstMovePiece& fmp);
+	void setFirstMove(bool firstMove);
+	void setMoved();
+	bool hasNotMove() const;
 };
 
 //============== 6 Types Of Pieces =================
 
 class King;	// Forwarding this
 
-class Pawn : public Piece
+
+
+class Pawn : public Piece, public FirstMovePiece
 {
 private:
-	bool pawnFirstMove;
+	bool pawnFirstMoveTwoSteps;
 
 public:
 	Pawn(Troop color);
 	Pawn(const Pawn& p);
 	~Pawn();
-	virtual void triggerOnFirstMove();
+	
+	void set(const Piece* p);
+
+	void triggerOnMoved(const Position& dest);
+	bool canBeEnpassant(Troop requestor);
+
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
 };
@@ -51,6 +48,7 @@ class Bishop : public Piece
 public:
 	Bishop(Troop color);
 	Bishop(const Bishop& b);
+
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
 };
@@ -62,21 +60,25 @@ class Knight : public Piece
 public:
 	Knight(Troop color);
 	Knight(const Knight& k);
+
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
 };
 
 
 
-class Rook : public Piece, public Castling
+class Rook : public Piece, public FirstMovePiece
 {
-
 public:
 	Rook(Troop color);
 	Rook(const Rook& r);
-	vector<Position> canGo(const Position& src, const Board& board);
 
-	virtual void triggerOnFirstMove();
+	void set(const Piece* p);
+
+	void triggerOnMoved(const Position& dest);
+	bool canCastle(Troop requestor);
+
+	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
 };
 
@@ -87,16 +89,17 @@ class Queen : public Piece
 public:
 	Queen(Troop color);
 	Queen(const Queen& q);
+
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
 };
 
 
 
-class King : public Piece, public Castling
+class King : public Piece, public FirstMovePiece
 {
 private:
-	Position kingPos; // positon of the king
+	Position kingPos;		// positon of the king
 	Position leftRook;
 	Position rightRook;
 
@@ -104,14 +107,44 @@ public:
 	King(Troop color);
 	King(const King& ki);
 
+	void set(const Piece* p);
+
 	Position getPosition();
 	void setPosition(const Position& p);
 
-	vector<Position> canGo(const Position& src, const Board& board);
+	void triggerOnMoved(const Position& dest);
+	bool canCastle(Troop requestor);
+	bool isKing() const;
 
-	virtual void triggerOnFirstMove();
 	void setRooksPosition(const Position& lRook, const Position& rRook);	// To move Rook on castling
 	Position getLeftRook() const;
 	Position getRightRook() const;
+
+	vector<Position> canGo(const Position& src, const Board& board);
+	Piece* deepCopyPiece(Piece* p);
+};
+
+
+// Null object - Singleton
+// When a square has no piece on it
+// Used for nullptr case of Piece, very useful, dont delete
+// 
+class NullPiece : public Piece 
+{
+private:
+	static NullPiece* instance;
+
+	NullPiece();
+public:
+	static NullPiece* getInstance();
+	static void deleteInstance();
+
+	void setNotLastChosen();
+	void setLastChosen();
+	bool isLastChosen() const;
+
+	bool isNullPiece() const;
+
+	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
 };

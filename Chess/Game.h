@@ -18,8 +18,9 @@ private:
 	King* whiteKing;
 	King* blackKing;
 
-	VectorMoves vecterMoves;
+	MoveHistory vecterMoves;
 
+	Piece* lastChoose;
 	Piece* initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j);
 	Piece* initPieceOnBoard(PieceType pn, Troop pc, const Position& p);
 
@@ -36,7 +37,6 @@ public:
 	const Board* getRefBoard() const;
 	void PromotType(PieceType type, const Position& pos);
 	// Determine if position chosen or move is valid
-	Position getPiecePos();
 	bool isValidChoice(const Position& pos) const;
 	bool isValidMove(const Position& src, const Position& dest, vector<Position> canGo) const;
 	// Return empty vector if pos is invalid, or that troop has no moves availible

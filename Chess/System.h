@@ -2,14 +2,16 @@
 #include "Exception.h"
 
 
-// mark = about to change
-
 enum class Troop {
+	None = -1,
+
 	Black = 0,
 	White = 1,
 };
 
 enum class PieceType {
+	None = -1,
+
 	Pawn,
 	Knight,
 	Bishop,
@@ -130,27 +132,22 @@ public:
 	void setPiece(const Position& p, Piece* piece);
 
 	bool hasPiece(const Position& pos) const;
-
-	bool EnPassantBlack;
-	bool EnPassantWhite;
-	Piece* lastChoose;
 };
 
 //=================================================================
 
-class Piece : public WrongAbleType
+class Piece
 {
 private:
 
 protected:
-	bool isFirstMove;
+	bool lastChosen;
 	Troop color;
 	PieceType type;
 
 	Piece();
-	Piece(Troop color);						// Not callable from Piece instance (protected)
-	// When initialize, a piece must have a square to stand on. If it has been eaten, that stand on
-	// will be nullptr.
+	Piece(Troop color);
+	Piece(const Piece& p);
 
 public:
 	virtual ~Piece();
@@ -158,8 +155,24 @@ public:
 	PieceType getPieceType() const;
 	Troop getTroop() const;
 
-	// Do nothing on normal pieces: Knight, Bishop, Queen
-	virtual void triggerOnFirstMove() {}
+	// Full set property (copy)
+	virtual void set(const Piece* p);
+
+	// NullPiece will always false
+	virtual bool isLastChosen() const;
+	virtual void setNotLastChosen();
+	virtual void setLastChosen();
+
+	// Some kinds of piece may perform differently
+	virtual bool isKing() const;
+	virtual bool isNullPiece() const;
+
+	// Trigger here only can only change pieces's property
+	virtual void triggerOnMoved(const Position& dest);
+	// Pass troop (color) of the requestor in to determine if its enemy or ally
+	virtual bool canBeEnpassant(Troop requestor);
+	virtual bool canCastle(Troop requestor);
+
 	virtual vector<Position> canGo(const Position& src, const Board& board) = 0;
 	virtual Piece* deepCopyPiece(Piece* p) = 0;
 };

@@ -1,37 +1,60 @@
 #pragma once
 #include "System.h"
-#include <vector>
 
-class	 Move
+
+
+class MoveEvent
 {
+private:
+	// New memory
 	Piece* moverPiece;
-	Piece* eatenPiece;
+	Piece* preInfoPiece;
 	Position srcPos;
-	Position desPos;
+	Position destPos;
+	
+	// Only reference
+	Piece* eatenPiece;
+	Position eatPos;
+
 public:
-	Move();
-	Move(Piece* mover, Piece* eaten, const Position& srcPos, const Position& desPos);
-	~Move();
-	void deleteMove();
-	Piece* getCopyMover();
-	Piece* getCopyEaten();
-	Piece* getMover();
-	Piece* getEaten();
-	Position getSrcPos();
-	Position getDesPos();
+	MoveEvent(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos);
+	~MoveEvent();
+
+	// Load saved properties
+	void loadMoverInfo(Piece* const p) const;
+	Piece* getMover() const;
+	Position getMoverSrc() const;
+	Position getMoverDest() const;
+
+	bool isEatMove() const;
+	
+	// Eating moves
+	Piece* reviveEaten() const;
+	Position getEatenPos() const;
 };
 
-class VectorMoves
+//=======================================================
+
+// Stack style
+
+class MoveHistory
 {
-	vector<Move> moves;
-	int curState;
+private:
+	vector<MoveEvent*> moves;
+	int state;
+
 public:
-	VectorMoves();
-	VectorMoves(const int& curState, const vector<Move>& moves);
-	void pushBack(Piece* mover, Piece* eaten, const Position& srcPos, const Position& desPos);
-	Move getAt(const int& state);
-	void setCurState(const int& state);
-	int getCurState();
-	void popBack();
-	void deleteFrom(const int& state);
+	MoveHistory();
+	~MoveHistory();
+
+	void update(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos);
+
+	MoveEvent* getCur() const;
+	// These two should only be called when performed undo/redo
+	void goBack();	// undo
+	void goOn();	// redo
+
+	// Clear all future events when triggered by moving
+	void triggerChanged();
 };
+

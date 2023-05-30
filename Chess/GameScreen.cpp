@@ -1,4 +1,6 @@
 #include "GameScreen.h"
+
+
 GameScreen::GameScreen(float& windowWidthScale, float& windowHeightScale, RenderGame*& render, GameState*& game) : Screen(windowWidthScale, windowHeightScale, render, game) {
 	this->gameb = GameBar::getInstance();
 }

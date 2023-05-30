@@ -64,3 +64,7 @@ vector<Position> shortMove(const Position& src, const Board& board, Troop pieceC
 
 // Pawn will have its own move
 
+//===================================================
+// Move act
+//===================================================
+

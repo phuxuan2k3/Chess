@@ -1,114 +1,102 @@
 #include "HistoryMove.h"
 #include "Pieces.h"
 
-Move::Move()
-{
-	this->moverPiece = nullptr;
-	this->eatenPiece = nullptr;
-}
 
-Move::Move(Piece* mover, Piece* eaten, const Position& srcPos, const Position& desPos)
-{
+//========================================================
+// Move Event
+//========================================================
+
+
+MoveEvent::MoveEvent(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos) {
+	this->preInfoPiece = mover->deepCopyPiece(mover);
 	this->moverPiece = mover;
 	this->eatenPiece = eaten;
 	this->srcPos = srcPos;
-	this->desPos = desPos;
+	this->destPos = desPos;
+	this->eatPos = eatPos;
 }
 
-Move::~Move()
+MoveEvent::~MoveEvent()
 {
-}
-
-void Move::deleteMove()
-{
-	delete this->moverPiece;
+	delete this->preInfoPiece;
 	delete this->eatenPiece;
 }
 
-Piece* Move::getCopyMover()
-{
-	return this->moverPiece->deepCopyPiece(this->moverPiece);
+bool MoveEvent::isEatMove() const {
+	return this->eatenPiece != nullptr &&
+		this->eatPos.isNotNull() == true;
 }
 
-Piece* Move::getCopyEaten()
-{
-	if (this->eatenPiece)
-	{
-		return this->eatenPiece->deepCopyPiece(this->eatenPiece);
-	}
-	return nullptr;
+void MoveEvent::loadMoverInfo(Piece* const p) const {
+	p->set(this->preInfoPiece);
 }
 
-Piece* Move::getMover()
-{
-	return this->moverPiece;
-}
-
-Piece* Move::getEaten()
-{
+Piece* MoveEvent::reviveEaten() const {
 	return this->eatenPiece;
 }
 
-Position Move::getSrcPos()
-{
+Position MoveEvent::getMoverSrc() const {
 	return this->srcPos;
 }
 
-Position Move::getDesPos()
-{
-	return this->desPos;
+Position MoveEvent::getMoverDest() const {
+	return this->destPos;
 }
 
-VectorMoves::VectorMoves()
-{
-	this->curState = -1;
+Position MoveEvent::getEatenPos() const {
+	return this->eatPos;
 }
 
-VectorMoves::VectorMoves(const int& curState, const vector<Move>& moves)
-{
-	this->curState = curState;
-	this->moves = moves;
+Piece* MoveEvent::getMover() const {
+	return this->moverPiece;
 }
 
-void VectorMoves::pushBack(Piece* mover, Piece* eaten, const Position& srcPos, const Position& desPos)
+
+//========================================================
+// Move History
+//========================================================
+
+
+MoveHistory::MoveHistory()
 {
-	this->moves.push_back(Move(mover, eaten, srcPos, desPos));
-	this->curState++;
+	this->state = -1;
 }
 
-Move VectorMoves::getAt(const int& state)
+MoveHistory::~MoveHistory() {
+	for (MoveEvent* move : this->moves) {
+		delete move;
+		move = nullptr;
+	}
+}
+
+void MoveHistory::update(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos)
 {
-	if (state > this->moves.size() - 1)
-	{
-		return this->moves.at(this->moves.size() - 1);
+	this->moves.push_back(new MoveEvent(mover, srcPos, desPos, eaten, eatPos));
+	this->state++;
+}
+
+MoveEvent* MoveHistory::getCur() const {
+	if (this->state <= -1 || this->state >= this->moves.size()) {
+		return nullptr;
 	}
 	return this->moves.at(state);
 }
 
-void VectorMoves::setCurState(const int& state)
-{
-	this->curState = state;
+void MoveHistory::goBack() {
+	if (this->state >= 0) {
+		this->state -= 1;
+	}
 }
 
-int VectorMoves::getCurState()
-{
-	return this->curState;
+void MoveHistory::goOn() {
+	if (this->state < this->moves.size() - 1) {
+		this->state += 1;
+	}
 }
 
-void VectorMoves::popBack()
-{
-	if (this->moves.empty() == false)
-	{
-		Move m = this->moves.at(this->moves.size() - 1);
-		m.deleteMove();
+void MoveHistory::triggerChanged() {
+	for (int i = this->state + 1; i < this->moves.size(); i++) {
 		this->moves.pop_back();
 	}
 }
 
-void VectorMoves::deleteFrom(const int& state)
-{
-	while (this->moves.size() - 1 >= state && this->moves.empty() == false)
-	{
-		this->popBack();
-	}
-}
