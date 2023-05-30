@@ -4,8 +4,6 @@ Troop GameBar::turn = Troop::White;
 Text GameBar::turnText;
 Sprite GameBar::undoBut;
 Sprite GameBar::homeBut;
-Text GameBar::selectedText;
-PieceType GameBar::type;
 Text GameBar::reset;
 int GameBar::canUndo = 0;
 
@@ -24,11 +22,6 @@ void GameBar::deleteInstance() {
 	if (!instance) return;
 	delete instance;
 	instance = NULL;
-}
-
-void GameBar::updateSelected(PieceType t)
-{
-	type = t;
 }
 
 void GameBar::updateTurn() {
@@ -63,43 +56,6 @@ void GameBar::showGameBar(RenderWindow& window) {
 	turnText.setOutlineThickness(2);
 	turnText.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.15 * window.getSize().y);
 	window.draw(turnText);
-	//Selected
-	selectedText.setFont(turrnFont);
-
-	selectedText.setPosition(bg.getPosition().x + 0.55 * textureBG.getSize().x * bg.getScale().x - 80, 0.5 * window.getSize().y);
-	selectedText.setFillColor((Color::Black));
-	selectedText.setCharacterSize(turnSize*0.5);
-	selectedText.setOutlineThickness(2);
-
-	selectedText.setOutlineColor(sf::Color(Color(90, 61, 43)));
-
-	
-
-	if (type == PieceType::Pawn) {
-		selectedText.setString("PAWN");
-
-	}
-	if (type == PieceType::Bishop) {
-		selectedText.setString("BISHOP");
-
-	}
-	if (type == PieceType::Knight) {
-		selectedText.setString("KNIGHT");
-
-	}
-	if (type == PieceType::King) {
-		selectedText.setString("KING");
-
-	}
-	if (type == PieceType::Queen) {
-		selectedText.setString("QUEEN");
-
-	}
-	if (type == PieceType::Rook) {
-		selectedText.setString("ROOK");
-
-	}
-	window.draw(selectedText);
 
 	float butScale = 0.3;
 	//home button

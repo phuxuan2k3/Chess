@@ -78,7 +78,6 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					if (this->render->getState() == State::NotSelected &&
 						this->game->isValidChoice(curPos) == true)
 					{
-						GameBar::updateSelected(this->game->getRefBoard()->getPiece(curPos)->getPieceType());
 						sf::RectangleShape rec(sf::Vector2f(100, 100));
 						rec.setPosition(curPos.get_i(), curPos.get_i());
 						rec.setFillColor(sf::Color(245, 40, 145, 150));
