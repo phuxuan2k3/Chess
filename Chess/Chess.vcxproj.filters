@@ -1,38 +1,108 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="EndGame.cpp" />
-    <ClCompile Include="Exception.cpp" />
-    <ClCompile Include="GameBar.cpp" />
-    <ClCompile Include="GameScreen.cpp" />
-    <ClCompile Include="GUI.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="HistoryMove.cpp" />
-    <ClCompile Include="MenuScreen.cpp" />
-    <ClCompile Include="Render.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Pieces.cpp" />
-    <ClCompile Include="Screen.cpp" />
-    <ClCompile Include="StaticFunc.cpp" />
-    <ClCompile Include="System.cpp" />
+    <ClCompile Include="System.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticFunc.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Pieces.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Screen.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuScreen.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScreen.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameBar.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="EndGame.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="HistoryMove.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI.cpp">
+      <Filter>Communicate</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Mics</Filter>
+    </ClCompile>
+    <ClCompile Include="Exception.cpp">
+      <Filter>Mics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EndGame.h" />
-    <ClInclude Include="Exception.h" />
-    <ClInclude Include="GameBar.h" />
-    <ClInclude Include="GameScreen.h" />
-    <ClInclude Include="GUI.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="HistoryMove.h" />
-    <ClInclude Include="MenuScreen.h" />
-    <ClInclude Include="Render.h" />
-    <ClInclude Include="Header.h" />
-    <ClInclude Include="Pieces.h" />
-    <ClInclude Include="Screen.h" />
-    <ClInclude Include="StaticFunc.h" />
-    <ClInclude Include="System.h" />
+    <ClInclude Include="System.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticFunc.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Pieces.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Screen.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuScreen.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScreen.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameBar.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="EndGame.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="HistoryMove.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI.h">
+      <Filter>Communicate</Filter>
+    </ClInclude>
+    <ClInclude Include="Header.h">
+      <Filter>Mics</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.h">
+      <Filter>Mics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Communicate">
+      <UniqueIdentifier>{b1b56755-1249-4f68-abdc-dcb43205a769}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{4b1ab550-1833-4587-b308-df29afe5ab0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{3b6664c1-7349-4892-a4fc-9edf142beb38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mics">
+      <UniqueIdentifier>{e7d73ccd-41db-44a0-a127-5695076a691b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
