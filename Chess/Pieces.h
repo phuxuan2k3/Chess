@@ -39,7 +39,6 @@ public:
 	Pawn(Troop color);
 	Pawn(const Pawn& p);
 	~Pawn();
-	void triggerPromotion();
 	virtual void triggerOnFirstMove();
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);

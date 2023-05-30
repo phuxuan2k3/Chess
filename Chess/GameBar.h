@@ -7,6 +7,8 @@ using namespace sf;
 class GameBar {
 private:
 	static GameBar* instance;
+	static Text selectedText;
+	static PieceType type;
 	GameBar();
 public:
 	static Troop turn; 
@@ -18,6 +20,7 @@ public:
 	static void updateTurn();
 	static GameBar* getInstance();
 	static void deleteInstance();
+	static void updateSelected(PieceType type);
 	void showGameBar(RenderWindow& window);
 };
 

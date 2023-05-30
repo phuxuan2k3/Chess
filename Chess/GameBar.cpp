@@ -1,10 +1,11 @@
 #include "GameBar.h"
-
 GameBar* GameBar::instance = NULL;
 Troop GameBar::turn = Troop::White;
 Text GameBar::turnText;
 Sprite GameBar::undoBut;
 Sprite GameBar::homeBut;
+Text GameBar::selectedText;
+PieceType GameBar::type;
 Text GameBar::reset;
 int GameBar::canUndo = 0;
 
@@ -25,6 +26,11 @@ void GameBar::deleteInstance() {
 	instance = NULL;
 }
 
+void GameBar::updateSelected(PieceType t)
+{
+	type = t;
+}
+
 void GameBar::updateTurn() {
 	if (turn == Troop::White) {
 		turn = Troop::Black;
@@ -41,7 +47,7 @@ void GameBar::showGameBar(RenderWindow& window) {
 	textureBG.setSmooth(true);
 	Sprite bg;
 	bg.setTexture(textureBG);
-	bg.setPosition(float(0.66 * window.getSize().x), 0);
+	bg.setPosition(float(0.67 * window.getSize().x), 0);
 	bg.setScale(float(0.35 * window.getSize().x / textureBG.getSize().x), float(1.0 * window.getSize().y / textureBG.getSize().y));
 	window.draw(bg);
 
@@ -50,13 +56,50 @@ void GameBar::showGameBar(RenderWindow& window) {
 	double turnSize = 0.1 * window.getSize().y;
 	turrnFont.loadFromFile("Font/gameFont_01.otf");
 	turnText.setFont(turrnFont);
-	turnText.setString((this->turn == Troop::White? "White":"Black"));
+	turnText.setString((this->turn == Troop::White ? "White" : "Black"));
 	turnText.setCharacterSize(turnSize);
 	turnText.setFillColor((this->turn == Troop::White ? Color(255, 236, 180) : Color::Black));
 	turnText.setOutlineColor(sf::Color(Color(90, 61, 43)));
 	turnText.setOutlineThickness(2);
 	turnText.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.15 * window.getSize().y);
 	window.draw(turnText);
+	//Selected
+	selectedText.setFont(turrnFont);
+
+	selectedText.setPosition(bg.getPosition().x + 0.55 * textureBG.getSize().x * bg.getScale().x - 80, 0.5 * window.getSize().y);
+	selectedText.setFillColor((Color::Black));
+	selectedText.setCharacterSize(turnSize*0.5);
+	selectedText.setOutlineThickness(2);
+
+	selectedText.setOutlineColor(sf::Color(Color(90, 61, 43)));
+
+	
+
+	if (type == PieceType::Pawn) {
+		selectedText.setString("PAWN");
+
+	}
+	if (type == PieceType::Bishop) {
+		selectedText.setString("BISHOP");
+
+	}
+	if (type == PieceType::Knight) {
+		selectedText.setString("KNIGHT");
+
+	}
+	if (type == PieceType::King) {
+		selectedText.setString("KING");
+
+	}
+	if (type == PieceType::Queen) {
+		selectedText.setString("QUEEN");
+
+	}
+	if (type == PieceType::Rook) {
+		selectedText.setString("ROOK");
+
+	}
+	window.draw(selectedText);
 
 	float butScale = 0.3;
 	//home button

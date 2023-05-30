@@ -153,15 +153,15 @@ Square::~Square()
 // Board
 //=======================================================
 
-bool Board::EnPassantBlack = false;
-bool Board::EnPassantWhite = false;
-Piece* Board::lastChoose = nullptr;
 
 Board::Board() {
 	this->board = new Square * [8];
 	for (int i = 0; i < 8; ++i) {
 		this->board[i] = new Square[8];
 	}
+	EnPassantBlack = false;
+	EnPassantWhite = false;
+	lastChoose = nullptr;
 }
 
 Board::~Board() {

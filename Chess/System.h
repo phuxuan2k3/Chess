@@ -131,9 +131,9 @@ public:
 
 	bool hasPiece(const Position& pos) const;
 
-	static bool EnPassantBlack; // Quân đen bắt tốt được
-	static bool EnPassantWhite; // quân trắng bắt tốt được 
-	static Piece* lastChoose; // con cờ được chọn cuối
+	bool EnPassantBlack;
+	bool EnPassantWhite;
+	Piece* lastChoose;
 };
 
 //=================================================================

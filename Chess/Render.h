@@ -59,6 +59,7 @@ public:
 	// Draw
 	void draw(sf::RenderWindow& window);
 	void drawCanGo(sf::RenderWindow& window);
+	void drawSelected(sf::RenderWindow& window, Position pos);
 };
 
 //===================================================
@@ -85,6 +86,7 @@ public:
 	// Draw
 	void draw(sf::RenderWindow& window);
 	void drawCanGo(sf::RenderWindow& window, vector<Position> squares);
+	void drawSelected(sf::RenderWindow& window, Position pos);
 };
 
 //===================================================
@@ -107,6 +109,9 @@ public:
 	// Draw
 	void draw(sf::RenderWindow& window);
 	void drawCanGo(sf::RenderWindow& window, vector<Position> squares);
+
+	void drawSelected(sf::RenderWindow& window, Position pos);
+
 };
 
 class RenderPromote

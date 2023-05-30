@@ -1,5 +1,4 @@
 #include "GameScreen.h"
-
 GameScreen::GameScreen(float& windowWidthScale, float& windowHeightScale, RenderGame*& render, GameState*& game) : Screen(windowWidthScale, windowHeightScale, render, game) {
 	this->gameb = GameBar::getInstance();
 }
@@ -15,6 +14,9 @@ void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare,
 	this->gameb->showGameBar(window);
 	this->render->draw(window);
 	this->render->drawCanGo(window, cango);
+	this->render->drawSelected(window, selectedSquare);
+	this->gameb->showGameBar(window);
+
 	window.display();
 }
 void GameScreen::chessPos(RenderWindow& window)
@@ -70,13 +72,23 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				if (mousePosition.x < 800 && mousePosition.x > 0 && mousePosition.y < 800)
 				{
 					curPos = coordinateToPosition(mousePosition);
+					
 
 					//neu chua chon mot quan co truoc do thi hien len duong di cua quan co duoc chon  va phai den turn
 					if (this->render->getState() == State::NotSelected &&
 						this->game->isValidChoice(curPos) == true)
 					{
+						GameBar::updateSelected(this->game->getRefBoard()->getPiece(curPos)->getPieceType());
+						sf::RectangleShape rec(sf::Vector2f(100, 100));
+						rec.setPosition(curPos.get_i(), curPos.get_i());
+						rec.setFillColor(sf::Color(245, 40, 145, 150));
 					
+						rec.setOutlineColor(sf::Color(255, 0, 0));
+						rec.setOutlineThickness(50);
+						window.draw(rec);
+						this->game;
 						canGo = this->game->canGo(curPos);
+
 						// neu khong co nuoc di hop le, ta giu nguyen trang thai NotSelected
 						// nguoc lai, ta chuyen ve tran thai Selected
 						if (canGo.empty() == false) {
@@ -102,6 +114,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 							this->drawGameScreen(window);
 
 						}
+						
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
 						this->game->switchTurn();
