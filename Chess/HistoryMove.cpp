@@ -19,7 +19,6 @@ MoveEvent::MoveEvent(Piece* mover, const Position& srcPos, const Position& desPo
 MoveEvent::~MoveEvent()
 {
 	delete this->preInfoPiece;
-	delete this->eatenPiece;
 }
 
 bool MoveEvent::isEatMove() const {
@@ -69,7 +68,7 @@ MoveHistory::~MoveHistory() {
 	}
 }
 
-void MoveHistory::update(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos)
+void MoveHistory::append(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos)
 {
 	this->moves.push_back(new MoveEvent(mover, srcPos, desPos, eaten, eatPos));
 	this->state++;
@@ -94,8 +93,10 @@ void MoveHistory::goOn() {
 	}
 }
 
-void MoveHistory::triggerChanged() {
-	for (int i = this->state + 1; i < this->moves.size(); i++) {
+// Truncate till state + 1 = size
+void MoveHistory::truncate() {
+	while (this->state + 1 < this->moves.size() && this->moves.empty() == false) {
+		delete this->moves.back();
 		this->moves.pop_back();
 	}
 }

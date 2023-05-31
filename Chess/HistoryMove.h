@@ -47,7 +47,7 @@ public:
 	MoveHistory();
 	~MoveHistory();
 
-	void update(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos);
+	void append(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos);
 
 	MoveEvent* getCur() const;
 	// These two should only be called when performed undo/redo
@@ -55,6 +55,6 @@ public:
 	void goOn();	// redo
 
 	// Clear all future events when triggered by moving
-	void triggerChanged();
+	void truncate();
 };
 

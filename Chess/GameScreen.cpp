@@ -118,7 +118,6 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
-						this->game->switchTurn();
 						GameBar::canUndo += 1;
 					}
 

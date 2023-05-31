@@ -180,6 +180,8 @@ vector<Position> GameState::canGo(const Position& pos) {
 			res.erase(res.begin() + i);
 		}
 		this->undo();
+		// These are fake moves so don't add into history
+		this->vecterMoves.truncate();
 	}
 
 	return res;
@@ -226,7 +228,7 @@ bool GameState::isCanGo(Troop turn)
 
 void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
 	// Change move history => No redo once moved
-	this->vecterMoves.triggerChanged();
+	this->vecterMoves.truncate();
 
 	Piece* pSrc = this->board.getPiece(src);
 	Piece* pEaten = nullptr;
@@ -266,7 +268,7 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	this->board.setPiece(src, nullptr);
 
 	// Update into history
-	this->vecterMoves.update(pSrc, src, dest, pEaten, eatPos);
+	this->vecterMoves.append(pSrc, src, dest, pEaten, eatPos);
 
 	// Update last chosen piece
 	this->lastChoose->setNotLastChosen();
@@ -276,6 +278,7 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	// Only update after moved
 	pSrc->triggerOnMoved(dest);
 
+	this->switchTurn();
 }
 
 
@@ -304,6 +307,9 @@ void GameState::undo() {
 		this->board.setPiece(currentState->getEatenPos(), currentState->reviveEaten());
 	}
 
+	// Set state to previous one
+	this->vecterMoves.goBack();
+
 	// Special: Castling - moved twice, so we undo twice
 	if (currentState->getMoverDest().getInfo() == PosInfo::CastlingRight ||
 		currentState->getMoverDest().getInfo() == PosInfo::CastlingLeft)
@@ -311,8 +317,7 @@ void GameState::undo() {
 		this->undo();
 	}
 
-	// Set state to previous one
-	this->vecterMoves.goBack();
+	this->switchTurn();
 
 	// Last piece chosen. Note: since it has gone back, the piece used here is the previous state's piece
 	// also the last chosen piece
@@ -327,7 +332,6 @@ void GameState::undo() {
 		this->lastChoose = this->vecterMoves.getCur()->getMover();
 		this->lastChoose->setLastChosen();
 	}
-
 }
 
 //
