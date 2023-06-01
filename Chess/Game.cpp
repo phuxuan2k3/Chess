@@ -298,10 +298,10 @@ void GameState::undo() {
 	this->board.setPiece(currentState->getMoverSrc(), pieceThatReturn);
 	currentState->loadMoverInfo(pieceThatReturn);
 
-	// Update Position
+	// Update King's Position (reversed because not switched turn)
 	if (pieceThatReturn->isKing() == true)
 	{
-		(this->turn == Troop::White ? this->whiteKing : this->blackKing) = currentState->getMoverSrc();
+		(this->turn != Troop::White ? this->whiteKing : this->blackKing) = currentState->getMoverSrc();
 	}
 
 	// Revive eaten piece: place back the pointer
@@ -312,7 +312,7 @@ void GameState::undo() {
 	// Set state to previous one
 	this->vecterMoves.goBack();
 
-	// Special: Castling - moved twice, so we undo twice
+	// Special: Castling - moved twice, so we undo twice, (must go back first)
 	if (currentState->getMoverDest().getInfo() == PosInfo::CastlingRight ||
 		currentState->getMoverDest().getInfo() == PosInfo::CastlingLeft)
 	{
@@ -416,8 +416,9 @@ void GameState::checkEndGame()
 	if (res != EndGameType::NoEndGame)
 	{
 		this->isEndGame = res;
+		delete iEndGame;
+		return;
 	}
-	delete iEndGame;
 
 	iEndGame = new DrawByStalemate;
 	res = iEndGame->check(
@@ -428,8 +429,10 @@ void GameState::checkEndGame()
 	if (res != EndGameType::NoEndGame)
 	{
 		this->isEndGame = res;
+		delete iEndGame;
+		return;
 	}
-	delete iEndGame;
 
+	delete iEndGame;
 	this->isEndGame = EndGameType::NoEndGame;
 }

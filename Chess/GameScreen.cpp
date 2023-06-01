@@ -105,6 +105,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					{
 						curPos = canGo[hasPosition(canGo, curPos)];		// Map curPos to canGo to get its type of move
 						this->game->move(prePos, curPos, canGo);
+
 						this->game->checkEndGame();
 
 
@@ -112,16 +113,16 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						switch (tem)
 						{
 						case EndGameType::WhiteLose:
-							cout << "W L";
+							cout << "WL" << endl;
 							break;
 						case EndGameType::BlackLose:
-							cout << "B L";
+							cout << "BL" << endl;
 							break;
 						case EndGameType::Draw:
-							cout << "D";
+							cout << "D" << endl;
 							break;
 						case EndGameType::NoEndGame:
-							cout << "N E G";
+							cout << "NEG" << endl;
 							break;
 						default:
 							break;
