@@ -15,8 +15,8 @@ private:
 	Board board;
 	vector<Piece*> pieces;
 
-	King* whiteKing;
-	King* blackKing;
+	Position whiteKing;
+	Position blackKing;
 
 	MoveHistory vecterMoves;
 
@@ -24,7 +24,7 @@ private:
 	Piece* initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j);
 	Piece* initPieceOnBoard(PieceType pn, Troop pc, const Position& p);
 
-	IEndGame* iEndGame;
+	EndGameType isEndGame;
 
 public:
 	GameState(Troop turn = Troop::White);
@@ -44,7 +44,8 @@ public:
 	// Return true on successful moves, false otherwise.
 	bool isCanGo(Troop turn); // check can go or not ( can not move any where)
 	void move(const Position& src, const Position& dest, vector<Position> canGo);
-	void undo();
+	void checkEndGame();
+	EndGameType getIsEndGame() const;
 
-	EndGameType checkEndGame();
+	void undo();
 };

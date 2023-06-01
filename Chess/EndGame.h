@@ -15,7 +15,7 @@ class IEndGame
 {
 public:
 	//this function has no sense
-	virtual EndGameType check(bool isCanGo, King* king, const Board& board) 	
+	virtual EndGameType check(bool isCanGo, const Position& king, const Board& board, Troop color)
 	{
 		return EndGameType::NoEndGame;
 	}
@@ -24,11 +24,11 @@ public:
 class LoseByCheckmate : public IEndGame
 {
 public:
-	EndGameType check(bool isCanGo, King* king, const Board& board);
+	EndGameType check(bool isCanGo, const Position& king, const Board& board, Troop color);
 };
 
 class DrawByStalemate : public IEndGame
 {
 public:
-	EndGameType check(bool isCanGo, King* king, const Board& board);
+	EndGameType check(bool isCanGo, const Position& king, const Board& board, Troop color);
 };

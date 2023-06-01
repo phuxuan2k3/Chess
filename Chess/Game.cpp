@@ -8,7 +8,6 @@
 //=======================================================
 
 GameState::GameState(Troop turn) {
-	this->iEndGame = nullptr;
 	this->turn = turn;
 	this->lastChoose = NullPiece::getInstance();
 
@@ -29,12 +28,11 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 1));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 2));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Queen, Troop::Black, 0, 3));
-	pieces.push_back(this->initPieceOnBoard(PieceType::King, Troop::Black, 0, 4));
-	((King*)(this->board.getPiece(0, 4)))->setPosition(Position(0, 4));
-	this->blackKing = (King*)this->board.getPiece(0, 4);
+	pieces.push_back(this->initPieceOnBoard(PieceType::King, Troop::Black, 0, 4));	// King
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 5));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::Black, 0, 7));
+	
 
 	// White
 
@@ -51,20 +49,21 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::White, 7, 1));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::White, 7, 2));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Queen, Troop::White, 7, 3));
-	pieces.push_back(this->initPieceOnBoard(PieceType::King, Troop::White, 7, 4));
-	((King*)(this->board.getPiece(7, 4)))->setPosition(Position(7, 4));
-	this->whiteKing = (King*)this->board.getPiece(7, 4);
+	pieces.push_back(this->initPieceOnBoard(PieceType::King, Troop::White, 7, 4));	// King
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::White, 7, 5));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::White, 7, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::White, 7, 7));
 
+
 	// Setup connection
 	// Black Side
+	this->blackKing = Position(0, 4);
 	((King*)this->board.getPiece(0, 4))->setRooksPosition(
 		Position(0, 0),
 		Position(0, 7)
 	);
 	// White Side
+	this->whiteKing = Position(7, 4);
 	((King*)this->board.getPiece(7, 4))->setRooksPosition(
 		Position(7, 0),
 		Position(7, 7)
@@ -74,8 +73,6 @@ GameState::GameState(Troop turn) {
 
 GameState::~GameState()
 {
-	if (this->iEndGame != nullptr) 
-		delete this->iEndGame;
 }
 
 void GameState::switchTurn() {
@@ -148,8 +145,6 @@ Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const Position& p) {
 	return this->initPieceOnBoard(pn, pc, p.get_i(), p.get_j());
 }
 
-
-
 bool GameState::isValidChoice(const Position& pos) const {
 	Piece* piece = this->board.getPiece(pos);
 	// If there isn't any piece
@@ -167,15 +162,17 @@ vector<Position> GameState::canGo(const Position& pos) {
 	if (this->board.hasPiece(pos) == false) {
 		return vector<Position>();
 	}
-
 	//Test after move whether king is dangerous
 	vector<Position> res = this->board.getPiece(pos)->canGo(pos, this->board);
 	for (int i = res.size() - 1; i >= 0; i--)
 	{
 		this->move(pos, res[i], res);
-		King* testwk = this->whiteKing;
-		King* testbk = this->blackKing;
-		if (isDangerousSquare((this->board.getPiece(res[i])->getTroop() == Troop::White ? this->whiteKing : this->blackKing)->getPosition(), this->board, this->board.getPiece(res[i])->getTroop()))
+		Position testwk = this->whiteKing;
+		Position testbk = this->blackKing;
+		if (isDangerousSquare(
+			(this->board.getPiece(res[i])->getTroop() == Troop::White ? this->whiteKing : this->blackKing),
+			this->board,
+			this->board.getPiece(res[i])->getTroop()))
 		{
 			res.erase(res.begin() + i);
 		}
@@ -216,14 +213,6 @@ bool GameState::isCanGo(Troop turn)
 	}
 	return false;
 }
-
-
-//// Set king's position
-//if (King* king = dynamic_cast<King*>(this->board.getPiece(src)))
-//{
-//	king->setPosition(dest);
-//}
-// Trigger event moved on the piece that chosen
 
 
 void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
@@ -267,6 +256,12 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	this->board.setPiece(dest, pSrc);
 	this->board.setPiece(src, nullptr);
 
+	// Update king's position: If the piece moved is the king
+	if (pSrc->isKing() == true)
+	{
+		(this->turn == Troop::White ? this->whiteKing : this->blackKing) = dest;
+	}
+
 	// Update into history
 	this->vecterMoves.append(pSrc, src, dest, pEaten, eatPos);
 
@@ -279,6 +274,7 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	pSrc->triggerOnMoved(dest);
 
 	this->switchTurn();
+	
 }
 
 
@@ -301,6 +297,12 @@ void GameState::undo() {
 	this->board.setPiece(currentState->getMoverDest(), nullptr);
 	this->board.setPiece(currentState->getMoverSrc(), pieceThatReturn);
 	currentState->loadMoverInfo(pieceThatReturn);
+
+	// Update Position
+	if (pieceThatReturn->isKing() == true)
+	{
+		(this->turn == Troop::White ? this->whiteKing : this->blackKing) = currentState->getMoverSrc();
+	}
 
 	// Revive eaten piece: place back the pointer
 	if (currentState->isEatMove() == true) {
@@ -397,23 +399,37 @@ void GameState::undo() {
 //	}
 //}
 
-EndGameType GameState::checkEndGame()
+EndGameType GameState::getIsEndGame() const {
+	return this->isEndGame;
+}
+
+void GameState::checkEndGame()
 {
-	this->iEndGame = new LoseByCheckmate;
-	EndGameType res = this->iEndGame->check(this->isCanGo(this->turn), this->turn == Troop::White ? this->whiteKing : this->blackKing, this->board);
+	IEndGame* iEndGame = nullptr;
+
+	iEndGame = new LoseByCheckmate;
+	EndGameType res = iEndGame->check(
+		this->isCanGo(this->turn),
+		this->turn == Troop::White ? this->whiteKing : this->blackKing,
+		this->board,
+		this->turn);
 	if (res != EndGameType::NoEndGame)
 	{
-		return res;
+		this->isEndGame = res;
 	}
-	delete this->iEndGame;
+	delete iEndGame;
 
-	this->iEndGame = new DrawByStalemate;
-	res = this->iEndGame->check(this->isCanGo(this->turn), this->turn == Troop::White ? this->whiteKing : this->blackKing, this->board);
+	iEndGame = new DrawByStalemate;
+	res = iEndGame->check(
+		this->isCanGo(this->turn),
+		this->turn == Troop::White ? this->whiteKing : this->blackKing,
+		this->board,
+		this->turn);
 	if (res != EndGameType::NoEndGame)
 	{
-		return res;
+		this->isEndGame = res;
 	}
-	delete this->iEndGame;
+	delete iEndGame;
 
-	return EndGameType::NoEndGame;
+	this->isEndGame = EndGameType::NoEndGame;
 }

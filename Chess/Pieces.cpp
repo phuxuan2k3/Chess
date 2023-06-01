@@ -309,7 +309,6 @@ bool King::canCastle(Troop requestor) {
 void King::set(const Piece* p) {
 	Piece::set(p);
 	King *pKing = (King*)p;
-	this->kingPos = pKing->kingPos;
 	this->leftRook = pKing->leftRook;
 	this->rightRook = pKing->rightRook;
 	this->setFirstMove(pKing->hasNotMove());
@@ -339,16 +338,6 @@ Position King::getRightRook() const {
 void King::triggerOnMoved(const Position& dest) {
 	Piece::triggerOnMoved(dest);
 	this->setMoved();
-}
-
-Position King::getPosition()
-{
-	return this->kingPos;
-}
-
-void King::setPosition(const Position& p)
-{
-	this->kingPos = p;
 }
 
 vector<Position> King::canGo(const Position& src, const Board& board)
@@ -423,7 +412,7 @@ vector<Position> King::canGo(const Position& src, const Board& board)
 	// There's must be a Piece, which is Rook and castlable
 	if (board.hasPiece(this->rightRook) == true &&
 		board.getPiece(this->rightRook)->getPieceType() == PieceType::Rook &&
-		board.getPiece(this->leftRook)->canCastle(this->color) == true)
+		board.getPiece(this->rightRook)->canCastle(this->color) == true)
 	{
 		// 2 Squares on the Right
 		s_1 = src.getRelativePosition(0, 1);
@@ -547,7 +536,6 @@ King::King(const King& p) : Piece(p), FirstMovePiece(p)
 {
 	this->leftRook = p.leftRook;
 	this->rightRook = p.rightRook;
-	this->kingPos = p.kingPos;
 }
 
 Piece* Pawn::deepCopyPiece(Piece* p)

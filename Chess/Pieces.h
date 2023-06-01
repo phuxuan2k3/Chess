@@ -99,7 +99,6 @@ public:
 class King : public Piece, public FirstMovePiece
 {
 private:
-	Position kingPos;		// positon of the king
 	Position leftRook;
 	Position rightRook;
 
@@ -108,9 +107,6 @@ public:
 	King(const King& ki);
 
 	void set(const Piece* p);
-
-	Position getPosition();
-	void setPosition(const Position& p);
 
 	void triggerOnMoved(const Position& dest);
 	bool canCastle(Troop requestor);

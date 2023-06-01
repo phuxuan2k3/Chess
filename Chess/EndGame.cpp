@@ -1,17 +1,17 @@
 #include "EndGame.h"
 
-EndGameType LoseByCheckmate::check(bool isCanGo, King* king, const Board& board)
+EndGameType LoseByCheckmate::check(bool isCanGo, const Position& king, const Board& board, Troop color)
 {
-	if (isCanGo == false and isDangerousSquare(king->getPosition(), board, king->getTroop()) == true)
+	if (isCanGo == false and isDangerousSquare(king, board, color) == true)
 	{
-		return (king->getTroop() == Troop::White ? EndGameType::WhiteLose : EndGameType::BlackLose);
+		return (color == Troop::White ? EndGameType::WhiteLose : EndGameType::BlackLose);
 	}
 	return EndGameType::NoEndGame;
 }
 
-EndGameType DrawByStalemate::check(bool isCanGo, King* king, const Board& board)
+EndGameType DrawByStalemate::check(bool isCanGo, const Position& king, const Board& board, Troop color)
 {
-	if (isCanGo == false and isDangerousSquare(king->getPosition(), board, king->getTroop()) == false)
+	if (isCanGo == false and isDangerousSquare(king, board, color) == false)
 	{
 		return EndGameType::Draw;
 	}

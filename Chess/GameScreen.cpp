@@ -105,6 +105,30 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					{
 						curPos = canGo[hasPosition(canGo, curPos)];		// Map curPos to canGo to get its type of move
 						this->game->move(prePos, curPos, canGo);
+						this->game->checkEndGame();
+
+
+						EndGameType tem = this->game->getIsEndGame();
+						switch (tem)
+						{
+						case EndGameType::WhiteLose:
+							cout << "W L";
+							break;
+						case EndGameType::BlackLose:
+							cout << "B L";
+							break;
+						case EndGameType::Draw:
+							cout << "D";
+							break;
+						case EndGameType::NoEndGame:
+							cout << "N E G";
+							break;
+						default:
+							break;
+						}
+
+
+
 						this->render->setState(State::NotSelected);
 						if (this->game->promote == 1) {
 							this->chessPos(window);
