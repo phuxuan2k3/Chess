@@ -7,18 +7,19 @@ GameScreen::GameScreen(float& windowWidthScale, float& windowHeightScale, Render
 
 void GameScreen::drawGameScreen(RenderWindow& window) {
 	window.clear();
-	this->gameb->showGameBar(window);
+	
 	this->render->draw(window);
+	this->gameb->showGameBar(window);
 	window.display();
 }
 void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare, vector<Position> cango) {
 	window.clear();
-	this->gameb->showGameBar(window);
+	
 	this->render->draw(window);
 	this->render->drawCanGo(window, cango);
 	this->render->drawSelected(window, selectedSquare);
+	//this->gameb->showGameBar(window);
 	this->gameb->showGameBar(window);
-
 	window.display();
 }
 void GameScreen::chessPos(RenderWindow& window)
@@ -114,9 +115,16 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						{
 						case EndGameType::WhiteLose:
 							cout << "WL" << endl;
+							GameBar::updateEnded();
+							this->drawGameScreen(window);
+
 							break;
 						case EndGameType::BlackLose:
 							cout << "BL" << endl;
+							GameBar::updateEnded();
+							this->drawGameScreen(window);
+
+
 							break;
 						case EndGameType::Draw:
 							cout << "D" << endl;

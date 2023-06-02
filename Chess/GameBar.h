@@ -15,8 +15,10 @@ public:
 	static Sprite homeBut;
 	static Text turnText;
 	static int canUndo;
+	static bool ended;
 	static Text reset;
 	static void updateTurn();
+	static void updateEnded();
 	static GameBar* getInstance();
 	static void deleteInstance();
 	void showGameBar(RenderWindow& window);

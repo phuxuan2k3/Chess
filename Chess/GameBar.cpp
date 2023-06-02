@@ -7,7 +7,7 @@ Sprite GameBar::homeBut;
 Text GameBar::reset;
 int GameBar::canUndo = 0;
 Sprite GameBar::redoBut;
-
+bool GameBar::ended = 0;
 
 GameBar::GameBar() {
 	
@@ -32,6 +32,11 @@ void GameBar::updateTurn() {
 	else {
 		turn = Troop::White;
 	}
+}
+
+void GameBar::updateEnded() {
+
+	ended = 1;
 }
 
 void GameBar::showGameBar(RenderWindow& window) {
@@ -86,5 +91,34 @@ void GameBar::showGameBar(RenderWindow& window) {
 	redoBut.setPosition(bg.getPosition().x + 80 * 3, turnText.getPosition().y + 300);
 	redoBut.setScale(butScale, butScale);
 	window.draw(redoBut);
+
+
+	//Ended
+	if (ended == 1) {
+		cout << "in";
+
+		Font turrnFont;
+		double turnSize = 0.08 * window.getSize().y;
+		turrnFont.loadFromFile("Font/gameFont_01.otf");
+		turnText.setFont(turrnFont);
+		turnText.setString((this->turn == Troop::White ? "Black Win" : "White Win"));
+		turnText.setCharacterSize(turnSize);
+		turnText.setFillColor(Color::Black);
+		turnText.setOutlineColor(sf::Color(Color(90, 61, 43)));
+		turnText.setOutlineThickness(2);
+		turnText.setPosition(0.5 * (window.getSize().x - bg.getPosition().x)+10, 0.5 * (window.getSize().y - bg.getPosition().y));
+
+		Texture textureBG;
+		textureBG.loadFromFile("Image/scroll.png");
+		textureBG.setSmooth(true);
+		Sprite bg;
+		bg.setTexture(textureBG);
+		bg.setPosition(0.5 * (window.getSize().x - bg.getPosition().x) - 460, 0.5 * (window.getSize().y - bg.getPosition().y) - 60);
+		window.draw(bg);
+		window.draw(turnText);
+
+
+	}
+
 
 }
