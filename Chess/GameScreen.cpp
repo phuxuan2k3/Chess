@@ -104,7 +104,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						this->game->isValidMove(prePos, curPos, canGo) == true)
 					{
 						curPos = canGo[hasPosition(canGo, curPos)];		// Map curPos to canGo to get its type of move
-						this->game->move(prePos, curPos, canGo);
+						this->game->move(prePos, curPos, canGo);		// Turn changed here
 
 						this->game->checkEndGame();
 
@@ -131,14 +131,11 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 
 
 						this->render->setState(State::NotSelected);
-						if (this->game->promote == 1) {
+						if (this->game->promote == true) {
 							this->chessPos(window);
-							//this->game->PromoType = RenderPromote::drawPromotion();
 							this->game->PromotType(RenderPromote::drawPromotion(), curPos);
-
-							this->game->promote = 0;
+							this->game->promote = false;
 							this->drawGameScreen(window);
-
 						}
 						
 						GameBar::updateTurn();

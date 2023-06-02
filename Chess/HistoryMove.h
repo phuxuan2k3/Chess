@@ -6,32 +6,60 @@
 class MoveEvent
 {
 private:
-	// New memory
-	Piece* moverPiece;
-	Piece* preInfoPiece;
+	Piece* moverPiece;		// Reference
+	Piece* copySrcPiece;	// New memory
+	Piece* copyDestPiece;	// New memory
 	Position srcPos;
 	Position destPos;
-	
-	// Only reference
-	Piece* eatenPiece;
+
+	Piece* eatenPiece;		// Reference
 	Position eatPos;
 
+	MoveEvent* castRookMove;	// A Rook move when king castled (Paired MoveEvent)
+
+	Piece* promotePiece;	// Reference
+	Position promPos;
+
+	Piece* lastChoose;		// Reference to last chosen piece of that state (event)
+
 public:
-	MoveEvent(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos);
+	// No promotion here
+	MoveEvent(Piece* mover, const Position& srcPos, const Position& desPos, Piece* lastChoose);
+
 	~MoveEvent();
 
-	// Load saved properties
-	void loadMoverInfo(Piece* const p) const;
-	Piece* getMover() const;
-	Position getMoverSrc() const;
-	Position getMoverDest() const;
-
-	bool isEatMove() const;
+	// Save - Load properties
+	void saveSrcPieceInfo(Piece* const p);
+	void saveDestPieceInfo(Piece* const p);
+	void loadSrcPieceInfo(Piece* const p) const;
+	void loadDestPieceInfo(Piece* const p) const;
 	
+	// Normal moves
+	Piece* getMoverPiece() const;
+	Position getSrcPos() const;
+	Position getDestPos() const;
+
 	// Eating moves
-	Piece* reviveEaten() const;
+	bool isEatMove() const;
+	Piece* getEatenPiece() const;
 	Position getEatenPos() const;
+	void setEatMove(Piece* eaten, const Position& pos);
+
+	// Castling moves
+	bool isCastlingMove() const;
+	MoveEvent* getCastRookMove() const;
+	void setCastRookMove(MoveEvent* castle);
+
+	// Promote moves
+	bool isPromoteMove() const;
+	Piece* getPromotePiece() const;
+	Position getPromotePos() const;
+	// Trigger separately (not in move)
+	void setPromote(Piece* promote, const Position& pos);
+
+	Piece* getLastChoosePiece() const;
 };
+
 
 //=======================================================
 
@@ -47,7 +75,7 @@ public:
 	MoveHistory();
 	~MoveHistory();
 
-	void append(Piece* mover, const Position& srcPos, const Position& desPos, Piece* eaten, const Position& eatPos);
+	void append(Piece* mover, const Position& srcPos, const Position& desPos, Piece* lastChoose);
 
 	MoveEvent* getCur() const;
 	// These two should only be called when performed undo/redo
@@ -55,6 +83,7 @@ public:
 	void goOn();	// redo
 
 	// Clear all future events when triggered by moving
-	void truncate();
+	// Pass in newly generated Piece for this function clean it
+	void truncate(vector<Piece*> pieceNew);
 };
 

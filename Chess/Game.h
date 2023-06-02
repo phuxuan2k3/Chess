@@ -14,6 +14,7 @@ private:
 	Troop turn;
 	Board board;
 	vector<Piece*> pieces;
+	vector<Piece*> promotePieces;
 
 	Position whiteKing;
 	Position blackKing;
@@ -25,6 +26,9 @@ private:
 	Piece* initPieceOnBoard(PieceType pn, Troop pc, const Position& p);
 
 	EndGameType isEndGame;
+
+	// Flags (mostly for undo, redo)
+	bool testState;
 
 public:
 	GameState(Troop turn = Troop::White);
@@ -48,4 +52,5 @@ public:
 	EndGameType getIsEndGame() const;
 
 	void undo();
+	void redo();
 };

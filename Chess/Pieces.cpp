@@ -42,6 +42,12 @@ Rook::Rook(Troop color) : Piece(color)
 	this->type = PieceType::Rook;
 }
 
+Rook::Rook(Troop color, bool fromPromote) : Piece(color)
+{
+	this->type = PieceType::Rook;
+	this->setMoved();
+}
+
 Queen::Queen(Troop color) : Piece(color)
 {
 	this->type = PieceType::Queen;

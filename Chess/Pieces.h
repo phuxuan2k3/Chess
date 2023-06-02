@@ -71,6 +71,7 @@ class Rook : public Piece, public FirstMovePiece
 {
 public:
 	Rook(Troop color);
+	Rook(Troop color, bool fromPromote);
 	Rook(const Rook& r);
 
 	void set(const Piece* p);

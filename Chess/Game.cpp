@@ -11,7 +11,7 @@ GameState::GameState(Troop turn) {
 	this->turn = turn;
 	this->lastChoose = NullPiece::getInstance();
 
-	// Default Placing 
+	this->testState = false;
 
 	// Black
 
@@ -33,7 +33,6 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::Black, 0, 7));
 	
-
 	// White
 
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 0));
@@ -54,7 +53,6 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::White, 7, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::White, 7, 7));
 
-
 	// Setup connection
 	// Black Side
 	this->blackKing = Position(0, 4);
@@ -71,8 +69,17 @@ GameState::GameState(Troop turn) {
 
 }
 
+
 GameState::~GameState()
 {
+	for (Piece* p : this->pieces) {
+		delete p;
+	}
+	for (Piece* p : this->promotePieces) {
+		delete p;
+	}
+	this->pieces.clear();
+	this->promotePieces.clear();
 }
 
 void GameState::switchTurn() {
@@ -88,28 +95,36 @@ const Board* GameState::getRefBoard() const {
 	return &this->board;
 }
 
+
+// Will generate new memory
 void GameState::PromotType(PieceType type, const Position& pos)
 {
+	// Turn has changed previously, so we temperately change turn here
+	this->switchTurn();
+	Piece* promote = nullptr;
 	if (type == PieceType::Bishop) {
-		Piece* promote = new Bishop(this->turn);
+		promote = new Bishop(this->turn);
 		this->board.setPiece(pos, promote);
 	}
-	if (type == PieceType::Knight) {
-		Piece* promote = new Knight(this->turn);
+	else if (type == PieceType::Knight) {
+		promote = new Knight(this->turn);
 		this->board.setPiece(pos, promote);
-
 	}
-	if (type == PieceType::Rook) {
-		Piece* promote = new Rook(this->turn);
+	else if (type == PieceType::Rook) {
+		promote = new Rook(this->turn);
 		this->board.setPiece(pos, promote);
-
 	}
-	if (type == PieceType::Queen) {
-		Piece* promote = new Queen(this->turn);
+	else if (type == PieceType::Queen) {
+		promote = new Queen(this->turn);
 		this->board.setPiece(pos, promote);
-
 	}
+	this->switchTurn();
+	// Add to pieces to handle
+	this->promotePieces.push_back(promote);
+	// Update to the current timeline
+	this->vecterMoves.getCur()->setPromote(promote, pos);
 }
+
 
 Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const int j) {
 	Piece* piece = nullptr;
@@ -136,14 +151,15 @@ Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const int i, const in
 	default:
 		break;
 	}
-
 	this->board.setPiece(i, j, piece);
 	return piece;
 }
 
+
 Piece* GameState::initPieceOnBoard(PieceType pn, Troop pc, const Position& p) {
 	return this->initPieceOnBoard(pn, pc, p.get_i(), p.get_j());
 }
+
 
 bool GameState::isValidChoice(const Position& pos) const {
 	Piece* piece = this->board.getPiece(pos);
@@ -158,11 +174,13 @@ bool GameState::isValidChoice(const Position& pos) const {
 	return true;
 }
 
+
 vector<Position> GameState::canGo(const Position& pos) {
 	if (this->board.hasPiece(pos) == false) {
 		return vector<Position>();
 	}
-	//Test after move whether king is dangerous
+	// Test after move whether king is dangerous
+	this->testState = true;
 	vector<Position> res = this->board.getPiece(pos)->canGo(pos, this->board);
 	for (int i = res.size() - 1; i >= 0; i--)
 	{
@@ -178,11 +196,12 @@ vector<Position> GameState::canGo(const Position& pos) {
 		}
 		this->undo();
 		// These are fake moves so don't add into history
-		this->vecterMoves.truncate();
+		this->vecterMoves.truncate(this->promotePieces);
 	}
-
+	this->testState = false;
 	return res;
 }
+
 
 bool GameState::isValidMove(const Position& src, const Position& dest, vector<Position> canGo) const {
 	// If the src Square chosen is empty, we do nothing
@@ -195,6 +214,7 @@ bool GameState::isValidMove(const Position& src, const Position& dest, vector<Po
 	}
 	return true;
 }
+
 
 bool GameState::isCanGo(Troop turn)
 {
@@ -217,41 +237,49 @@ bool GameState::isCanGo(Troop turn)
 
 void GameState::move(const Position& src, const Position& dest, vector<Position> canGo) {
 	// Change move history => No redo once moved
-	this->vecterMoves.truncate();
+	// For promotion: delete every newly promoted piece, by return the vector of pointer
+	// of newly promoted piece
+	this->vecterMoves.truncate(this->promotePieces);
 
 	Piece* pSrc = this->board.getPiece(src);
-	Piece* pEaten = nullptr;
-	Position eatPos;
 
-	// Check promote
-	if (dest.getInfo() == PosInfo::Promote) {
-		this->promote = 1;
-	}
+	// Update into history
+	this->vecterMoves.append(pSrc, src, dest, this->lastChoose);
 
 	// If dest Square is occupied by a Piece => Just remove it from square, dont delete pls
 	if (this->board.hasPiece(dest) == true) {
-		pEaten = this->board.getPiece(dest);
-		eatPos = dest;
+		// Update (before remove it from board)
+		this->vecterMoves.getCur()->setEatMove(this->board.getPiece(dest), dest);
 		this->board.setPiece(dest, nullptr);
 	}
-	// Castling Move:
-	else if (dest.getInfo() == PosInfo::CastlingLeft) {
-		Piece* leftRook = this->board.getPiece(((King*)pSrc)->getLeftRook());
-		this->move(((King*)pSrc)->getLeftRook(), src.getRelativePosition(0, -1), canGo);
-	}
-	else if (dest.getInfo() == PosInfo::CastlingRight) {
-		Piece* rightRook = this->board.getPiece(((King*)pSrc)->getRightRook());
-		this->move(((King*)pSrc)->getRightRook(), src.getRelativePosition(0, 1), canGo);
+	// Castling Move: If it has passed all castling conditions, things will be fine
+	else if (dest.getInfo() == PosInfo::CastlingLeft ||
+		dest.getInfo() == PosInfo::CastlingRight) {
+		bool left = dest.getInfo() == PosInfo::CastlingLeft;
+		// Get rook and its position
+		Position rookSrcPos =  left ? ((King*)pSrc)->getLeftRook() : ((King*)pSrc)->getRightRook();
+		Position rookDestPos = left ? src.getRelativePosition(0, -1) : src.getRelativePosition(0, 1);
+		Piece* rook = this->board.getPiece(rookSrcPos);
+		this->board.setPiece(rookDestPos, rook);
+		this->board.setPiece(rookSrcPos, nullptr);
+		// Update
+		MoveEvent* castle = new MoveEvent(rook, rookSrcPos, rookDestPos, nullptr);
+		castle->saveSrcPieceInfo(rook);
+		// Custom trigger
+		rook->triggerOnMoved(dest);
+		castle->saveDestPieceInfo(rook);
+		this->vecterMoves.getCur()->setCastRookMove(castle);
 	}
 	// Enpassant
 	else if (dest.getInfo() == PosInfo::EnPassant) {
 		int dir = (pSrc->getTroop() == Troop::White ? 1 : -1);
 		Position EnPassantPos = dest.getRelativePosition(dir, 0);
-		pEaten = this->board.getPiece(EnPassantPos);
-		eatPos = EnPassantPos;
+		// Update
+		this->vecterMoves.getCur()->setEatMove(this->board.getPiece(EnPassantPos), EnPassantPos);
 		this->board.setPiece(EnPassantPos, nullptr);
 	}
 
+	// Main MOVE action:
 	// Set piece to its destinaiton
 	this->board.setPiece(dest, pSrc);
 	this->board.setPiece(src, nullptr);
@@ -261,143 +289,137 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	{
 		(this->turn == Troop::White ? this->whiteKing : this->blackKing) = dest;
 	}
-
-	// Update into history
-	this->vecterMoves.append(pSrc, src, dest, pEaten, eatPos);
+	// Check promote (for Pawns only), update into history with a PromoteEvent -> MoveEvent
+	if (dest.getInfo() == PosInfo::Promote) {
+		// If it's test state we dont trigger promote
+		if (this->testState != true) {
+			this->promote = true;
+		}
+	}
 
 	// Update last chosen piece
 	this->lastChoose->setNotLastChosen();
 	this->lastChoose = pSrc;
 	this->lastChoose->setLastChosen();
 
+	// Update pre-state
+	this->vecterMoves.getCur()->saveSrcPieceInfo(pSrc);
 	// Only update after moved
 	pSrc->triggerOnMoved(dest);
+	// Update post-state
+	this->vecterMoves.getCur()->saveDestPieceInfo(pSrc);
 
 	this->switchTurn();
-	
 }
 
 
 void GameState::undo() {
 	// Current state to undo, cause it save information of the piece before it get to this current postion
 	MoveEvent* currentState = this->vecterMoves.getCur();
+	// Set state to previous one (before castling to prevent loop)
+	this->vecterMoves.goBack();
 	// If the state is 'empty' (starting or reached the current (for redo))
 	if (currentState == nullptr) {
-		// Do nothing
+		// Set last choose back to null
+		this->lastChoose = NullPiece::getInstance();
 		return;
 	}
 
-	if (this->board.hasPiece(currentState->getMoverDest()) == false) {
-		throw exception();
-	}
+	Piece* pieceToUndo = currentState->getMoverPiece();
 
-	Piece* pieceThatReturn = this->board.getPiece(currentState->getMoverDest());
-
-	// Return undo piece to its previous position and copy its previous properties into it.
-	this->board.setPiece(currentState->getMoverDest(), nullptr);
-	this->board.setPiece(currentState->getMoverSrc(), pieceThatReturn);
-	currentState->loadMoverInfo(pieceThatReturn);
-
-	// Update King's Position (reversed because not switched turn)
-	if (pieceThatReturn->isKing() == true)
-	{
-		(this->turn != Troop::White ? this->whiteKing : this->blackKing) = currentState->getMoverSrc();
-	}
+	// Main UNDO
+	// Place piece back to its preious position, and load its info
+	this->board.setPiece(currentState->getDestPos(), nullptr);
+	this->board.setPiece(currentState->getSrcPos(), pieceToUndo);
+	currentState->loadSrcPieceInfo(pieceToUndo);
 
 	// Revive eaten piece: place back the pointer
 	if (currentState->isEatMove() == true) {
-		this->board.setPiece(currentState->getEatenPos(), currentState->reviveEaten());
+		this->board.setPiece(currentState->getEatenPos(), currentState->getEatenPiece());
 	}
 
-	// Set state to previous one
-	this->vecterMoves.goBack();
+	// No need to check Promote move in undo
 
-	// Special: Castling - moved twice, so we undo twice, (must go back first)
-	if (currentState->getMoverDest().getInfo() == PosInfo::CastlingRight ||
-		currentState->getMoverDest().getInfo() == PosInfo::CastlingLeft)
+	// Castling
+	if (currentState->isCastlingMove() == true)
 	{
-		this->undo();
+		MoveEvent* rookCastleEvent = currentState->getCastRookMove();
+		Piece* rookToUndo = rookCastleEvent->getMoverPiece();
+		this->board.setPiece(rookCastleEvent->getDestPos(), nullptr);
+		this->board.setPiece(rookCastleEvent->getSrcPos(), rookToUndo);
+		rookCastleEvent->loadSrcPieceInfo(rookToUndo);
+	}
+
+	// Update King's Position (reversed because not switched turn, current turn is opponent's)
+	if (pieceToUndo->isKing() == true)
+	{
+		(this->turn != Troop::White ? this->whiteKing : this->blackKing) = currentState->getSrcPos();
+	}
+	
+	this->switchTurn();
+
+	// Set last chosen piece of that state
+	this->lastChoose->setNotLastChosen();
+	this->lastChoose = currentState->getLastChoosePiece();
+	this->lastChoose->setLastChosen();
+}
+
+
+void GameState::redo() {
+	// Set state to later one (its future state), then we consider it as current state
+	// and reverse all undo operations
+	this->vecterMoves.goOn();
+	// Current state to undo, cause it save information of the piece before it get to this current postion
+	MoveEvent* futureState = this->vecterMoves.getCur();
+	// If the state is 'empty' (reached starting or current (for redo))
+	if (futureState == nullptr) {
+		return;
+	}
+
+	Piece* pieceToRedo = futureState->getMoverPiece();
+
+	// Main REDO
+	// Move piece to its future position
+	this->board.setPiece(futureState->getSrcPos(), nullptr);
+	this->board.setPiece(futureState->getDestPos(), pieceToRedo);
+	futureState->loadDestPieceInfo(pieceToRedo);
+
+	// Kill the eaten piece (if its hasn't been replaced)
+	if (futureState->isEatMove() == true &&
+		!(futureState->getDestPos() == futureState->getEatenPos())) 
+	{
+		this->board.setPiece(futureState->getEatenPos(), nullptr);
+	}
+
+	// If Promote, replace it with the Promote piece
+	if (futureState->isPromoteMove()) {
+		this->board.setPiece(futureState->getDestPos(), futureState->getPromotePiece());
+	}
+
+	// Castling
+	if (futureState->isCastlingMove() == true)
+	{
+		MoveEvent* rookCastleEvent = futureState->getCastRookMove();
+		Piece* rookToRedo = rookCastleEvent->getMoverPiece();
+		this->board.setPiece(rookCastleEvent->getSrcPos(), nullptr);
+		this->board.setPiece(rookCastleEvent->getDestPos(), rookToRedo);
+		rookCastleEvent->loadDestPieceInfo(rookToRedo);
+	}
+	
+	// Update King's Position (reversed because not switched turn, current turn is opponent's)
+	if (pieceToRedo->isKing() == true)
+	{
+		(this->turn != Troop::White ? this->whiteKing : this->blackKing) = futureState->getSrcPos();
 	}
 
 	this->switchTurn();
 
-	// Last piece chosen. Note: since it has gone back, the piece used here is the previous state's piece
-	// also the last chosen piece
-	// Reached its start
-	if (this->vecterMoves.getCur() == nullptr) {
-		this->lastChoose = NullPiece::getInstance();
-	}
-	else {
-		// Get its reference
-		// Note: it has already set to be chosen because of the copy into memory (?)
-		this->lastChoose->setNotLastChosen();
-		this->lastChoose = this->vecterMoves.getCur()->getMover();
-		this->lastChoose->setLastChosen();
-	}
+	// Set last chosen piece of that state
+	this->lastChoose->setNotLastChosen();
+	this->lastChoose = futureState->getLastChoosePiece();
+	this->lastChoose->setLastChosen();
 }
 
-//
-//void GameState::undo()
-//{
-//	if (this->vecterMoves.getCurState() >= 0)
-//	{
-//		MoveEvent lastMove = this->vecterMoves.getAt(this->vecterMoves.getCurState());
-//
-//		this->vecterMoves.setCurState(this->vecterMoves.getCurState() - 1);
-//
-//		if (King* king = dynamic_cast<King*>(lastMove.getMover()))
-//		{
-//			king->setPosition(lastMove.getMoverSrc());
-//		}
-//
-//		//delete piece at its current position
-//		if (this->board.getPiece(lastMove.getMoverDest()))
-//		{
-//			delete this->board.getPiece(lastMove.getMoverDest());
-//			this->board.setPiece(lastMove.getMoverDest(), nullptr);
-//		}
-//
-		//Piece* newMover = lastMove.getCopyMover();
-		//this->board.setPiece(lastMove.getMoverSrc(), newMover);
-		////set king in gamestate a gain because new king is created
-		//if (King* king = dynamic_cast<King*>(newMover))
-		//{
-		//	(newMover->getTroop() == Troop::White ? this->whiteKing : this->blackKing) = king;
-		//}
-//
-//		int dir = 0;
-//		Position rookPos;
-//		switch (lastMove.getMoverDest().getInfo())
-//		{
-//		case PosInfo::CastlingLeft:
-//			this->undo();
-//			break;
-//		case PosInfo::CastlingRight:
-//			this->undo();
-//			break;
-//		case PosInfo::EnPassant:
-//			dir = (lastMove.getCopyMover()->getTroop() == Troop::White ? 1 : -1);
-//			this->board.setPiece(lastMove.getMoverDest().getRelativePosition(dir, 0), lastMove.getCopyEaten());
-//			break;
-//		default:
-//			if (lastMove.getEaten())
-//			{
-//				this->board.setPiece(lastMove.getMoverDest(), lastMove.getCopyEaten());
-//			}
-//			break;
-//		}
-//		this->turn = lastMove.getMover()->getTroop();
-//
-//		if (this->vecterMoves.getCurState() >= 0)
-//		{
-//			this->lastChoose = this->vecterMoves.getAt(this->vecterMoves.getCurState()).getMover();
-//		}
-//		else
-//		{
-//			this->lastChoose = NullPiece::getInstance();
-//		}
-//	}
-//}
 
 EndGameType GameState::getIsEndGame() const {
 	return this->isEndGame;
