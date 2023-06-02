@@ -11,6 +11,7 @@ private:
 public:
 	static Troop turn; 
 	static Sprite undoBut;
+	static Sprite redoBut;
 	static Sprite homeBut;
 	static Text turnText;
 	static int canUndo;

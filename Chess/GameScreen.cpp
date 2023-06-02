@@ -157,8 +157,16 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						this->drawGameScreen(window);
 						GameBar::canUndo -= 1;
 					}
-
 				} 
+				if (GameBar::redoBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
+					
+						game->redo();
+						GameBar::updateTurn();
+						this->drawGameScreen(window);
+						GameBar::canUndo -= 1;
+					}
+
+
 				if (GameBar::homeBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
 					Screen* temp = screen;
 					screen = new MenuScreen(this->windowWidthScale, this->windowHeightScale, this->render, this->game);

@@ -6,6 +6,7 @@ Sprite GameBar::undoBut;
 Sprite GameBar::homeBut;
 Text GameBar::reset;
 int GameBar::canUndo = 0;
+Sprite GameBar::redoBut;
 
 
 GameBar::GameBar() {
@@ -77,5 +78,13 @@ void GameBar::showGameBar(RenderWindow& window) {
 	undoBut.setScale(butScale, butScale);
 	window.draw(undoBut);
 
+	// Redo button
+	Texture redoTexture;
+	redoTexture.loadFromFile("Image/redoBut.png");
+	redoTexture.setSmooth(true);
+	redoBut.setTexture(redoTexture);
+	redoBut.setPosition(bg.getPosition().x + 80 * 3, turnText.getPosition().y + 300);
+	redoBut.setScale(butScale, butScale);
+	window.draw(redoBut);
 
 }
