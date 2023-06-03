@@ -6,6 +6,7 @@ Sprite GameBar::undoBut;
 Sprite GameBar::homeBut;
 Text GameBar::reset;
 Sprite GameBar::redoBut;
+Sprite GameBar::newGame;
 bool GameBar::ended = 0;
 
 int GameBar::timeline = 0;
@@ -65,6 +66,14 @@ void GameBar::showGameBar(RenderWindow& window) {
 	turnText.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.15 * window.getSize().y);
 	window.draw(turnText);
 
+	//newgame
+	Texture ngTexture;
+	ngTexture.loadFromFile("Image/newGame.png");
+	ngTexture.setSmooth(true);
+	newGame.setTexture(ngTexture);
+	newGame.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.3 * window.getSize().y);
+	newGame.setScale(0.2, 0.2);
+
 	float butScale = 0.3;
 	//home button
 	Texture homeTexture;
@@ -96,7 +105,20 @@ void GameBar::showGameBar(RenderWindow& window) {
 
 	//Ended
 	if (ended == 1) {
+
+		window.draw(newGame);
+		cout << "in";
+		Texture textureBG;
+		textureBG.loadFromFile("Image/scroll.png");
+		textureBG.setSmooth(true);
+		bg.setTexture(textureBG);
+		bg.scale(2.5, 2.5);
+		bg.setPosition(0.5 * window.getSize().x - 450, 0.5 * window.getSize().y - 100);
+		window.draw(bg);
+
+		
 		cout << "END";
+		
 		Font turrnFont;
 		double turnSize = 0.08 * window.getSize().y;
 		turrnFont.loadFromFile("Font/gameFont_01.otf");
@@ -106,9 +128,9 @@ void GameBar::showGameBar(RenderWindow& window) {
 		turnText.setFillColor(Color::Black);
 		turnText.setOutlineColor(sf::Color(Color(90, 61, 43)));
 		turnText.setOutlineThickness(2);
-		turnText.setPosition( bg.getPosition().x + 100 , bg.getPosition().y + 50);
+		turnText.setPosition(bg.getPosition().x + 100, bg.getPosition().y + 50);
 
-		
+
 		window.draw(turnText);
 	}
 }

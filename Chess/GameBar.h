@@ -13,6 +13,7 @@ public:
 	static Sprite undoBut;
 	static Sprite redoBut;
 	static Sprite homeBut;
+	static Sprite newGame;
 	static Text turnText;
 	static bool ended;
 	static Text reset;
