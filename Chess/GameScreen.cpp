@@ -43,6 +43,16 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	themSong.setVolume(50);
 	themSong.play();
 
+	SoundBuffer pcB;
+	pcB.loadFromFile("Audio/pc_3.wav");
+	Sound pc;
+	pc.setBuffer(pcB);
+	pc.setVolume(50);
+
+
+	//pc.wav
+
+
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -103,6 +113,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					{
 						curPos = canGo[hasPosition(canGo, curPos)];		// Map curPos to canGo to get its type of move
 						this->game->move(prePos, curPos, canGo);		// Turn changed here
+						pc.play();
 						this->game->checkEndGame();
 
 						EndGameType tem = this->game->getIsEndGame();
