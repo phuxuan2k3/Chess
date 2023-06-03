@@ -35,6 +35,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	vector<Position> canGo;
 
 	//Am thanh
+	
 	SoundBuffer soundB;
 	soundB.loadFromFile("Audio/themSong.wav");
 	Sound themSong;
@@ -49,10 +50,13 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	pc.setBuffer(pcB);
 	pc.setVolume(50);
 
-
+	SoundBuffer startGameB;
+	startGameB.loadFromFile("Audio/dice_roll-96878.wav");
+	Sound startGame;
+	startGame.setBuffer(startGameB);
+	startGame.setVolume(50);
+	startGame.play();
 	//pc.wav
-
-
 	while (window.isOpen())
 	{
 		sf::Event event;
