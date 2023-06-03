@@ -145,30 +145,30 @@ void MoveHistory::append(Piece* mover, const Position& srcPos, const Position& d
 }
 
 MoveEvent* MoveHistory::getCur() const {
-	if (this->state <= -1 || this->state >= this->moves.size()) {
+	if (this->state <= -1 || this->state >= (int)this->moves.size()) {
 		return nullptr;
 	}
 	return this->moves.at(state);
 }
 
 void MoveHistory::goBack() {
-	if (this->state >= 0) {
+	if (this->state > -1) {
 		this->state -= 1;
 	}
 }
 
 void MoveHistory::goOn() {
-	if (this->state < this->moves.size() - 1) {
+	if (this->state < (int)this->moves.size() - 1) {
 		this->state += 1;
 	}
 }
 
 // Truncate till state + 1 = size
 void MoveHistory::truncate(vector<Piece*> pieceNew) {
-	while (this->state + 1 < this->moves.size() && this->moves.empty() == false) {
+	while (this->state + 1 < (int)this->moves.size() && this->moves.empty() == false) {
 		// Delete the Piece from manage vector
 		if (this->moves.back()->isPromoteMove() == true) {
-			for (int i = 0; i < pieceNew.size(); ++i) {
+			for (int i = 0; i < (int)pieceNew.size(); ++i) {
 				if (pieceNew[i] == this->moves.back()->getPromotePiece()) {
 					pieceNew.erase(pieceNew.begin() + i);
 				}

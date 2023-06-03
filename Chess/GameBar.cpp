@@ -38,12 +38,11 @@ void GameBar::updateTurn() {
 }
 
 void GameBar::updateEnded() {
-
 	ended = 1;
 }
 
 void GameBar::showGameBar(RenderWindow& window) {
-	//BackGroup  
+	//BackGround
 	Texture textureBG;
 	textureBG.loadFromFile("Image/gameBar.png");
 	textureBG.setSmooth(true);
@@ -95,18 +94,9 @@ void GameBar::showGameBar(RenderWindow& window) {
 	redoBut.setScale(butScale, butScale);
 	window.draw(redoBut);
 
-
 	//Ended
 	if (ended == 1) {
-		cout << "in";
-		Texture textureBG;
-		textureBG.loadFromFile("Image/scroll.png");
-		textureBG.setSmooth(true);
-		bg.setTexture(textureBG);
-		bg.scale(2.5, 2.5);
-		bg.setPosition(0.5 * window.getSize().x - 450 , 0.5 *window.getSize().y - 100);
-		window.draw(bg);
-
+		cout << "END";
 		Font turrnFont;
 		double turnSize = 0.08 * window.getSize().y;
 		turrnFont.loadFromFile("Font/gameFont_01.otf");
@@ -120,9 +110,5 @@ void GameBar::showGameBar(RenderWindow& window) {
 
 		
 		window.draw(turnText);
-
-
 	}
-
-
 }

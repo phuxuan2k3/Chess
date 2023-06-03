@@ -153,8 +153,9 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
-						GameBar::timeline += 1;
-						GameBar::currentState = GameBar::timeline;	// Once moved, it'll be set to current
+
+						GameBar::timeline = GameBar::currentState + 1;
+						GameBar::currentState = GameBar::timeline;
 					}
 
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected
