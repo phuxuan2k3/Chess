@@ -28,7 +28,6 @@ void GUI::run()
 }
 
 GUI::~GUI() {
-	if(this->game) delete this->game;
 	if(this->render) delete this->render;
 	if(this->screen) delete this->screen;
 }

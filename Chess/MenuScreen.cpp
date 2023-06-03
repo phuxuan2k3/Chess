@@ -136,8 +136,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				if (Exit.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
 				{	
 					end = true;
-
-
+					delete game;
 					break;
 				}
 				if (loadBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
