@@ -204,6 +204,12 @@ vector<Position> GameState::canGo(const Position& pos) {
 }
 
 
+bool GameState::isChecked() const {
+	Position kingPos = this->turn == Troop::White ? this->whiteKing : this->blackKing;
+	return isDangerousSquare(kingPos, this->board, this->turn);
+}
+
+
 bool GameState::isValidMove(const Position& src, const Position& dest, vector<Position> canGo) const {
 	// If the src Square chosen is empty, we do nothing
 	if (this->board.hasPiece(src) == false) {

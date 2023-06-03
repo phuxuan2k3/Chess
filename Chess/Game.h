@@ -50,7 +50,10 @@ public:
 	void move(const Position& src, const Position& dest, vector<Position> canGo);
 	void checkEndGame();
 	EndGameType getIsEndGame() const;
+
+	// Toi luot ben nao thi tra ve tin hieu con vua ben do co bi chieu hay khong
+	bool isChecked() const;
+
 	void undo();
 	void redo();
-
 };
