@@ -185,6 +185,8 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
 						GameBar::currentState -= 1;
+						checked.stop();
+						notify = false;
 					}
 				}
 				if (GameBar::redoBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false) {
