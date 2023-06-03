@@ -185,6 +185,7 @@ vector<Position> GameState::canGo(const Position& pos) {
 	vector<Position> res = this->board.getPiece(pos)->canGo(pos, this->board);
 	for (int i = res.size() - 1; i >= 0; i--)
 	{
+		// Call MOVE here
 		this->move(pos, res[i], res);
 		Position testwk = this->whiteKing;
 		Position testbk = this->blackKing;
@@ -197,7 +198,7 @@ vector<Position> GameState::canGo(const Position& pos) {
 		}
 		this->undo();
 		// These are fake moves so don't add into history
-		this->vecterMoves.truncate(this->promotePieces);
+		//this->vecterMoves.truncate(this->promotePieces);
 	}
 	this->testState = false;
 	return res;
@@ -246,17 +247,23 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	// Change move history => No redo once moved
 	// For promotion: delete every newly promoted piece, by return the vector of pointer
 	// of newly promoted piece
-	this->vecterMoves.truncate(this->promotePieces);
 
 	Piece* pSrc = this->board.getPiece(src);
+	MoveEvent* me = new MoveEvent(pSrc, src, dest, this->lastChoose);
 
 	// Update into history
-	this->vecterMoves.append(pSrc, src, dest, this->lastChoose);
+	if (this->testState == false) {
+		this->vecterMoves.truncate(this->promotePieces);
+		this->vecterMoves.append(me);
+	}
+	else {
+		this->vecterMoves.pushTestMove(me);
+	}
 
 	// If dest Square is occupied by a Piece => Just remove it from square, dont delete pls
 	if (this->board.hasPiece(dest) == true) {
 		// Update (before remove it from board)
-		this->vecterMoves.getCur()->setEatMove(this->board.getPiece(dest), dest);
+		me->setEatMove(this->board.getPiece(dest), dest);
 		this->board.setPiece(dest, nullptr);
 	}
 	// Castling Move: If it has passed all castling conditions, things will be fine
@@ -264,7 +271,7 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 		dest.getInfo() == PosInfo::CastlingRight) {
 		bool left = dest.getInfo() == PosInfo::CastlingLeft;
 		// Get rook and its position
-		Position rookSrcPos =  left ? ((King*)pSrc)->getLeftRook() : ((King*)pSrc)->getRightRook();
+		Position rookSrcPos = left ? ((King*)pSrc)->getLeftRook() : ((King*)pSrc)->getRightRook();
 		Position rookDestPos = left ? src.getRelativePosition(0, -1) : src.getRelativePosition(0, 1);
 		Piece* rook = this->board.getPiece(rookSrcPos);
 		this->board.setPiece(rookDestPos, rook);
@@ -275,14 +282,14 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 		// Custom trigger
 		rook->triggerOnMoved(dest);
 		castle->saveDestPieceInfo(rook);
-		this->vecterMoves.getCur()->setCastRookMove(castle);
+		me->setCastRookMove(castle);
 	}
 	// Enpassant
 	else if (dest.getInfo() == PosInfo::EnPassant) {
 		int dir = (pSrc->getTroop() == Troop::White ? 1 : -1);
 		Position EnPassantPos = dest.getRelativePosition(dir, 0);
 		// Update
-		this->vecterMoves.getCur()->setEatMove(this->board.getPiece(EnPassantPos), EnPassantPos);
+		me->setEatMove(this->board.getPiece(EnPassantPos), EnPassantPos);
 		this->board.setPiece(EnPassantPos, nullptr);
 	}
 
@@ -310,11 +317,11 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 	this->lastChoose->setLastChosen();
 
 	// Update pre-state
-	this->vecterMoves.getCur()->saveSrcPieceInfo(pSrc);
+	me->saveSrcPieceInfo(pSrc);
 	// Only update after moved
 	pSrc->triggerOnMoved(dest);
 	// Update post-state
-	this->vecterMoves.getCur()->saveDestPieceInfo(pSrc);
+	me->saveDestPieceInfo(pSrc);
 
 	this->switchTurn();
 }
@@ -322,10 +329,17 @@ void GameState::move(const Position& src, const Position& dest, vector<Position>
 
 void GameState::undo() {
 	// Current state to undo, cause it save information of the piece before it get to this current postion
-	MoveEvent* currentState = this->vecterMoves.getCur();
 	// Set state to previous one (before castling to prevent loop)
-	this->vecterMoves.goBack();
 	// If the state is 'empty' (starting or reached the current (for redo))
+	MoveEvent* currentState = nullptr;
+	if (this->testState == false) {
+		currentState = this->vecterMoves.getCur();
+		this->vecterMoves.goBack();
+	}
+	else {
+		currentState = this->vecterMoves.getTestMove();
+	}
+
 	if (currentState == nullptr) {
 		// Set last choose back to null
 		this->lastChoose = NullPiece::getInstance();
@@ -375,10 +389,11 @@ void GameState::undo() {
 void GameState::redo() {
 	// Set state to later one (its future state), then we consider it as current state
 	// and reverse all undo operations
-	this->vecterMoves.goOn();
 	// Current state to undo, cause it save information of the piece before it get to this current postion
-	MoveEvent* futureState = this->vecterMoves.getCur();
 	// If the state is 'empty' (reached starting or current (for redo))
+	// No testing with redo
+	this->vecterMoves.goOn();
+	MoveEvent* futureState = this->vecterMoves.getCur();
 	if (futureState == nullptr) {
 		return;
 	}

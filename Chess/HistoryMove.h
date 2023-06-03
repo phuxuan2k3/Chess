@@ -68,6 +68,7 @@ public:
 class MoveHistory
 {
 private:
+	MoveEvent* testMove;		// Moves for checking if king is in danger
 	vector<MoveEvent*> moves;
 	int state;
 
@@ -75,7 +76,10 @@ public:
 	MoveHistory();
 	~MoveHistory();
 
-	void append(Piece* mover, const Position& srcPos, const Position& desPos, Piece* lastChoose);
+	void append(MoveEvent* me);
+
+	void pushTestMove(MoveEvent* me);
+	MoveEvent* getTestMove() const;
 
 	MoveEvent* getCur() const;
 	// These two should only be called when performed undo/redo

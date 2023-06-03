@@ -128,6 +128,7 @@ Piece* MoveEvent::getLastChoosePiece() const {
 
 MoveHistory::MoveHistory()
 {
+	this->testMove = nullptr;
 	this->state = -1;
 }
 
@@ -136,11 +137,13 @@ MoveHistory::~MoveHistory() {
 		delete move;
 		move = nullptr;
 	}
+	delete this->testMove;
+	this->testMove = nullptr;
 }
 
-void MoveHistory::append(Piece* mover, const Position& srcPos, const Position& desPos, Piece* lastChoose)
+void MoveHistory::append(MoveEvent* me)
 {
-	this->moves.push_back(new MoveEvent(mover, srcPos, desPos, lastChoose));
+	this->moves.push_back(me);
 	this->state++;
 }
 
@@ -149,6 +152,18 @@ MoveEvent* MoveHistory::getCur() const {
 		return nullptr;
 	}
 	return this->moves.at(state);
+}
+
+void MoveHistory::pushTestMove(MoveEvent* me) {
+	// There can only be 1 testMove at a time
+	if (this->testMove != nullptr) {
+		delete this->testMove;
+	}
+	this->testMove = me;
+}
+
+MoveEvent* MoveHistory::getTestMove() const {
+	return this->testMove;
 }
 
 void MoveHistory::goBack() {
