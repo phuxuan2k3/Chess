@@ -7,6 +7,7 @@ Sprite GameBar::homeBut;
 Text GameBar::reset;
 Sprite GameBar::redoBut;
 Sprite GameBar::newGame;
+Sprite GameBar::checked;
 bool GameBar::ended = 0;
 
 int GameBar::timeline = 0;
@@ -42,7 +43,9 @@ void GameBar::updateEnded() {
 	ended = 1;
 }
 
-void GameBar::showGameBar(RenderWindow& window) {
+void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
+	
+
 	//BackGround
 	Texture textureBG;
 	textureBG.loadFromFile("Image/gameBar.png");
@@ -66,6 +69,16 @@ void GameBar::showGameBar(RenderWindow& window) {
 	turnText.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.15 * window.getSize().y);
 	window.draw(turnText);
 
+	//checked
+	Texture checkedTxt;
+	checkedTxt.loadFromFile("Image/Warning-PNG-Free-Image.png");
+	checkedTxt.setSmooth(true);
+	Sprite checked;
+	checked.setTexture(checkedTxt);
+	checked.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 50, 0.3 * window.getSize().y);
+	checked.setScale(0.2, 0.2);
+	if (isChecked) window.draw(checked);
+
 	//newgame
 	Texture ngTexture;
 	ngTexture.loadFromFile("Image/newGame.png");
@@ -83,6 +96,7 @@ void GameBar::showGameBar(RenderWindow& window) {
 	homeBut.setPosition(bg.getPosition().x + 80 , turnText.getPosition().y + 300);
 	homeBut.setScale(butScale, butScale);
 	window.draw(homeBut);
+
 
 
 	// Undo button
@@ -132,5 +146,7 @@ void GameBar::showGameBar(RenderWindow& window) {
 
 
 		window.draw(turnText);
+
+		
 	}
 }

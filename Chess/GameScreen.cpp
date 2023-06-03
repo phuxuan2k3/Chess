@@ -9,7 +9,7 @@ void GameScreen::drawGameScreen(RenderWindow& window) {
 	window.clear();
 	
 	this->render->draw(window);
-	this->gameb->showGameBar(window);
+	this->gameb->showGameBar(window,game->isChecked());
 	window.display();
 }
 void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare, vector<Position> cango) {
@@ -19,7 +19,7 @@ void GameScreen::drawCanGo(RenderWindow& window, const Position& selectedSquare,
 	this->render->drawCanGo(window, cango);
 	this->render->drawSelected(window, selectedSquare);
 	//this->gameb->showGameBar(window);
-	this->gameb->showGameBar(window);
+	this->gameb->showGameBar(window, game->isChecked());
 	window.display();
 }
 void GameScreen::chessPos(RenderWindow& window)
@@ -28,12 +28,12 @@ void GameScreen::chessPos(RenderWindow& window)
 	obj.setRelaPos(window.getPosition());
 }
 void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
-
+	bool notify = false;
 	this->drawGameScreen(window);
 	Position curPos;
 	Position prePos;
 	vector<Position> canGo;
-
+	
 	//Am thanh
 	
 	SoundBuffer soundB;
@@ -43,6 +43,14 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	themSong.setLoop(true);
 	themSong.setVolume(50);
 	themSong.play();
+
+	SoundBuffer checkB;
+	checkB.loadFromFile("Audio/creepy-church-bell-33827.wav");
+	Sound checked;
+	checked.setLoop(true);
+	checked.setBuffer(checkB);
+	checked.setVolume(80);
+	//checked.play();
 
 	SoundBuffer pcB;
 	pcB.loadFromFile("Audio/pc_3.wav");
@@ -59,6 +67,10 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	//pc.wav
 	while (window.isOpen())
 	{
+		if (game->isChecked() && !notify) {
+			checked.play();
+			notify = true;
+		}
 		sf::Event event;
 		if (window.pollEvent(event))
 		{
@@ -156,6 +168,8 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 
 						GameBar::timeline = GameBar::currentState + 1;
 						GameBar::currentState = GameBar::timeline;
+						checked.stop();
+						notify = false;
 					}
 
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected

@@ -21,8 +21,8 @@ public:
 	static void updateEnded();
 	static GameBar* getInstance();
 	static void deleteInstance();
-	void showGameBar(RenderWindow& window);
-
+	void showGameBar(RenderWindow& window, bool isChecked);
+	static Sprite checked;
 	// State for undo, redo
 	static int timeline;
 	static int currentState;
