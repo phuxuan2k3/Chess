@@ -48,14 +48,22 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	playBut.setString("Play");
 	playBut.setCharacterSize(textSize);
 	playBut.setFillColor(sf::Color::White);
-	playBut.setPosition(x, y);
+	playBut.setPosition(x, y );
+
+	//Load Button
+	Text loadBut;
+	loadBut.setFont(font);
+	loadBut.setString("Load");
+	loadBut.setCharacterSize(textSize);
+	loadBut.setFillColor(sf::Color::White);
+	loadBut.setPosition(x, y + textSize);
 	//Exit Button
 	Text Exit;
 	Exit.setFont(font);
 	Exit.setString("Exit");
 	Exit.setCharacterSize(textSize);
 	Exit.setFillColor(sf::Color::White);
-	Exit.setPosition(x, y +   textSize);
+	Exit.setPosition(x, y +  2*  textSize);
 
 	while (window.isOpen())
 	{
@@ -81,6 +89,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				{
 					playBut.setFillColor(hoverColor);
 					Exit.setFillColor(defaultColor);
+					loadBut.setFillColor(defaultColor);
 					if (!choosing) {
 						choosing = true;
 						hover.play();
@@ -91,6 +100,16 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				{
 					Exit.setFillColor(hoverColor);
 					playBut.setFillColor(defaultColor);
+					loadBut.setFillColor(defaultColor);
+					if (!choosing) {
+						choosing = true;
+						hover.play();
+					}
+				}
+				else if (loadBut.getGlobalBounds().contains(sf::Vector2f(mousePosition))) {
+					loadBut.setFillColor(hoverColor);
+					Exit.setFillColor(defaultColor);
+					playBut.setFillColor(defaultColor);
 					if (!choosing) {
 						choosing = true;
 						hover.play();
@@ -98,6 +117,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				}
 				else
 				{
+					loadBut.setFillColor(defaultColor);
 					playBut.setFillColor(defaultColor);
 					Exit.setFillColor(defaultColor);
 					choosing = false;
@@ -118,6 +138,11 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					end = true;
 					break;
 				}
+				if (loadBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
+				{
+					cout << "load game here!" << endl;
+					break;
+				}
 			}
 		}
 		
@@ -133,6 +158,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 		sprite.setScale(1.0 * window.getSize().x / texture.getSize().x, 1.0 * window.getSize().y / texture.getSize().y);
 		window.draw(sprite);
 		window.draw(playBut);
+		window.draw(loadBut);
 		window.draw(Exit);
 		window.draw(Chess);
 		window.display();
