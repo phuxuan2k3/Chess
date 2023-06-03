@@ -50,7 +50,7 @@ public:
 	void move(const Position& src, const Position& dest, vector<Position> canGo);
 	void checkEndGame();
 	EndGameType getIsEndGame() const;
-
 	void undo();
 	void redo();
+
 };

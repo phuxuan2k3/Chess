@@ -181,8 +181,11 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					}
 				}
 				if (GameBar::homeBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
+					game = new GameState();
+					render->setBoard(game->getRefBoard());
 					Screen* temp = screen;
-					screen = new MenuScreen(this->windowWidthScale, this->windowHeightScale, this->render, this->game);
+					screen = new MenuScreen(this->windowWidthScale, this->windowHeightScale, render, game);
+					delete temp;
 					break;
 				}
 			}

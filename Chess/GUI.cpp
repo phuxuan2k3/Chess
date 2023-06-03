@@ -24,10 +24,11 @@ void GUI::run()
 		if (this->end) break;
 		this->screen->run(this->window, this->screen, this->end);
 	}
+
 }
 
 GUI::~GUI() {
-	delete this->screen;
-	delete this->render;
-	delete this->game;
+	if(this->game) delete this->game;
+	if(this->render) delete this->render;
+	if(this->screen) delete this->screen;
 }

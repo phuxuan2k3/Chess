@@ -70,13 +70,14 @@ GameState::GameState(Troop turn) {
 }
 
 
+
 GameState::~GameState()
 {
 	for (Piece* p : this->pieces) {
-		delete p;
+		if (p) delete p;
 	}
 	for (Piece* p : this->promotePieces) {
-		delete p;
+		if (p) delete p;
 	}
 	this->pieces.clear();
 	this->promotePieces.clear();
