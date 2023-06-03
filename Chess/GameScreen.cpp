@@ -28,7 +28,7 @@ void GameScreen::chessPos(RenderWindow& window)
 	obj.setRelaPos(window.getPosition());
 }
 void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
-	
+
 	this->drawGameScreen(window);
 	Position curPos;
 	Position prePos;
@@ -71,20 +71,19 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						sf::Mouse::getPosition(window).y * 1.0f / this->windowHeightScale
 					);
 
-				// nhap chuot vao ban co
+				// Valid mouse click (in-board)
 				if (mousePosition.x < 800 && mousePosition.x > 0 && mousePosition.y < 800)
 				{
+					// Map coordinate to Position on board
 					curPos = coordinateToPosition(mousePosition);
-					
-
-					//neu chua chon mot quan co truoc do thi hien len duong di cua quan co duoc chon  va phai den turn
+					// Show AVAILIBLE MOVES
 					if (this->render->getState() == State::NotSelected &&
 						this->game->isValidChoice(curPos) == true)
 					{
 						sf::RectangleShape rec(sf::Vector2f(100, 100));
 						rec.setPosition(curPos.get_i(), curPos.get_i());
 						rec.setFillColor(sf::Color(245, 40, 145, 150));
-					
+
 						rec.setOutlineColor(sf::Color(255, 0, 0));
 						rec.setOutlineThickness(50);
 						window.draw(rec);
@@ -95,20 +94,16 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						// nguoc lai, ta chuyen ve tran thai Selected
 						if (canGo.empty() == false) {
 							this->render->setState(State::Selected);
-							this->drawCanGo(window,curPos, canGo);
+							this->drawCanGo(window, curPos, canGo);
 							prePos = curPos;
 						}
 					}
-
-					// neu da chon mot quan co truoc do va chon vao 1 nuoc di hop le
-					else if (this->render->getState() == State::Selected &&
-						this->game->isValidMove(prePos, curPos, canGo) == true)
+					// Perform MOVE
+					else if (this->render->getState() == State::Selected && this->game->isValidMove(prePos, curPos, canGo) == true)
 					{
 						curPos = canGo[hasPosition(canGo, curPos)];		// Map curPos to canGo to get its type of move
 						this->game->move(prePos, curPos, canGo);		// Turn changed here
-
 						this->game->checkEndGame();
-
 
 						EndGameType tem = this->game->getIsEndGame();
 						switch (tem)
@@ -117,14 +112,11 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 							cout << "WL" << endl;
 							GameBar::updateEnded();
 							this->drawGameScreen(window);
-
 							break;
 						case EndGameType::BlackLose:
 							cout << "BL" << endl;
 							GameBar::updateEnded();
 							this->drawGameScreen(window);
-
-
 							break;
 						case EndGameType::Draw:
 							cout << "D" << endl;
@@ -136,8 +128,6 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 							break;
 						}
 
-
-
 						this->render->setState(State::NotSelected);
 						if (this->game->promote == true) {
 							this->chessPos(window);
@@ -145,10 +135,11 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 							this->game->promote = false;
 							this->drawGameScreen(window);
 						}
-						
+
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
-						GameBar::canUndo += 1;
+						GameBar::timeline += 1;
+						GameBar::currentState = GameBar::timeline;	// Once moved, it'll be set to current
 					}
 
 					// neu chon vao vi tri khong hop le, ta tro ve trang thai NotSelected
@@ -159,29 +150,26 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					}
 				}
 				if (GameBar::undoBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
-					if (GameBar::canUndo != 0) {
-						game->undo();
+					if (GameBar::currentState > 0) {
+						this->game->undo();
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
-						GameBar::canUndo -= 1;
+						GameBar::currentState -= 1;
 					}
-				} 
+				}
 				if (GameBar::redoBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
-					
-						game->redo();
+					if (GameBar::currentState < GameBar::timeline) {
+						this->game->redo();
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
-						GameBar::canUndo -= 1;
+						GameBar::currentState += 1;
 					}
-
-
+				}
 				if (GameBar::homeBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
 					Screen* temp = screen;
 					screen = new MenuScreen(this->windowWidthScale, this->windowHeightScale, this->render, this->game);
 					break;
 				}
-			
-				
 			}
 		}
 	}

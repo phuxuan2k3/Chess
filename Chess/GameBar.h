@@ -14,7 +14,6 @@ public:
 	static Sprite redoBut;
 	static Sprite homeBut;
 	static Text turnText;
-	static int canUndo;
 	static bool ended;
 	static Text reset;
 	static void updateTurn();
@@ -22,5 +21,9 @@ public:
 	static GameBar* getInstance();
 	static void deleteInstance();
 	void showGameBar(RenderWindow& window);
+
+	// State for undo, redo
+	static int timeline;
+	static int currentState;
 };
 

@@ -5,9 +5,12 @@ Text GameBar::turnText;
 Sprite GameBar::undoBut;
 Sprite GameBar::homeBut;
 Text GameBar::reset;
-int GameBar::canUndo = 0;
 Sprite GameBar::redoBut;
 bool GameBar::ended = 0;
+
+int GameBar::timeline = 0;
+int GameBar::currentState = 0;
+
 
 GameBar::GameBar() {
 	
