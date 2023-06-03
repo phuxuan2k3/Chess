@@ -25,5 +25,6 @@ public:
 	// State for undo, redo
 	static int timeline;
 	static int currentState;
+
 };
 

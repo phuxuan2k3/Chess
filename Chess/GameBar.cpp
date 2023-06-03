@@ -99,6 +99,13 @@ void GameBar::showGameBar(RenderWindow& window) {
 	//Ended
 	if (ended == 1) {
 		cout << "in";
+		Texture textureBG;
+		textureBG.loadFromFile("Image/scroll.png");
+		textureBG.setSmooth(true);
+		bg.setTexture(textureBG);
+		bg.scale(2.5, 2.5);
+		bg.setPosition(0.5 * window.getSize().x - 450 , 0.5 *window.getSize().y - 100);
+		window.draw(bg);
 
 		Font turrnFont;
 		double turnSize = 0.08 * window.getSize().y;
@@ -109,15 +116,9 @@ void GameBar::showGameBar(RenderWindow& window) {
 		turnText.setFillColor(Color::Black);
 		turnText.setOutlineColor(sf::Color(Color(90, 61, 43)));
 		turnText.setOutlineThickness(2);
-		turnText.setPosition(0.5 * (window.getSize().x - bg.getPosition().x)+10, 0.5 * (window.getSize().y - bg.getPosition().y));
+		turnText.setPosition( bg.getPosition().x + 100 , bg.getPosition().y + 50);
 
-		Texture textureBG;
-		textureBG.loadFromFile("Image/scroll.png");
-		textureBG.setSmooth(true);
-		Sprite bg;
-		bg.setTexture(textureBG);
-		bg.setPosition(0.5 * (window.getSize().x - bg.getPosition().x) - 460, 0.5 * (window.getSize().y - bg.getPosition().y) - 60);
-		window.draw(bg);
+		
 		window.draw(turnText);
 
 

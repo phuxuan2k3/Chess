@@ -164,7 +164,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						this->drawGameScreen(window);
 					}
 				}
-				if (GameBar::undoBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
+				if (GameBar::undoBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false) {
 					if (GameBar::currentState > 0) {
 						this->game->undo();
 						GameBar::updateTurn();
@@ -172,7 +172,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						GameBar::currentState -= 1;
 					}
 				}
-				if (GameBar::redoBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
+				if (GameBar::redoBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false) {
 					if (GameBar::currentState < GameBar::timeline) {
 						this->game->redo();
 						GameBar::updateTurn();
