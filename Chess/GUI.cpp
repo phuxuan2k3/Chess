@@ -7,7 +7,10 @@
 //===================================================
 
 GUI::GUI() {
+	sf::Image icon;
+	icon.loadFromFile("Image/king.jpg");
 	this->window.create(sf::VideoMode(1200, 800), "Chess", sf::Style::Close);
+	window.setIcon(icon.getSize().x, icon.getSize().y,icon.getPixelsPtr());
 	this->windowHeightScale = 1;
 	this->windowWidthScale = 1;
 	this->render = new RenderGame();

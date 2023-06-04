@@ -79,6 +79,8 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	checked.setTexture(checkedTxt);
 	checked.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 50, 0.3 * window.getSize().y);
 	checked.setScale(0.2, 0.2);
+
+
 	if (isChecked && !ended && !isReplay) window.draw(checked);
 
 
@@ -88,7 +90,7 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	homeTexture.loadFromFile("Image/homebut.png");
 	homeTexture.setSmooth(true);
 	homeBut.setTexture(homeTexture);
-	homeBut.setPosition(bg.getPosition().x + 80 , turnText.getPosition().y + 300);
+	homeBut.setPosition(bg.getPosition().x + 125, turnText.getPosition().y + 400);
 	homeBut.setScale(butScale, butScale);
 	window.draw(homeBut);
 
@@ -99,7 +101,7 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	undoTexture.loadFromFile("Image/undoBut.png");
 	undoTexture.setSmooth(true);
 	undoBut.setTexture(undoTexture);
-	undoBut.setPosition(bg.getPosition().x + 80 * 2, turnText.getPosition().y + 300);
+	undoBut.setPosition(bg.getPosition().x + 125 , turnText.getPosition().y + 300);
 	undoBut.setScale(butScale, butScale);
 	window.draw(undoBut);
 
@@ -110,7 +112,7 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	redoTexture.loadFromFile("Image/redoBut.png");
 	redoTexture.setSmooth(true);
 	redoBut.setTexture(redoTexture);
-	redoBut.setPosition(bg.getPosition().x + 80 * 3, turnText.getPosition().y + 300);
+	redoBut.setPosition(bg.getPosition().x + 125* 2, turnText.getPosition().y + 300);
 	redoBut.setScale(butScale, butScale);
 	window.draw(redoBut);
 
@@ -120,7 +122,7 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	saveTexture.loadFromFile("Image/save.png");
 	saveTexture.setSmooth(true);
 	saveBut.setTexture(saveTexture);
-	saveBut.setPosition(bg.getPosition().x + 80, turnText.getPosition().y + 400);
+	saveBut.setPosition(bg.getPosition().x + 125 * 2 + 5, turnText.getPosition().y + 400);
 	saveBut.setScale(butScale, butScale);
 	window.draw(saveBut);
 
@@ -134,20 +136,20 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 		ngTexture.loadFromFile("Image/newGame.png");
 		ngTexture.setSmooth(true);
 		newGame.setTexture(ngTexture);
-		newGame.setScale(0.2, 0.2);
-		newGame.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.3 * window.getSize().y);
+		newGame.setScale(0.4, 0.4);
+		newGame.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 100, 0.25 * window.getSize().y);
 		window.draw(newGame);
 
 		//replay
 		Texture replayTet;
-		replayTet.loadFromFile("Image/sup_replay.png");
+		replayTet.loadFromFile("Image/Replay_Game.png");
 		replayTet.setSmooth(true);
 		replay.setTexture(replayTet);
 		replay.setScale(0.3, 0.3);
 		replay.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 70, 0.35 * window.getSize().y);
 		window.draw(replay);
 
-		cout << "in";
+		
 		Texture textureBG;
 		textureBG.loadFromFile("Image/scroll.png");
 		textureBG.setSmooth(true);
@@ -177,4 +179,6 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 
 		
 	}
+
+	
 }
