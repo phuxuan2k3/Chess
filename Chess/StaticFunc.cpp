@@ -77,9 +77,9 @@ bool isDangerousSquare(const Position& src, const Board& board, Troop color)
 	}
 
 	// Short path Part - Pawn, King, Knight
-	Piece* test = nullptr;
 
 	// Pawn: Black eat downward, White eat upward
+	vector<Piece*> testPawn;
 	int pawnEat[2][2] = {
 		{-1, -1},
 		{-1, 1},
@@ -88,32 +88,34 @@ bool isDangerousSquare(const Position& src, const Board& board, Troop color)
 		pawnEat[0][0] = 1;
 		pawnEat[1][0] = 1;
 	}
-	test = shortSearchEnemy(src, board, color, pawnEat, 2);
-	if (test != nullptr) {
-		if (test->getPieceType() == PieceType::Pawn) {
+	testPawn = shortSearchEnemy(src, board, color, pawnEat, 2);
+	for (Piece* p : testPawn) {
+		if (p->getPieceType() == PieceType::Pawn) {
 			return true;
 		}
 	}
 
 	// Knight
+	vector<Piece*> testKnight;
 	int knightEat[8][2] = {
-		{-2, 1},
 		{-2, -1},
-		{-1, 2},
 		{-1, -2},
-		{1, 2},
 		{1, -2},
-		{2, 1},
 		{2, -1},
+		{2, 1},
+		{1, 2},
+		{-1, 2},
+		{-2, 1},
 	};
-	test = shortSearchEnemy(src, board, color, knightEat, 8);
-	if (test != nullptr) {
-		if (test->getPieceType() == PieceType::Knight) {
+	testKnight = shortSearchEnemy(src, board, color, knightEat, 8);
+	for (Piece* p : testKnight) {
+		if (p->getPieceType() == PieceType::Knight) {
 			return true;
 		}
 	}
 
 	// King
+	vector<Piece*> testKing;
 	int kingEat[8][2] = {
 		{-1, -1},
 		{-1, 0},
@@ -124,9 +126,9 @@ bool isDangerousSquare(const Position& src, const Board& board, Troop color)
 		{1, 0},
 		{1, 1},
 	};
-	test = shortSearchEnemy(src, board, color, kingEat, 8);
-	if (test != nullptr) {
-		if (test->getPieceType() == PieceType::King) {
+	testKing = shortSearchEnemy(src, board, color, kingEat, 8);
+	for (Piece* p : testKing) {
+		if (p->getPieceType() == PieceType::King) {
 			return true;
 		}
 	}
@@ -288,8 +290,9 @@ Piece* linearSearchEnemy(const Position& src, const Board& board, Troop troop, M
 	return nullptr;
 }
 
-// Count the Pawn case, cause it 
-Piece* shortSearchEnemy(const Position& src, const Board& board, Troop troop, int moves[][2], int range) {
+// Count the Pawn case 
+vector<Piece*> shortSearchEnemy(const Position& src, const Board& board, Troop troop, int moves[][2], int range) {
+	vector<Piece*> enemyBlocker;
 	Position squareToMove;
 
 	for (int i = 0; i < range; ++i) {
@@ -299,20 +302,17 @@ Piece* shortSearchEnemy(const Position& src, const Board& board, Troop troop, in
 		if (squareToMove.isNotNull() == false) {
 			continue;
 		}
-		// If it's blocked by a Piece
+		// Found 1 enemy
 		if (board.hasPiece(squareToMove) == true) {
-			Piece* blocker = board.getPiece(squareToMove);
-			// Found 1 enemy
-			if (blocker->getTroop() != troop) {
-				return blocker;
+			if (board.getPiece(squareToMove)->getTroop() != troop) {
+				enemyBlocker.push_back(board.getPiece(squareToMove));
 			}
 			else {
 				continue;
 			}
 		}
 	}
-
-	return nullptr;
+	return enemyBlocker;
 }
 
 //===================================================

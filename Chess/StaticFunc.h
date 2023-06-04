@@ -41,7 +41,7 @@ string getSprite(PieceType pn, Troop pc);
 // Find if there's an enemy on a specific direction
 Piece* linearSearchEnemy(const Position& src, const Board& board, Troop pieceColor, MoveDirection dir);
 // Find if there's an enemy on a specific set of squares
-Piece* shortSearchEnemy(const Position& src, const Board& board, Troop pieceColor, int moves[][2], int range);
+vector<Piece*> shortSearchEnemy(const Position& src, const Board& board, Troop pieceColor, int moves[][2], int range);
 
 // Note: we can have more than 1 enemy pieces found, but we only need to
 // know whether a specific enemy piece
