@@ -4,11 +4,12 @@ Troop GameBar::turn = Troop::White;
 Text GameBar::turnText;
 Sprite GameBar::undoBut;
 Sprite GameBar::homeBut;
+Sprite GameBar::saveBut;
 Text GameBar::reset;
 Sprite GameBar::redoBut;
 Sprite GameBar::newGame;
 Sprite GameBar::checked;
-bool GameBar::ended = 0;
+int GameBar::ended = 0;
 
 int GameBar::timeline = 0;
 int GameBar::currentState = 0;
@@ -39,8 +40,8 @@ void GameBar::updateTurn() {
 	}
 }
 
-void GameBar::updateEnded() {
-	ended = 1;
+void GameBar::updateEnded(int i) {
+	ended = i;
 }
 
 void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
@@ -108,6 +109,8 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	undoBut.setScale(butScale, butScale);
 	window.draw(undoBut);
 
+
+
 	// Redo button
 	Texture redoTexture;
 	redoTexture.loadFromFile("Image/redoBut.png");
@@ -117,8 +120,18 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	redoBut.setScale(butScale, butScale);
 	window.draw(redoBut);
 
+
+	// Save button
+	Texture saveTexture;
+	saveTexture.loadFromFile("Image/save.png");
+	saveTexture.setSmooth(true);
+	saveBut.setTexture(saveTexture);
+	saveBut.setPosition(bg.getPosition().x + 80, turnText.getPosition().y + 400);
+	saveBut.setScale(butScale, butScale);
+	window.draw(saveBut);
+
 	//Ended
-	if (ended == 1) {
+	if (ended !=0) {
 
 		window.draw(newGame);
 		cout << "in";
@@ -137,12 +150,14 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 		double turnSize = 0.08 * window.getSize().y;
 		turrnFont.loadFromFile("Font/gameFont_01.otf");
 		turnText.setFont(turrnFont);
-		turnText.setString((this->turn == Troop::White ? "Black Win" : "White Win"));
+		if(ended==1) turnText.setString((this->turn == Troop::White ? "Black Win" : "White Win"));
+		if(ended==2) turnText.setString("Draw");
 		turnText.setCharacterSize(turnSize);
 		turnText.setFillColor(Color::Black);
 		turnText.setOutlineColor(sf::Color(Color(90, 61, 43)));
 		turnText.setOutlineThickness(2);
 		turnText.setPosition(bg.getPosition().x + 100, bg.getPosition().y + 50);
+
 
 
 		window.draw(turnText);

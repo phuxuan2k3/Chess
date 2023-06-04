@@ -137,16 +137,18 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						{
 						case EndGameType::WhiteLose:
 							cout << "WL" << endl;
-							GameBar::updateEnded();
+							GameBar::updateEnded(1);
 							this->drawGameScreen(window);
 							break;
 						case EndGameType::BlackLose:
 							cout << "BL" << endl;
-							GameBar::updateEnded();
+							GameBar::updateEnded(1);
 							this->drawGameScreen(window);
 							break;
 						case EndGameType::Draw:
 							cout << "D" << endl;
+							GameBar::updateEnded(2);
+							this->drawGameScreen(window);
 							break;
 						case EndGameType::NoEndGame:
 							cout << "NEG" << endl;
@@ -196,6 +198,9 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						this->drawGameScreen(window);
 						GameBar::currentState += 1;
 					}
+				}
+				if (GameBar::saveBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false) {
+					cout << "save here";
 				}
 				if (GameBar::homeBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
 					delete game;

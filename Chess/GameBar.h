@@ -12,13 +12,15 @@ public:
 	static Troop turn; 
 	static Sprite undoBut;
 	static Sprite redoBut;
+	static Sprite saveBut;
 	static Sprite homeBut;
 	static Sprite newGame;
 	static Text turnText;
-	static bool ended;
+	static int ended;
 	static Text reset;
 	static void updateTurn();
-	static void updateEnded();
+	
+	static void updateEnded(int i);
 	static GameBar* getInstance();
 	static void deleteInstance();
 	void showGameBar(RenderWindow& window, bool isChecked);
