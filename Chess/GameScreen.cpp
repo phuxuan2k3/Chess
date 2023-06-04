@@ -98,7 +98,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					);
 
 				// Valid mouse click (in-board)
-				if (mousePosition.x < 800 && mousePosition.x > 0 && mousePosition.y < 800)
+				if (mousePosition.x < 800 && mousePosition.x > 0 && mousePosition.y < 800 && !GameBar::isReplay)
 				{
 					// Map coordinate to Position on board
 					curPos = coordinateToPosition(mousePosition);
