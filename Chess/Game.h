@@ -2,6 +2,7 @@
 #include "Pieces.h"
 #include "HistoryMove.h"
 #include "EndGame.h"
+#include <fstream>
 
 //=================================================================
 // Handle the algorithm part
@@ -56,4 +57,7 @@ public:
 
 	void undo();
 	void redo();
+
+	void saveGame();
+	void loadGame();
 };

@@ -31,7 +31,7 @@ public:
 	Pawn(Troop color);
 	Pawn(const Pawn& p);
 	~Pawn();
-	
+
 	void set(const Piece* p);
 
 	void triggerOnMoved(const Position& dest);
@@ -39,6 +39,9 @@ public:
 
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
+
+	void savePiece(fstream& file);
+	void loadPiece(fstream& file);
 };
 
 
@@ -51,6 +54,9 @@ public:
 
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
+
+	void savePiece(fstream& file);
+	void loadPiece(fstream& file);
 };
 
 
@@ -63,6 +69,9 @@ public:
 
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
+
+	void savePiece(fstream& file);
+	void loadPiece(fstream& file);
 };
 
 
@@ -81,6 +90,9 @@ public:
 
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
+
+	void savePiece(fstream& file);
+	void loadPiece(fstream& file);
 };
 
 
@@ -93,6 +105,9 @@ public:
 
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
+
+	void savePiece(fstream& file);
+	void loadPiece(fstream& file);
 };
 
 
@@ -119,6 +134,9 @@ public:
 
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
+
+	void savePiece(fstream& file);
+	void loadPiece(fstream& file);
 };
 
 
@@ -126,7 +144,7 @@ public:
 // When a square has no piece on it
 // Used for nullptr case of Piece, very useful, dont delete
 // 
-class NullPiece : public Piece 
+class NullPiece : public Piece
 {
 private:
 	static NullPiece* instance;
@@ -144,4 +162,7 @@ public:
 
 	vector<Position> canGo(const Position& src, const Board& board);
 	Piece* deepCopyPiece(Piece* p);
+
+	void savePiece(fstream& file);
+	void loadPiece(fstream& file);
 };

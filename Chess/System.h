@@ -175,6 +175,9 @@ public:
 
 	virtual vector<Position> canGo(const Position& src, const Board& board) = 0;
 	virtual Piece* deepCopyPiece(Piece* p) = 0;
+
+	virtual void savePiece(fstream& file) = 0;
+	virtual void loadPiece(fstream& file) = 0;
 };
 
 

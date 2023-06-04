@@ -32,7 +32,7 @@ GameState::GameState(Troop turn) {
 	pieces.push_back(this->initPieceOnBoard(PieceType::Bishop, Troop::Black, 0, 5));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Knight, Troop::Black, 0, 6));
 	pieces.push_back(this->initPieceOnBoard(PieceType::Rook, Troop::Black, 0, 7));
-	
+
 	// White
 
 	pieces.push_back(this->initPieceOnBoard(PieceType::Pawn, Troop::White, 6, 0));
@@ -376,7 +376,7 @@ void GameState::undo() {
 	{
 		(this->turn != Troop::White ? this->whiteKing : this->blackKing) = currentState->getSrcPos();
 	}
-	
+
 	this->switchTurn();
 
 	// Set last chosen piece of that state
@@ -408,7 +408,7 @@ void GameState::redo() {
 
 	// Kill the eaten piece (if its hasn't been replaced)
 	if (futureState->isEatMove() == true &&
-		!(futureState->getDestPos() == futureState->getEatenPos())) 
+		!(futureState->getDestPos() == futureState->getEatenPos()))
 	{
 		this->board.setPiece(futureState->getEatenPos(), nullptr);
 	}
@@ -427,7 +427,7 @@ void GameState::redo() {
 		this->board.setPiece(rookCastleEvent->getDestPos(), rookToRedo);
 		rookCastleEvent->loadDestPieceInfo(rookToRedo);
 	}
-	
+
 	// Update King's Position (reversed because not switched turn, current turn is opponent's)
 	if (pieceToRedo->isKing() == true)
 	{
@@ -479,4 +479,297 @@ void GameState::checkEndGame()
 
 	delete iEndGame;
 	this->isEndGame = EndGameType::NoEndGame;
+}
+
+void GameState::saveGame()
+{
+	fstream file("chess.bin", ios::out | ios::binary);
+	if (file.is_open())
+	{
+		//file.write(reinterpret_cast<const char*>(this), sizeof(GameState));
+		for (auto p : this->pieces)
+		{
+			p->savePiece(file);
+			bool found = false;
+			for (int i = 0; i < 8; i++)
+			{
+				if (found == true) break;
+				for (int j = 0; j < 8; j++)
+				{
+					if (found == true) break;
+					if (this->board.getPiece(Position(i, j)) == p)
+					{
+						Position pos(i, j);
+						file.write(reinterpret_cast<const char*>(&pos), sizeof(Position));
+						found = true;
+					}
+				}
+			}
+			if (found == false)
+			{
+				Position pos;
+				file.write(reinterpret_cast<const char*>(&pos), sizeof(Position));
+			}
+		}
+		//ghi them vi tri
+		for (auto p : this->promotePieces)
+		{
+			PieceType pt = p->getPieceType();
+			file.write(reinterpret_cast<const char*>(&pt), sizeof(PieceType));
+			p->savePiece(file);
+			bool found = false;
+			for (int i = 0; i < 8; i++)
+			{
+				if (found == true) break;
+				for (int j = 0; j < 8; j++)
+				{
+					if (found == true) break;
+					if (this->board.getPiece(Position(i, j)) == p)
+					{
+						Position pos(i, j);
+						file.write(reinterpret_cast<const char*>(&pos), sizeof(Position));
+						found = true;
+					}
+				}
+			}
+			if (found == false)
+			{
+				Position pos;
+				file.write(reinterpret_cast<const char*>(&pos), sizeof(Position));
+			}
+		}
+	}
+	else
+	{
+		cout << "Ghi ra file that bai!\n";
+	}
+	file.close();
+}
+
+void GameState::loadGame()
+{
+	for (Piece* p : this->pieces) {
+		if (p) delete p;
+	}
+	for (Piece* p : this->promotePieces) {
+		if (p) delete p;
+	}
+	this->pieces.clear();
+	this->promotePieces.clear();
+
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			this->board.setPiece(Position(i, j), nullptr);
+		}
+	}
+
+	this->lastChoose = NullPiece::getInstance();
+
+	fstream file("chess.bin", ios::in | ios::binary);
+	if (file.is_open())
+	{
+		//file.read(reinterpret_cast<char*>(this), sizeof(GameState));
+		for (int i = 0; i < 8; i++)
+		{
+			Piece* p = new Pawn(Troop::Black);
+			file.read(reinterpret_cast<char*>(p), sizeof(Pawn));
+			this->pieces.push_back(p);
+			Position pos;
+			file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+			if (pos.isNotNull())
+			{
+				this->board.setPiece(pos, p);
+			}
+		}
+
+		Piece* r1 = new Rook(Troop::Black);
+		file.read(reinterpret_cast<char*>(r1), sizeof(Rook));
+		this->pieces.push_back(r1);
+		Position pos;
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, r1);
+		}
+		Piece* k1 = new Knight(Troop::Black);
+		file.read(reinterpret_cast<char*>(k1), sizeof(Knight));
+		this->pieces.push_back(k1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, k1);
+		}
+		Piece* b1 = new Bishop(Troop::Black);
+		file.read(reinterpret_cast<char*>(b1), sizeof(Bishop));
+		this->pieces.push_back(b1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, b1);
+		}
+		Piece* q1 = new Queen(Troop::Black);
+		file.read(reinterpret_cast<char*>(q1), sizeof(Queen));
+		this->pieces.push_back(q1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, q1);
+		}
+		Piece* ki1 = new King(Troop::Black);
+		file.read(reinterpret_cast<char*>(ki1), sizeof(King));
+		this->pieces.push_back(ki1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, ki1);
+			//vi tri con vua
+			this->blackKing = pos;
+		}
+		Piece* b2 = new Bishop(Troop::Black);
+		file.read(reinterpret_cast<char*>(b2), sizeof(Bishop));
+		this->pieces.push_back(b2);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, b2);
+		}
+		Piece* k2 = new Knight(Troop::Black);
+		file.read(reinterpret_cast<char*>(k2), sizeof(Knight));
+		this->pieces.push_back(k2);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, k2);
+		}
+		Piece* r2 = new Rook(Troop::Black);
+		file.read(reinterpret_cast<char*>(r2), sizeof(Rook));
+		this->pieces.push_back(r2);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, r2);
+		}
+
+		for (int i = 0; i < 8; i++)
+		{
+			Piece* p = new Pawn(Troop::White);
+			file.read(reinterpret_cast<char*>(p), sizeof(Pawn));
+			this->pieces.push_back(p);
+			Position pos;
+			file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+			if (pos.isNotNull())
+			{
+				this->board.setPiece(pos, p);
+			}
+		}
+
+		r1 = new Rook(Troop::White);
+		file.read(reinterpret_cast<char*>(r1), sizeof(Rook));
+		this->pieces.push_back(r1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, r1);
+		}
+		k1 = new Knight(Troop::White);
+		file.read(reinterpret_cast<char*>(k1), sizeof(Knight));
+		this->pieces.push_back(k1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, k1);
+		}
+		b1 = new Bishop(Troop::White);
+		file.read(reinterpret_cast<char*>(b1), sizeof(Bishop));
+		this->pieces.push_back(b1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, b1);
+		}
+		q1 = new Queen(Troop::White);
+		file.read(reinterpret_cast<char*>(q1), sizeof(Queen));
+		this->pieces.push_back(q1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, q1);
+		}
+		ki1 = new King(Troop::White);
+		file.read(reinterpret_cast<char*>(ki1), sizeof(King));
+		this->pieces.push_back(ki1);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, ki1);
+			//vi tri con vua
+			this->whiteKing = pos;
+		}
+		b2 = new Bishop(Troop::White);
+		file.read(reinterpret_cast<char*>(b2), sizeof(Bishop));
+		this->pieces.push_back(b2);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, b2);
+		}
+		k2 = new Knight(Troop::White);
+		file.read(reinterpret_cast<char*>(k2), sizeof(Knight));
+		this->pieces.push_back(k2);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, k2);
+		}
+		r2 = new Rook(Troop::White);
+		file.read(reinterpret_cast<char*>(r2), sizeof(Rook));
+		this->pieces.push_back(r2);
+		file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+		if (pos.isNotNull())
+		{
+			this->board.setPiece(pos, r2);
+		}
+
+		while (!file.eof())
+		{
+			Piece* p = nullptr;
+			PieceType pt;
+			file.read(reinterpret_cast<char*>(&pt), sizeof(PieceType));
+			switch (pt)
+			{
+			case PieceType::Knight:
+				p = new Knight(Troop::None);
+				file.read(reinterpret_cast<char*>(p), sizeof(Knight));
+				break;
+			case PieceType::Bishop:
+				p = new Bishop(Troop::None);
+				file.read(reinterpret_cast<char*>(p), sizeof(Bishop));
+				break;
+			case PieceType::Rook:
+				p = new Rook(Troop::None);
+				file.read(reinterpret_cast<char*>(p), sizeof(Rook));
+				break;
+			case PieceType::Queen:
+				p = new Queen(Troop::None);
+				file.read(reinterpret_cast<char*>(p), sizeof(Queen));
+				break;
+			default:
+				break;
+			}
+			this->promotePieces.push_back(p);
+			Position pos;
+			file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+			if (pos.isNotNull())
+			{
+				this->board.setPiece(pos, p);
+			}
+		}
+	}
+	else
+	{
+		cout << "Ghi ra file that bai!\n";
+	}
+	file.close();
 }

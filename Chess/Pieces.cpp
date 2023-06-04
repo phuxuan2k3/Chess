@@ -144,7 +144,7 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 		board.getPiece(squareToMove)->getTroop() != this->getTroop())
 	{
 		if (squareToMove.get_i() == endBoard) {
-			squareToMove.setMoveType(PosInfo::Promote); 
+			squareToMove.setMoveType(PosInfo::Promote);
 		}
 		pos.push_back(squareToMove);
 	}
@@ -162,7 +162,7 @@ vector<Position> Pawn::canGo(const Position& src, const Board& board)
 	}
 
 	// Enpassant
-	
+
 	// The pass in square will always be empty cause the pawn has moved 2 steps in the previous turn
 	squareToMove = src.getRelativePosition(1 * inv, -1);
 	if (squareToMove.isNotNull() == true)
@@ -314,7 +314,7 @@ bool King::canCastle(Troop requestor) {
 
 void King::set(const Piece* p) {
 	Piece::set(p);
-	King *pKing = (King*)p;
+	King* pKing = (King*)p;
 	this->leftRook = pKing->leftRook;
 	this->rightRook = pKing->rightRook;
 	this->setFirstMove(pKing->hasNotMove());
@@ -474,11 +474,11 @@ bool NullPiece::isLastChosen() const {
 	return false;
 }
 
-void NullPiece::setNotLastChosen() 
+void NullPiece::setNotLastChosen()
 {
 }
 
-void NullPiece::setLastChosen() 
+void NullPiece::setLastChosen()
 {
 }
 
@@ -512,7 +512,7 @@ NullPiece* NullPiece::instance = nullptr;
 // Copy
 //===================================================
 
-FirstMovePiece::FirstMovePiece(const FirstMovePiece& fmp) 
+FirstMovePiece::FirstMovePiece(const FirstMovePiece& fmp)
 {
 	this->firstMove = fmp.firstMove;
 }
@@ -578,4 +578,73 @@ Piece* King::deepCopyPiece(Piece* p)
 {
 	Piece* newPiece = new King(*(dynamic_cast<King*>(p)));
 	return newPiece;
+}
+
+//SAVE PEICE
+void Pawn::savePiece(fstream& file)
+{
+	file.write(reinterpret_cast<const char*>(this), sizeof(Pawn));
+}
+
+void Bishop::savePiece(fstream& file)
+{
+	file.write(reinterpret_cast<const char*>(this), sizeof(Bishop));
+}
+
+void Knight::savePiece(fstream& file)
+{
+	file.write(reinterpret_cast<const char*>(this), sizeof(Knight));
+}
+
+void Queen::savePiece(fstream& file)
+{
+	file.write(reinterpret_cast<const char*>(this), sizeof(Queen));
+}
+
+void Rook::savePiece(fstream& file)
+{
+	file.write(reinterpret_cast<const char*>(this), sizeof(Rook));
+}
+
+void King::savePiece(fstream& file)
+{
+	file.write(reinterpret_cast<const char*>(this), sizeof(King));
+}
+
+void NullPiece::savePiece(fstream& file)
+{
+}
+
+void Pawn::loadPiece(fstream& file)
+{
+	file.read(reinterpret_cast<char*>(this), sizeof(Pawn));
+}
+
+void Bishop::loadPiece(fstream& file)
+{
+	file.read(reinterpret_cast<char*>(this), sizeof(Bishop));
+}
+
+void Queen::loadPiece(fstream& file)
+{
+	file.read(reinterpret_cast<char*>(this), sizeof(Queen));
+}
+
+void Knight::loadPiece(fstream& file)
+{
+	file.read(reinterpret_cast<char*>(this), sizeof(Knight));
+}
+
+void Rook::loadPiece(fstream& file)
+{
+	file.read(reinterpret_cast<char*>(this), sizeof(Rook));
+}
+
+void King::loadPiece(fstream& file)
+{
+	file.read(reinterpret_cast<char*>(this), sizeof(King));
+}
+
+void NullPiece::loadPiece(fstream& file)
+{
 }
