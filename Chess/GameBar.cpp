@@ -79,7 +79,7 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	checked.setTexture(checkedTxt);
 	checked.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 50, 0.3 * window.getSize().y);
 	checked.setScale(0.2, 0.2);
-	if (isChecked and !ended) window.draw(checked);
+	if (isChecked && !ended && !isReplay) window.draw(checked);
 
 
 	float butScale = 0.3;
