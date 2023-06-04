@@ -207,7 +207,7 @@ void RenderBoard::setSize(const float& width, const float& height)
 
 void RenderBoard::setPieces() {
 	if (this->board == nullptr) {
-		throw UninitializedException();
+		throw exception();
 	}
 
 	Piece* p;
@@ -227,7 +227,7 @@ void RenderBoard::setPieces() {
 void RenderBoard::draw(sf::RenderWindow& window)
 {
 	if (this->board == nullptr) {
-		throw UninitializedException();
+		throw exception();
 	}
 
 	// Update Pieces before draw

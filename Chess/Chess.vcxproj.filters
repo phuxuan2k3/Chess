@@ -22,9 +22,6 @@
     <ClCompile Include="Main.cpp">
       <Filter>Mics</Filter>
     </ClCompile>
-    <ClCompile Include="Exception.cpp">
-      <Filter>Mics</Filter>
-    </ClCompile>
     <ClCompile Include="EndGame.cpp">
       <Filter>Game\Endgame</Filter>
     </ClCompile>
@@ -64,9 +61,6 @@
       <Filter>Communicate</Filter>
     </ClInclude>
     <ClInclude Include="Header.h">
-      <Filter>Mics</Filter>
-    </ClInclude>
-    <ClInclude Include="Exception.h">
       <Filter>Mics</Filter>
     </ClInclude>
     <ClInclude Include="EndGame.h">

@@ -171,7 +171,7 @@ Board::~Board() {
 Square Board::getSquare(const int i, const int j) const {
 	Position p(i, j);
 	if (p.isNotNull() == false) {
-		throw OutsideBoard();
+		throw exception();
 	}
 	return this->board[i][j];
 }

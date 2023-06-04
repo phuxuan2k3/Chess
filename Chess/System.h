@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include "Exception.h"
-
+#include "Header.h"
 
 enum class Troop {
 	None = -1,
