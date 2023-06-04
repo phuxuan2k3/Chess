@@ -237,13 +237,13 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					notify = false;
 					GameBar::ended = false;
 					GameBar::isReplay = true;
-
+					Sleep(1500);
 					while (GameBar::currentState < GameBar::timeline) {
 						this->game->redo();
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
 						GameBar::currentState += 1;
-						Sleep(1000);
+						Sleep(1500);
 					}
 					GameBar::ended = true;
 					GameBar::isReplay = false;
