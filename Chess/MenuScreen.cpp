@@ -143,6 +143,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				{
 					cout << "load here" << endl;
 					this->game->loadGame();
+					GameBar::turn = this->game->getTurn();
 					Screen* temp = screen;
 					screen = new GameScreen(this->windowWidthScale, this->windowHeightScale, this->render, this->game);
 					delete temp;
