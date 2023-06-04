@@ -10,7 +10,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	SoundBuffer buffer;
 	int i = 253;
 	if (!buffer.loadFromFile("Audio/intro.wav"))
-		return ;
+		return;
 	//sound
 	Sound sound;
 	sound.setBuffer(buffer);
@@ -48,7 +48,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	playBut.setString("Play");
 	playBut.setCharacterSize(textSize);
 	playBut.setFillColor(sf::Color::White);
-	playBut.setPosition(x, y );
+	playBut.setPosition(x, y);
 
 	//Load Button
 	Text loadBut;
@@ -63,12 +63,12 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 	Exit.setString("Exit");
 	Exit.setCharacterSize(textSize);
 	Exit.setFillColor(sf::Color::White);
-	Exit.setPosition(x, y +  2*  textSize);
+	Exit.setPosition(x, y + 2 * textSize);
 
 	while (window.isOpen())
 	{
 		sf::Event event;
-	
+
 		if (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed)
@@ -80,7 +80,7 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 			{
 				sf::FloatRect view(0, 0, event.size.width, event.size.height);
 				window.setView(sf::View(view));
-				
+
 			}
 			if (event.type == sf::Event::MouseMoved)
 			{
@@ -129,12 +129,12 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				if (playBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
 				{
 					Screen* temp = screen;
-					screen = new GameScreen(this->windowWidthScale,this->windowHeightScale,this->render,this->game);
+					screen = new GameScreen(this->windowWidthScale, this->windowHeightScale, this->render, this->game);
 					delete temp;
 					break;
 				}
 				if (Exit.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
-				{	
+				{
 					end = true;
 					delete game;
 					break;
@@ -142,11 +142,12 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				if (loadBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
 				{
 					cout << "load game here!" << endl;
+					game->loadGame();
 					break;
 				}
 			}
 		}
-		
+
 		window.clear();
 
 		// video intro
@@ -169,5 +170,5 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 
 
 }
-  
+
 
