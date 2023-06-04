@@ -182,6 +182,7 @@ vector<Position> GameState::canGo(const Position& pos) {
 	}
 	// Test after move whether king is dangerous
 	this->testState = true;
+	//Piece* rsses = this->board.getPiece(pos);		// asdfasdfm;admf;amf
 	vector<Position> res = this->board.getPiece(pos)->canGo(pos, this->board);
 	for (int i = res.size() - 1; i >= 0; i--)
 	{

@@ -201,6 +201,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				}
 				if (GameBar::saveBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false) {
 					cout << "save here";
+					this->game->saveGame();
 				}
 				if (GameBar::homeBut.getGlobalBounds().contains(Vector2f(mousePosition))) {
 					delete game;

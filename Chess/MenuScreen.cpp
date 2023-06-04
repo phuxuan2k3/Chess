@@ -141,8 +141,11 @@ void MenuScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 				}
 				if (loadBut.getGlobalBounds().contains(sf::Vector2f(mousePosition)))
 				{
-					cout << "load game here!" << endl;
-					game->loadGame();
+					cout << "load here" << endl;
+					this->game->loadGame();
+					Screen* temp = screen;
+					screen = new GameScreen(this->windowWidthScale, this->windowHeightScale, this->render, this->game);
+					delete temp;
 					break;
 				}
 			}
