@@ -5,7 +5,9 @@ Text GameBar::turnText;
 Sprite GameBar::undoBut;
 Sprite GameBar::homeBut;
 Sprite GameBar::saveBut;
+Sprite GameBar::replay;
 Text GameBar::reset;
+bool GameBar::isReplay = false;
 Sprite GameBar::redoBut;
 Sprite GameBar::newGame;
 Sprite GameBar::checked;
@@ -46,7 +48,6 @@ void GameBar::updateEnded(int i) {
 
 void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	
-
 	//BackGround
 	Texture textureBG;
 	textureBG.loadFromFile("Image/gameBar.png");
@@ -78,15 +79,8 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	checked.setTexture(checkedTxt);
 	checked.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 50, 0.3 * window.getSize().y);
 	checked.setScale(0.2, 0.2);
-	if (isChecked) window.draw(checked);
+	if (isChecked and !ended) window.draw(checked);
 
-	//newgame
-	Texture ngTexture;
-	ngTexture.loadFromFile("Image/newGame.png");
-	ngTexture.setSmooth(true);
-	newGame.setTexture(ngTexture);
-	newGame.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.3 * window.getSize().y);
-	newGame.setScale(0.2, 0.2);
 
 	float butScale = 0.3;
 	//home button
@@ -130,10 +124,29 @@ void GameBar::showGameBar(RenderWindow& window,bool isChecked) {
 	saveBut.setScale(butScale, butScale);
 	window.draw(saveBut);
 
+
+
+	
 	//Ended
 	if (ended !=0) {
-
+		//newgame
+		Texture ngTexture;
+		ngTexture.loadFromFile("Image/newGame.png");
+		ngTexture.setSmooth(true);
+		newGame.setTexture(ngTexture);
+		newGame.setScale(0.2, 0.2);
+		newGame.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 80, 0.3 * window.getSize().y);
 		window.draw(newGame);
+
+		//replay
+		Texture replayTet;
+		replayTet.loadFromFile("Image/sup_replay.png");
+		replayTet.setSmooth(true);
+		replay.setTexture(replayTet);
+		replay.setScale(0.3, 0.3);
+		replay.setPosition(bg.getPosition().x + 0.5 * textureBG.getSize().x * bg.getScale().x - 70, 0.35 * window.getSize().y);
+		window.draw(replay);
+
 		cout << "in";
 		Texture textureBG;
 		textureBG.loadFromFile("Image/scroll.png");

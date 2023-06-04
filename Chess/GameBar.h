@@ -15,6 +15,7 @@ public:
 	static Sprite saveBut;
 	static Sprite homeBut;
 	static Sprite newGame;
+	static Sprite replay;
 	static Text turnText;
 	static int ended;
 	static Text reset;
@@ -28,6 +29,7 @@ public:
 	// State for undo, redo
 	static int timeline;
 	static int currentState;
+	static bool isReplay;
 
 };
 

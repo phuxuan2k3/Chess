@@ -181,7 +181,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						this->drawGameScreen(window);
 					}
 				}
-				if (GameBar::undoBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false) {
+				if (GameBar::undoBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false && GameBar::isReplay == false) {
 					if (GameBar::currentState > 0) {
 						this->game->undo();
 						GameBar::updateTurn();
@@ -191,7 +191,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						notify = false;
 					}
 				}
-				if (GameBar::redoBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false) {
+				if (GameBar::redoBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false && GameBar::isReplay == false) {
 					if (GameBar::currentState < GameBar::timeline) {
 						this->game->redo();
 						GameBar::updateTurn();
@@ -199,7 +199,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						GameBar::currentState += 1;
 					}
 				}
-				if (GameBar::saveBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false) {
+				if (GameBar::saveBut.getGlobalBounds().contains(Vector2f(mousePosition)) && GameBar::ended == false && GameBar::isReplay == false) {
 					cout << "save here";
 					this->game->saveGame();
 				}
@@ -224,6 +224,29 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 					GameBar::turn = Troop::White;
 					game = new GameState();
 					render->setBoard(game->getRefBoard());
+					break;
+				}
+				if (GameBar::ended && GameBar::replay.getGlobalBounds().contains(Vector2f(mousePosition))) {
+					while (GameBar::currentState != 0) {
+						this->game->undo();
+						GameBar::updateTurn();
+						GameBar::currentState -= 1;
+					}
+					this->drawGameScreen(window);
+					checked.stop();
+					notify = false;
+					GameBar::ended = false;
+					GameBar::isReplay = true;
+
+					while (GameBar::currentState < GameBar::timeline) {
+						this->game->redo();
+						GameBar::updateTurn();
+						this->drawGameScreen(window);
+						GameBar::currentState += 1;
+						Sleep(1000);
+					}
+					GameBar::ended = true;
+					GameBar::isReplay = false;
 					break;
 				}
 			}

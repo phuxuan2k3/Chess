@@ -2,6 +2,7 @@
 #include "Screen.h"
 #include "GameBar.h"
 #include "MenuScreen.h"
+#include <Windows.h>
 
 class GameScreen : public Screen
 {
