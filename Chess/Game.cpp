@@ -92,6 +92,10 @@ void GameState::switchTurn() {
 	}
 }
 
+Troop GameState::getTurn() const {
+	return this->turn;
+}
+
 const Board* GameState::getRefBoard() const {
 	return &this->board;
 }
@@ -487,7 +491,7 @@ void GameState::saveGame()
 	fstream file("chess.bin", ios::out | ios::binary);
 	if (file.is_open())
 	{
-		//file.write(reinterpret_cast<const char*>(this), sizeof(GameState));
+		file.write(reinterpret_cast<const char*>(&(this->turn)), sizeof(Troop));
 		for (auto p : this->pieces)
 		{
 			p->savePiece(file);
@@ -571,7 +575,7 @@ void GameState::loadGame()
 	fstream file("chess.bin", ios::in | ios::binary);
 	if (file.is_open())
 	{
-		//file.read(reinterpret_cast<char*>(this), sizeof(GameState));
+		file.read(reinterpret_cast<char*>(&(this->turn)), sizeof(Troop));
 		for (int i = 0; i < 8; i++)
 		{
 			Piece* p = new Pawn(Troop::Black);
@@ -759,12 +763,14 @@ void GameState::loadGame()
 			default:
 				break;
 			}
-			this->promotePieces.push_back(p);
-			Position pos;
-			file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
-			if (pos.isNotNull())
-			{
-				this->board.setPiece(pos, p);
+			if (p != nullptr) {
+				this->promotePieces.push_back(p);
+				Position pos;
+				file.read(reinterpret_cast<char*>(&pos), sizeof(Position));
+				if (pos.isNotNull())
+				{
+					this->board.setPiece(pos, p);
+				}
 			}
 		}
 	}

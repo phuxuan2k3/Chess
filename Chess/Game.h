@@ -38,6 +38,7 @@ public:
 	bool promote = 0;
 	PieceType PromoType;
 	void switchTurn();
+	Troop getTurn() const;
 	// To connect the board in RenderGame
 	const Board* getRefBoard() const;
 	void PromotType(PieceType type, const Position& pos);
