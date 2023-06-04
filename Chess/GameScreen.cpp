@@ -242,7 +242,7 @@ void GameScreen::run(RenderWindow& window, Screen*& screen, bool& end) {
 						GameBar::updateTurn();
 						this->drawGameScreen(window);
 						GameBar::currentState += 1;
-						Sleep(1500);
+						Sleep(500);
 					}
 					GameBar::ended = true;
 					GameBar::isReplay = false;
